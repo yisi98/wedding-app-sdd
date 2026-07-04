@@ -1,0 +1,38 @@
+[project]
+name = "wedding-media-platform-backend"
+version = "0.1.0"
+description = "Backend API for the Wedding Media Platform"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+    "sqlalchemy[asyncio]>=2.0",
+    "asyncpg>=0.29",
+    "aiosqlite>=0.20",
+    "pydantic-settings>=2.4",
+    "python-jose[cryptography]>=3.3",
+    "bcrypt>=4.1",
+    "alembic>=1.13",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.2",
+    "pytest-asyncio>=0.24",
+    "httpx>=0.27",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src"]

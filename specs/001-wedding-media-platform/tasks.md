@@ -34,12 +34,12 @@ and demoed independently. MVP = US1 + US2 + US3.
 **Purpose**: Project skeleton, tooling, and local infrastructure
 
 - [ ] T001 Create the `backend/` and `frontend/` project trees per plan.md structure
-- [ ] T002 Initialize backend Python 3.12 project with `uv` and dependencies (FastAPI, SQLAlchemy 2, Alembic, Pydantic v2, python-jose, bcrypt, boto3, Celery, redis, Pillow, ffmpeg-python, imagehash, pywebpush, aiosmtplib, pytest) in `backend/pyproject.toml`
+- [X] T002 Initialize backend Python 3.12 project with `uv` and dependencies (FastAPI, SQLAlchemy 2, Alembic, Pydantic v2, python-jose, bcrypt, boto3, Celery, redis, Pillow, ffmpeg-python, imagehash, pywebpush, aiosmtplib, pytest) in `backend/pyproject.toml`
 - [ ] T003 [P] Initialize frontend Next.js 14 + TypeScript project with deps (TailwindCSS, react-i18next, Zustand, axios) in `frontend/package.json`
 - [ ] T004 [P] Author `infra/docker-compose.dev.yml` (PostgreSQL 15, Redis 7, MinIO, backend, worker, frontend)
 - [ ] T005 [P] Add `infra/nginx/` reverse-proxy + TLS config and `infra/docker-compose.prod.yml`
 - [ ] T006 [P] Configure backend linting/formatting (ruff/black) and frontend eslint/prettier
-- [ ] T007 [P] Add `.env.example` (EVENT_PASSWORD_HASH, JWT_SECRET, VAPID keys, storage keys, DATABASE_URL, REDIS_URL, optional SMTP_HOST) and ensure `.env` + `.claude/` are git-ignored
+- [X] T007 [P] Add `.env.example` (EVENT_PASSWORD_HASH, JWT_SECRET, VAPID keys, storage keys, DATABASE_URL, REDIS_URL, optional SMTP_HOST) and ensure `.env` + `.claude/` are git-ignored
 - [ ] T008 [P] Add GitHub Actions CI (`.github/workflows/ci.yml`): lint + pytest + Docker build
 
 ---
@@ -50,12 +50,12 @@ and demoed independently. MVP = US1 + US2 + US3.
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T009 Implement `backend/src/config.py` with `@lru_cache get_settings()` reading `.env` (document restart-to-reload behavior)
-- [ ] T010 Implement async engine/session in `backend/src/db.py`
-- [ ] T011 Create the FastAPI app factory in `backend/src/main.py` (router registration, env-based CORS: `["*"]` when DEBUG else explicit allow-list)
+- [X] T009 Implement `backend/src/config.py` with `@lru_cache get_settings()` reading `.env` (document restart-to-reload behavior)
+- [X] T010 Implement async engine/session in `backend/src/db.py`
+- [X] T011 Create the FastAPI app factory in `backend/src/main.py` (router registration, env-based CORS: `["*"]` when DEBUG else explicit allow-list)
 - [ ] T012 Initialize Alembic in `backend/alembic/` and wire the async migration environment
 - [ ] T013 Author migration `0001_initial_schema` (users, refresh_tokens, media, event_config) in `backend/alembic/versions/`
-- [ ] T014 [P] Create base ORM models in `backend/src/models/` for `user.py`, `refresh_token.py`, `media.py`, `event_config.py` per data-model.md
+- [X] T014 [P] Create base ORM models in `backend/src/models/` for `user.py`, `refresh_token.py`, `media.py`, `event_config.py` per data-model.md
 - [ ] T015 [P] Create Celery app in `backend/src/workers/celery_app.py` (Redis broker; `--pool=solo` note for Windows)
 - [ ] T016 [P] Implement `backend/src/services/storage.py` (boto3 S3 client, presigned URL init/confirm, MinIO↔OSS parity)
 - [ ] T017 [P] Implement `backend/src/services/deduplication.py` (SHA-256 hashing + hash-existence check)
@@ -63,7 +63,7 @@ and demoed independently. MVP = US1 + US2 + US3.
 - [ ] T019 Implement `backend/src/i18n/` gettext catalogs (en/zh/ru) + message resolver keyed on `language_preference`
 - [ ] T020 [P] Set up frontend i18n init in `frontend/src/lib/i18n.ts` with `frontend/src/locales/{en,zh,ru}.json` and self-hosted fonts in `frontend/public/`
 - [ ] T021 [P] Implement shared axios client + auth interceptor in `frontend/src/lib/api.ts` and Zustand auth store in `frontend/src/stores/auth.ts`
-- [ ] T022 Implement `GET /api/v1/health` (DB + Redis probes, 503 on degraded) in `backend/src/routers/health.py` + integration test in `backend/tests/integration/test_health.py`
+- [X] T022 Implement `GET /api/v1/health` (DB + Redis probes, 503 on degraded) in `backend/src/routers/health.py` + integration test in `backend/tests/integration/test_health.py`
 
 **Checkpoint**: Foundation ready — user stories can now begin
 
@@ -78,15 +78,15 @@ name → same account; rotated refresh token → 401
 
 ### Tests for User Story 1 ⚠️ (write first, ensure they FAIL)
 
-- [ ] T023 [P] [US1] Integration test for `POST /auth/login` (new account, get-or-create, wrong password 401) in `backend/tests/integration/test_auth_login.py`
-- [ ] T024 [P] [US1] Integration test for `POST /auth/refresh` rotation + reused-token 401 in `backend/tests/integration/test_auth_refresh.py`
-- [ ] T025 [P] [US1] Integration test for `POST /auth/logout` (revoke all), `GET /auth/me` (no email), `PUT /auth/profile` in `backend/tests/integration/test_auth_session.py`
+- [X] T023 [P] [US1] Integration test for `POST /auth/login` (new account, get-or-create, wrong password 401) in `backend/tests/integration/test_auth_login.py`
+- [X] T024 [P] [US1] Integration test for `POST /auth/refresh` rotation + reused-token 401 in `backend/tests/integration/test_auth_refresh.py`
+- [X] T025 [P] [US1] Integration test for `POST /auth/logout` (revoke all), `GET /auth/me` (no email), `PUT /auth/profile` in `backend/tests/integration/test_auth_session.py`
 
 ### Implementation for User Story 1
 
-- [ ] T026 [US1] Implement `backend/src/services/auth.py` (event-password verify, get-or-create user, JWT access 15 min, refresh 7 days w/ rotation, revoke-all)
-- [ ] T027 [P] [US1] Add Pydantic auth schemas in `backend/src/schemas/auth.py` (exclude `email` from all responses)
-- [ ] T028 [US1] Implement `backend/src/routers/auth.py` (`/auth/login`, `/auth/refresh`, `/auth/logout`, `/auth/me`, `/auth/profile`) + access-token dependency
+- [X] T026 [US1] Implement `backend/src/services/auth.py` (event-password verify, get-or-create user, JWT access 15 min, refresh 7 days w/ rotation, revoke-all)
+- [X] T027 [P] [US1] Add Pydantic auth schemas in `backend/src/schemas/auth.py` (exclude `email` from all responses)
+- [X] T028 [US1] Implement `backend/src/routers/auth.py` (`/auth/login`, `/auth/refresh`, `/auth/logout`, `/auth/me`, `/auth/profile`) + access-token dependency
 - [ ] T029 [P] [US1] Build login screen (display name + event password, single form) in `frontend/src/app/login/page.tsx`
 - [ ] T030 [US1] Wire silent access-token refresh via rotating refresh token in `frontend/src/lib/api.ts`
 
