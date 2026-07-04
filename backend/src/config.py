@@ -29,7 +29,23 @@ class Settings(BaseSettings):
     access_token_ttl_minutes: int = 15
     refresh_token_ttl_days: int = 7
 
-    # Real-time / storage / email (wired in later user stories)
+    # Object storage. When storage_access_key is set, an S3-compatible backend
+    # (MinIO/AliCloud OSS) is used; otherwise a local filesystem backend (dev/test).
+    storage_endpoint: str | None = None
+    storage_access_key: str | None = None
+    storage_secret_key: str | None = None
+    storage_bucket: str = "wedding-media"
+    storage_dir: str = ".data"  # local backend base directory
+
+    # Upload validation
+    allowed_image_types: list[str] = Field(
+        default_factory=lambda: ["image/jpeg", "image/png", "image/webp", "image/gif", "image/heic"]
+    )
+    allowed_video_types: list[str] = Field(
+        default_factory=lambda: ["video/mp4", "video/quicktime", "video/webm"]
+    )
+
+    # Real-time / email (wired in later user stories)
     redis_url: str | None = None
     smtp_host: str | None = None
 

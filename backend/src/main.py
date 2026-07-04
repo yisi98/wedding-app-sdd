@@ -16,6 +16,7 @@ from .models import Base
 from .models.event_config import SINGLETON_ID, EventConfig
 from .routers import auth as auth_router
 from .routers import health as health_router
+from .routers import media as media_router
 
 
 @asynccontextmanager
@@ -56,6 +57,7 @@ def create_app() -> FastAPI:
 
     app.include_router(health_router.router)
     app.include_router(auth_router.router)
+    app.include_router(media_router.router)
     return app
 
 
