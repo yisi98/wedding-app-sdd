@@ -1,0 +1,34 @@
+# Secrets & environment (Principle III: secrets only in .env, never in git)
+.env
+.env.*
+!.env.example
+
+# Agent folder (may hold credentials/tokens)
+.claude/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.ruff_cache/
+*.db
+*.sqlite3
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+coverage/
+npm-debug.log*
+
+# Editors / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+*.swp
