@@ -31,6 +31,31 @@ MESSAGES: dict[str, dict[str, str]] = {
         "zh": "需要管理员权限。",
         "ru": "Требуются права администратора.",
     },
+    "uploads_closed": {
+        "en": "Uploads are currently closed.",
+        "zh": "上传当前已关闭。",
+        "ru": "Загрузка сейчас закрыта.",
+    },
+    "invalid_file_type": {
+        "en": "This file type is not allowed.",
+        "zh": "不允许此文件类型。",
+        "ru": "Этот тип файла не разрешён.",
+    },
+    "file_too_large": {
+        "en": "This file exceeds the size limit.",
+        "zh": "此文件超过大小限制。",
+        "ru": "Этот файл превышает лимит размера.",
+    },
+    "duplicate_media": {
+        "en": "This file has already been uploaded.",
+        "zh": "此文件已上传。",
+        "ru": "Этот файл уже загружен.",
+    },
+    "media_not_found": {
+        "en": "Media not found.",
+        "zh": "未找到媒体。",
+        "ru": "Медиа не найдено.",
+    },
 }
 
 DEFAULT_LANG = "en"

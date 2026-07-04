@@ -56,9 +56,9 @@ and demoed independently. MVP = US1 + US2 + US3.
 - [ ] T012 Initialize Alembic in `backend/alembic/` and wire the async migration environment
 - [ ] T013 Author migration `0001_initial_schema` (users, refresh_tokens, media, event_config) in `backend/alembic/versions/`
 - [X] T014 [P] Create base ORM models in `backend/src/models/` for `user.py`, `refresh_token.py`, `media.py`, `event_config.py` per data-model.md
-- [ ] T015 [P] Create Celery app in `backend/src/workers/celery_app.py` (Redis broker; `--pool=solo` note for Windows)
-- [ ] T016 [P] Implement `backend/src/services/storage.py` (boto3 S3 client, presigned URL init/confirm, MinIO↔OSS parity)
-- [ ] T017 [P] Implement `backend/src/services/deduplication.py` (SHA-256 hashing + hash-existence check)
+- [X] T015 [P] Create Celery app in `backend/src/workers/celery_app.py` (Redis broker; `--pool=solo` note for Windows)
+- [X] T016 [P] Implement `backend/src/services/storage.py` (boto3 S3 client, presigned URL init/confirm, MinIO↔OSS parity)
+- [X] T017 [P] Implement `backend/src/services/deduplication.py` (SHA-256 hashing + hash-existence check)
 - [ ] T018 [P] Configure error handling + structured logging middleware in `backend/src/main.py`
 - [ ] T019 Implement `backend/src/i18n/` gettext catalogs (en/zh/ru) + message resolver keyed on `language_preference`
 - [ ] T020 [P] Set up frontend i18n init in `frontend/src/lib/i18n.ts` with `frontend/src/locales/{en,zh,ru}.json` and self-hosted fonts in `frontend/public/`
@@ -103,17 +103,17 @@ over-limit/disallowed → rejected; archive mode → refused
 
 ### Tests for User Story 2 ⚠️
 
-- [ ] T031 [P] [US2] Integration test for `POST /media/upload/init` (validation, size limits, duplicate 409, uploads-paused) in `backend/tests/integration/test_upload_init.py`
-- [ ] T032 [P] [US2] Integration test for `POST /media/upload/confirm` (enqueue, status processing) in `backend/tests/integration/test_upload_confirm.py`
-- [ ] T033 [P] [US2] Integration test for background processing outputs (thumbnail/webp/phash/lqip/exif/duration → ready|failed) in `backend/tests/integration/test_media_processing.py`
+- [X] T031 [P] [US2] Integration test for `POST /media/upload/init` (validation, size limits, duplicate 409, uploads-paused) in `backend/tests/integration/test_upload_init.py`
+- [X] T032 [P] [US2] Integration test for `POST /media/upload/confirm` (enqueue, status processing) in `backend/tests/integration/test_upload_confirm.py`
+- [X] T033 [P] [US2] Integration test for background processing outputs (thumbnail/webp/phash/lqip/exif/duration → ready|failed) in `backend/tests/integration/test_media_processing.py`
 
 ### Implementation for User Story 2
 
-- [ ] T034 [US2] Implement `backend/src/services/media.py` upload-init (validate mime/size vs `event_config`, dedup via T017, presigned URL, `uploads_enabled` gate)
-- [ ] T035 [US2] Implement upload-confirm (persist media `processing`, enqueue Celery task) in `backend/src/services/media.py`
-- [ ] T036 [P] [US2] Implement media processing task (400×400 thumbnail, WebP, pHash, LQIP, EXIF, video duration) in `backend/src/workers/media_processing.py`
-- [ ] T037 [P] [US2] Add media/upload Pydantic schemas in `backend/src/schemas/media.py`
-- [ ] T038 [US2] Implement `backend/src/routers/media.py` upload endpoints (`/media/upload/init`, `/media/upload/confirm`)
+- [X] T034 [US2] Implement `backend/src/services/media.py` upload-init (validate mime/size vs `event_config`, dedup via T017, presigned URL, `uploads_enabled` gate)
+- [X] T035 [US2] Implement upload-confirm (persist media `processing`, enqueue Celery task) in `backend/src/services/media.py`
+- [X] T036 [P] [US2] Implement media processing task (400×400 thumbnail, WebP, pHash, LQIP, EXIF, video duration) in `backend/src/workers/media_processing.py`
+- [X] T037 [P] [US2] Add media/upload Pydantic schemas in `backend/src/schemas/media.py`
+- [X] T038 [US2] Implement `backend/src/routers/media.py` upload endpoints (`/media/upload/init`, `/media/upload/confirm`)
 - [ ] T039 [P] [US2] Build drag-and-drop multi-upload component with per-file + total progress in `frontend/src/components/Uploader.tsx`
 
 **Checkpoint**: US1 + US2 work independently
