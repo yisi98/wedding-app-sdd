@@ -6,10 +6,11 @@ enqueues background processing (eager in dev/test, Celery in prod).
 """
 
 import re
-from datetime import date
+from datetime import date, timedelta
 
 from fastapi import HTTPException, status
 from sqlalchemy import asc, desc, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..config import Settings
@@ -93,7 +94,19 @@ async def init_upload(
         status=STATUS_PENDING,
     )
     session.add(media)
-    await session.flush()
+    try:
+        await session.flush()
+    except IntegrityError:
+        # Concurrent identical upload won the file_hash unique constraint first.
+        await session.rollback()
+        existing = await deduplication.find_by_hash(session, body.file_hash)
+        raise HTTPException(
+            status.HTTP_409_CONFLICT,
+            detail={
+                "message": t("duplicate_media", lang),
+                "media_id": existing.id if existing else None,
+            },
+        )
     upload_url = get_storage().presigned_put_url(storage_key)
     return media, upload_url
 
@@ -154,7 +167,8 @@ async def list_gallery(
     if date_from:
         stmt = stmt.where(Media.created_at >= date_from)
     if date_to:
-        stmt = stmt.where(Media.created_at <= date_to)
+        # Inclusive of the whole `date_to` day (created_at is a timestamp).
+        stmt = stmt.where(Media.created_at < date_to + timedelta(days=1))
     if q:
         stmt = stmt.where(Media.original_filename.ilike(f"%{q}%"))
 
