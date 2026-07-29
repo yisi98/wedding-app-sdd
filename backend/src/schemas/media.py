@@ -33,6 +33,7 @@ class MediaOut(BaseModel):
     file_hash: str
     media_type: str
     mime_type: str
+    storage_path: str
     status: str
     width: int | None = None
     height: int | None = None

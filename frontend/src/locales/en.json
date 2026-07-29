@@ -1,0 +1,60 @@
+{
+  "app": { "title": "Our Wedding" },
+  "login": {
+    "displayName": "Your name",
+    "eventPassword": "Event password",
+    "enter": "Enter",
+    "error": "Incorrect event password"
+  },
+  "nav": { "gallery": "Gallery", "favorites": "Favorites", "admin": "Admin", "logout": "Log out", "upload": "Upload" },
+  "gallery": {
+    "empty": "No photos yet — be the first to upload!",
+    "search": "Search by filename",
+    "all": "All",
+    "images": "Photos",
+    "videos": "Videos",
+    "sortNewest": "Newest",
+    "sortOldest": "Oldest",
+    "sortMostViewed": "Most viewed",
+    "sortMostLiked": "Most liked",
+    "loadMore": "Load more"
+  },
+  "lightbox": {
+    "download": "Download",
+    "similar": "Similar photos",
+    "comments": "Comments",
+    "addComment": "Add a comment…",
+    "send": "Send",
+    "share": "Share",
+    "close": "Close"
+  },
+  "upload": {
+    "drop": "Drag photos & videos here, or click to select",
+    "uploading": "Uploading…",
+    "done": "Done",
+    "duplicate": "Already uploaded",
+    "closed": "Uploads are closed"
+  },
+  "share": {
+    "title": "Share",
+    "copy": "Copy link",
+    "copied": "Copied!",
+    "gallery": "Whole gallery",
+    "expired": "This link has expired"
+  },
+  "admin": {
+    "stats": "Statistics",
+    "users": "Users",
+    "media": "Media",
+    "totalMedia": "Media",
+    "totalUsers": "Guests",
+    "totalViews": "Views",
+    "storage": "Storage",
+    "promote": "Make admin",
+    "deactivate": "Deactivate",
+    "hide": "Hide",
+    "show": "Show",
+    "export": "Export CSV"
+  },
+  "activity": { "title": "Activity", "new_upload": "uploaded", "new_reaction": "reacted", "new_comment": "commented", "new_favorite": "favorited" }
+}
