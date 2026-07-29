@@ -12,8 +12,12 @@ export function useAuthGuard(requireAdmin = false) {
   const [ready, setReady] = useState(false);
   const token = useAuthStore((s) => s.accessToken);
   const user = useAuthStore((s) => s.user);
+  const hasHydrated = useAuthStore((s) => s.hasHydrated);
 
   useEffect(() => {
+    // Wait for the persisted session to load before judging the token — otherwise a
+    // fresh load/refresh reads the pre-hydration `null` and logs a valid session out.
+    if (!hasHydrated) return;
     if (!token) {
       router.replace("/login");
       return;
@@ -23,7 +27,7 @@ export function useAuthGuard(requireAdmin = false) {
       return;
     }
     setReady(true);
-  }, [token, user, requireAdmin, router]);
+  }, [hasHydrated, token, user, requireAdmin, router]);
 
   return { ready, user };
 }
