@@ -7,6 +7,7 @@ from .favorite import Favorite
 from .media import Media
 from .reaction import Reaction
 from .refresh_token import RefreshToken
+from .share_link import ShareLink
 from .user import User
 
 __all__ = [
@@ -18,4 +19,5 @@ __all__ = [
     "Reaction",
     "Comment",
     "Favorite",
+    "ShareLink",
 ]
