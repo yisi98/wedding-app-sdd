@@ -5,13 +5,17 @@ code — see [tasks.md](./tasks.md) for the build steps.
 
 ## Prerequisites
 
-- Docker + Docker Compose (dev infra: PostgreSQL 15, Redis 7, MinIO)
 - Python 3.12 + `uv` (backend), Node 20 + `npm` (frontend)
-- ffmpeg available on PATH (video duration/processing)
-- A `.env` file (never committed) with: `EVENT_PASSWORD_HASH`, `JWT_SECRET`,
-  `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY`, storage keys, `DATABASE_URL`, `REDIS_URL`,
-  optional `SMTP_HOST`. On Windows/WSL2, point DB/Redis hosts at the WSL bridge IP, not
+- For the **full stack**: Docker + Docker Compose (PostgreSQL 15, Redis 7, MinIO) and
+  ffmpeg on PATH (video duration).
+- A `.env` file (never committed) — see [`backend/.env.example`](../../backend/.env.example)
+  for every variable. On Windows/WSL2, point DB/Redis hosts at the WSL bridge IP, not
   `localhost`.
+
+> **Zero-infra dev/test path**: with `DEBUG=true` and no storage keys set, the backend uses
+> SQLite + a local filesystem storage backend and processes uploads inline — so
+> `uv run pytest` and `uv run uvicorn src.main:app --reload` work with **no Docker, Redis,
+> or MinIO**. Media bytes are served from `GET /media-object/{key}`.
 
 ## Bring up infrastructure
 
