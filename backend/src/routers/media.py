@@ -70,19 +70,46 @@ async def upload_init(
 
 @router.put("/upload/raw", status_code=status.HTTP_204_NO_CONTENT)
 async def upload_raw(key: str, request: Request, user: CurrentUser, session: DbDep) -> None:
-    """Dev-only: accept bytes for a pending media object and store them."""
+    """Dev-only stand-in for the direct client→OSS PUT.
+
+    Only available with the local storage backend; in production the client uploads
+    straight to the presigned OSS URL. Validates the *actual* byte size against the
+    configured limit (the declared size at init is not trusted) and records the truth.
+    """
     from sqlalchemy import select
 
-    from ..models.media import STATUS_PENDING, Media
+    from ..models.event_config import SINGLETON_ID, EventConfig
+    from ..models.media import MEDIA_IMAGE, STATUS_PENDING, Media
+    from ..services.storage import LocalStorage
+
+    storage = get_storage()
+    if not isinstance(storage, LocalStorage):
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Not found")
 
     result = await session.execute(
         select(Media).where(Media.storage_path == key, Media.uploader_id == user.id)
     )
     media = result.scalar_one_or_none()
     if media is None or media.status != STATUS_PENDING:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, detail=t("media_not_found", user.language_preference))
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND, detail=t("media_not_found", user.language_preference)
+        )
+
     body = await request.body()
-    get_storage().put(key, body)
+    config = await session.get(EventConfig, SINGLETON_ID)
+    max_bytes = (
+        (config.max_image_bytes if config else 50 * 1024 * 1024)
+        if media.media_type == MEDIA_IMAGE
+        else (config.max_video_bytes if config else 500 * 1024 * 1024)
+    )
+    if len(body) > max_bytes:
+        raise HTTPException(
+            status.HTTP_413_CONTENT_TOO_LARGE, detail=t("file_too_large", user.language_preference)
+        )
+
+    storage.put(key, body)
+    media.file_size = len(body)  # record the actual size, not the client's declared one
+    await session.commit()
 
 
 @router.post("/upload/confirm", response_model=MediaOut)

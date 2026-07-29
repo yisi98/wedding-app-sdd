@@ -39,15 +39,24 @@ async function refreshAccessToken(): Promise<string | null> {
   }
 }
 
+// Single-flight: concurrent 401s share one refresh; the slot clears only when it settles,
+// so a second refresh is never kicked off against an already-rotated token.
+function getRefresh(): Promise<string | null> {
+  if (!refreshing) {
+    refreshing = refreshAccessToken().finally(() => {
+      refreshing = null;
+    });
+  }
+  return refreshing;
+}
+
 api.interceptors.response.use(
   (r) => r,
   async (error) => {
     const original = error.config as AxiosRequestConfig & { _retried?: boolean };
     if (error.response?.status === 401 && original && !original._retried) {
       original._retried = true;
-      refreshing = refreshing ?? refreshAccessToken();
-      const newToken = await refreshing;
-      refreshing = null;
+      const newToken = await getRefresh();
       if (newToken) {
         original.headers = { ...original.headers, Authorization: `Bearer ${newToken}` };
         return api(original);
