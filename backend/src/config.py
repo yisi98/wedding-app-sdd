@@ -45,9 +45,19 @@ class Settings(BaseSettings):
         default_factory=lambda: ["video/mp4", "video/quicktime", "video/webm"]
     )
 
-    # Real-time / email (wired in later user stories)
+    # Real-time
     redis_url: str | None = None
+    activity_channel: str = "wmp:activity"
+
+    # Web push (VAPID)
+    vapid_public_key: str | None = None
+    vapid_private_key: str | None = None
+    vapid_subject: str = "mailto:admin@example.com"
+
+    # Email (optional; disabled when smtp_host is empty)
     smtp_host: str | None = None
+    smtp_port: int = 587
+    smtp_from: str = "noreply@example.com"
 
     # Production CORS allow-list (only used when debug is False)
     cors_origins: list[str] = Field(default_factory=list)

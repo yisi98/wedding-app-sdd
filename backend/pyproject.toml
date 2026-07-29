@@ -16,6 +16,9 @@ dependencies = [
     "celery>=5.4",
     "pillow>=10.4",
     "numpy>=2.0",
+    "redis>=5.0",
+    "pywebpush>=2.0",
+    "aiosmtplib>=3.0",
 ]
 
 [dependency-groups]

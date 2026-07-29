@@ -10,11 +10,17 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..i18n import t
+from ..models.activity_event import (
+    EVENT_NEW_COMMENT,
+    EVENT_NEW_FAVORITE,
+    EVENT_NEW_REACTION,
+)
 from ..models.comment import Comment
 from ..models.favorite import Favorite
 from ..models.media import STATUS_READY, Media
 from ..models.reaction import Reaction
 from ..models.user import User
+from ..services import activity as activity_service
 from ..services.media import get_visible_item
 
 
@@ -32,6 +38,9 @@ async def toggle_reaction(
         session.add(Reaction(user_id=user.id, media_id=media_id, reaction_type=reaction_type))
         media.reaction_count += 1
         current: str | None = reaction_type
+        await activity_service.record(
+            session, EVENT_NEW_REACTION, user, media_id, {"reaction_type": reaction_type}
+        )
     elif existing.reaction_type == reaction_type:
         await session.delete(existing)
         media.reaction_count = max(0, media.reaction_count - 1)
@@ -50,6 +59,7 @@ async def add_comment(session: AsyncSession, user: User, media_id: int, content:
     session.add(comment)
     media.comment_count += 1
     await session.flush()
+    await activity_service.record(session, EVENT_NEW_COMMENT, user, media_id)
     return comment
 
 
@@ -94,6 +104,7 @@ async def toggle_favorite(session: AsyncSession, user: User, media_id: int) -> t
         session.add(Favorite(user_id=user.id, media_id=media_id))
         media.favorite_count += 1
         favorited = True
+        await activity_service.record(session, EVENT_NEW_FAVORITE, user, media_id)
     else:
         await session.delete(existing)
         media.favorite_count = max(0, media.favorite_count - 1)
