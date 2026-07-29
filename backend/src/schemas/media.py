@@ -41,5 +41,14 @@ class MediaOut(BaseModel):
     thumbnail_path: str | None = None
     optimized_path: str | None = None
     view_count: int
+    reaction_count: int
+    comment_count: int
+    favorite_count: int
     is_visible: bool
     created_at: datetime
+
+
+class GalleryResponse(BaseModel):
+    items: list["MediaOut"]
+    has_more: bool
+    next_offset: int | None = None
