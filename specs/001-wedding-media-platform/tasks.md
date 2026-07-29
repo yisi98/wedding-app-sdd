@@ -36,11 +36,11 @@ and demoed independently. MVP = US1 + US2 + US3.
 - [X] T001 Create the `backend/` and `frontend/` project trees per plan.md structure
 - [X] T002 Initialize backend Python 3.12 project with `uv` and dependencies (FastAPI, SQLAlchemy 2, Alembic, Pydantic v2, python-jose, bcrypt, boto3, Celery, redis, Pillow, ffmpeg-python, imagehash, pywebpush, aiosmtplib, pytest) in `backend/pyproject.toml`
 - [X] T003 [P] Initialize frontend Next.js 14 + TypeScript project with deps (TailwindCSS, react-i18next, Zustand, axios) in `frontend/package.json`
-- [ ] T004 [P] Author `infra/docker-compose.dev.yml` (PostgreSQL 15, Redis 7, MinIO, backend, worker, frontend)
-- [ ] T005 [P] Add `infra/nginx/` reverse-proxy + TLS config and `infra/docker-compose.prod.yml`
+- [X] T004 [P] Author `infra/docker-compose.dev.yml` (PostgreSQL 15, Redis 7, MinIO, backend, worker, frontend)
+- [X] T005 [P] Add `infra/nginx/` reverse-proxy + TLS config and `infra/docker-compose.prod.yml`
 - [X] T006 [P] Configure backend linting/formatting (ruff/black) and frontend eslint/prettier
 - [X] T007 [P] Add `.env.example` (EVENT_PASSWORD_HASH, JWT_SECRET, VAPID keys, storage keys, DATABASE_URL, REDIS_URL, optional SMTP_HOST) and ensure `.env` + `.claude/` are git-ignored
-- [ ] T008 [P] Add GitHub Actions CI (`.github/workflows/ci.yml`): lint + pytest + Docker build
+- [X] T008 [P] Add GitHub Actions CI (`.github/workflows/ci.yml`): lint + pytest + Docker build
 
 ---
 
@@ -59,8 +59,8 @@ and demoed independently. MVP = US1 + US2 + US3.
 - [X] T015 [P] Create Celery app in `backend/src/workers/celery_app.py` (Redis broker; `--pool=solo` note for Windows)
 - [X] T016 [P] Implement `backend/src/services/storage.py` (boto3 S3 client, presigned URL init/confirm, MinIO↔OSS parity)
 - [X] T017 [P] Implement `backend/src/services/deduplication.py` (SHA-256 hashing + hash-existence check)
-- [ ] T018 [P] Configure error handling + structured logging middleware in `backend/src/main.py`
-- [ ] T019 Implement `backend/src/i18n/` gettext catalogs (en/zh/ru) + message resolver keyed on `language_preference`
+- [X] T018 [P] Configure error handling + structured logging middleware in `backend/src/main.py`
+- [X] T019 Implement `backend/src/i18n/` gettext catalogs (en/zh/ru) + message resolver keyed on `language_preference`
 - [X] T020 [P] Set up frontend i18n init in `frontend/src/lib/i18n.ts` with `frontend/src/locales/{en,zh,ru}.json` and self-hosted fonts in `frontend/public/`
 - [X] T021 [P] Implement shared axios client + auth interceptor in `frontend/src/lib/api.ts` and Zustand auth store in `frontend/src/stores/auth.ts`
 - [X] T022 Implement `GET /api/v1/health` (DB + Redis probes, 503 on degraded) in `backend/src/routers/health.py` + integration test in `backend/tests/integration/test_health.py`
@@ -159,7 +159,7 @@ comment; favorite appears in list; views increment
 
 ### Implementation for User Story 4
 
-- [ ] T050 [P] [US4] Add migration `0002_phase3_social_search_sharing` (reactions, comments, favorites, share_links + indexes) in `backend/alembic/versions/`
+- [X] T050 [P] [US4] Add migration `0002_phase3_social_search_sharing` (reactions, comments, favorites, share_links + indexes) in `backend/alembic/versions/`
 - [X] T051 [P] [US4] Create `reaction.py`, `comment.py`, `favorite.py` models in `backend/src/models/`
 - [X] T052 [US4] Implement `backend/src/services/social.py` (reaction toggle/replace, comment soft-delete rules, favorites, view increment, denormalized count updates)
 - [X] T053 [US4] Implement social endpoints in `backend/src/routers/social.py` (`/media/{id}/reactions|comments|favorites|view`, `GET /media/favorites`)
@@ -177,13 +177,13 @@ comment; favorite appears in list; views increment
 
 ### Tests for User Story 5 ⚠️
 
-- [ ] T055 [P] [US5] Integration test for `POST /share` + `GET /share/{token}` (access count, expiry, hidden-item safety) in `backend/tests/integration/test_share.py`
+- [X] T055 [P] [US5] Integration test for `POST /share` + `GET /share/{token}` (access count, expiry, hidden-item safety) in `backend/tests/integration/test_share.py`
 
 ### Implementation for User Story 5
 
-- [ ] T056 [P] [US5] Create `share_link.py` model in `backend/src/models/` (covered by 0002 migration)
-- [ ] T057 [US5] Implement `backend/src/services/share.py` (token create, resolve, access-count, expiry, exclude hidden/deleted)
-- [ ] T058 [US5] Implement `backend/src/routers/share.py` (`POST /share`, `GET /share/{token}`)
+- [X] T056 [P] [US5] Create `share_link.py` model in `backend/src/models/` (covered by 0002 migration)
+- [X] T057 [US5] Implement `backend/src/services/share.py` (token create, resolve, access-count, expiry, exclude hidden/deleted)
+- [X] T058 [US5] Implement `backend/src/routers/share.py` (`POST /share`, `GET /share/{token}`)
 - [X] T059 [P] [US5] Build share UI (QR code + Web Share API + copy-link) in `frontend/src/components/ShareDialog.tsx` and share landing in `frontend/src/app/share/[token]/page.tsx`
 
 **Checkpoint**: US1–US5 independently functional
@@ -199,17 +199,17 @@ push; unsubscribe → stop; no SMTP → no email attempted
 
 ### Tests for User Story 6 ⚠️
 
-- [ ] T060 [P] [US6] Integration test for `GET /activity` feed in `backend/tests/integration/test_activity.py`
-- [ ] T061 [P] [US6] Integration test for push subscribe/unsubscribe + `GET /push/vapid-public-key` in `backend/tests/integration/test_push.py`
-- [ ] T062 [P] [US6] Integration/functional test for `/ws` broadcast via Redis pub/sub in `backend/tests/integration/test_websocket.py`
+- [X] T060 [P] [US6] Integration test for `GET /activity` feed in `backend/tests/integration/test_activity.py`
+- [X] T061 [P] [US6] Integration test for push subscribe/unsubscribe + `GET /push/vapid-public-key` in `backend/tests/integration/test_push.py`
+- [X] T062 [P] [US6] Integration/functional test for `/ws` broadcast via Redis pub/sub in `backend/tests/integration/test_websocket.py`
 
 ### Implementation for User Story 6
 
-- [ ] T063 [P] [US6] Add migration `0003_phase4_realtime_pwa` (activity_events, push_subscriptions) + models `activity_event.py`, `push_subscription.py` in `backend/`
-- [ ] T064 [US6] Implement `backend/src/services/activity.py` (record events) and `backend/src/services/websocket_manager.py` (Redis pub/sub bridge)
-- [ ] T065 [P] [US6] Implement `backend/src/services/push_service.py` (pywebpush/VAPID) and `backend/src/services/email_service.py` (aiosmtplib, no-op when SMTP_HOST empty)
-- [ ] T066 [US6] Implement `backend/src/routers/notifications.py` (`/activity`, `/push/subscribe`, `/push/vapid-public-key`) and `backend/src/routers/ws.py` (`/ws`)
-- [ ] T067 [US6] Emit activity events + publish to Redis from upload/reaction/comment/favorite services (wire into T034/T052)
+- [X] T063 [P] [US6] Add migration `0003_phase4_realtime_pwa` (activity_events, push_subscriptions) + models `activity_event.py`, `push_subscription.py` in `backend/`
+- [X] T064 [US6] Implement `backend/src/services/activity.py` (record events) and `backend/src/services/websocket_manager.py` (Redis pub/sub bridge)
+- [X] T065 [P] [US6] Implement `backend/src/services/push_service.py` (pywebpush/VAPID) and `backend/src/services/email_service.py` (aiosmtplib, no-op when SMTP_HOST empty)
+- [X] T066 [US6] Implement `backend/src/routers/notifications.py` (`/activity`, `/push/subscribe`, `/push/vapid-public-key`) and `backend/src/routers/ws.py` (`/ws`)
+- [X] T067 [US6] Emit activity events + publish to Redis from upload/reaction/comment/favorite services (wire into T034/T052)
 - [X] T068 [P] [US6] Build live-toast + activity-feed UI and push subscribe toggle in `frontend/src/stores/realtime.ts` and `frontend/src/components/ActivityFeed.tsx`
 
 **Checkpoint**: US1–US6 independently functional
@@ -246,16 +246,16 @@ gallery, present in admin list; non-admin → 403; CSV export
 
 ### Tests for User Story 8 ⚠️
 
-- [ ] T073 [P] [US8] Integration test for `GET /admin/stats` in `backend/tests/integration/test_admin_stats.py`
-- [ ] T074 [P] [US8] Integration test for user mgmt (list/search, promote, deactivate, delete, self-account guard) in `backend/tests/integration/test_admin_users.py`
-- [ ] T075 [P] [US8] Integration test for media moderation (list incl. hidden, visibility toggle, guest 404) + CSV export in `backend/tests/integration/test_admin_media.py`
-- [ ] T076 [P] [US8] Integration test asserting non-admin → 403 on every `/admin/*` route in `backend/tests/integration/test_admin_authz.py`
+- [X] T073 [P] [US8] Integration test for `GET /admin/stats` in `backend/tests/integration/test_admin_stats.py`
+- [X] T074 [P] [US8] Integration test for user mgmt (list/search, promote, deactivate, delete, self-account guard) in `backend/tests/integration/test_admin_users.py`
+- [X] T075 [P] [US8] Integration test for media moderation (list incl. hidden, visibility toggle, guest 404) + CSV export in `backend/tests/integration/test_admin_media.py`
+- [X] T076 [P] [US8] Integration test asserting non-admin → 403 on every `/admin/*` route in `backend/tests/integration/test_admin_authz.py`
 
 ### Implementation for User Story 8
 
-- [ ] T077 [US8] Implement admin-role dependency/guard (incl. own-account protection) in `backend/src/services/auth.py`
-- [ ] T078 [US8] Implement admin stats + user-management + moderation logic in `backend/src/services/media.py`/`auth.py` and CSV export in a helper
-- [ ] T079 [US8] Implement `backend/src/routers/admin.py` (`/admin/stats`, `/admin/users[...]`, `/admin/media`, `/admin/media/{id}/visibility`, `/admin/export/media`)
+- [X] T077 [US8] Implement admin-role dependency/guard (incl. own-account protection) in `backend/src/services/auth.py`
+- [X] T078 [US8] Implement admin stats + user-management + moderation logic in `backend/src/services/media.py`/`auth.py` and CSV export in a helper
+- [X] T079 [US8] Implement `backend/src/routers/admin.py` (`/admin/stats`, `/admin/users[...]`, `/admin/media`, `/admin/media/{id}/visibility`, `/admin/export/media`)
 - [X] T080 [P] [US8] Build admin dashboard + user table + moderation UI in `frontend/src/app/admin/page.tsx`
 
 **Checkpoint**: US1–US8 independently functional
@@ -270,12 +270,12 @@ gallery, present in admin list; non-admin → 403; CSV export
 
 ### Tests for User Story 9 ⚠️
 
-- [ ] T081 [P] [US9] Integration test for `POST /downloads/bulk` (ZIP contents, excludes hidden) in `backend/tests/integration/test_bulk_download.py`
+- [X] T081 [P] [US9] Integration test for `POST /downloads/bulk` (ZIP contents, excludes hidden) in `backend/tests/integration/test_bulk_download.py`
 
 ### Implementation for User Story 9
 
-- [ ] T082 [US9] Implement `backend/src/services/zip_service.py` (streamed ZIP of requested visible/ready items)
-- [ ] T083 [US9] Implement `backend/src/routers/downloads.py` (`POST /downloads/bulk`)
+- [X] T082 [US9] Implement `backend/src/services/zip_service.py` (streamed ZIP of requested visible/ready items)
+- [X] T083 [US9] Implement `backend/src/routers/downloads.py` (`POST /downloads/bulk`)
 - [X] T084 [P] [US9] Add multi-select + bulk-download action to `frontend/src/components/GalleryGrid.tsx`
 
 **Checkpoint**: All user stories independently functional
@@ -286,12 +286,12 @@ gallery, present in admin list; non-admin → 403; CSV export
 
 **Purpose**: Quality bars and go-live gates
 
-- [ ] T085 [P] EN/ZH/RU string-parity audit across `frontend/src/locales/*` and `backend/src/i18n/*` (SC-004)
-- [ ] T086 Load test sustaining 150 concurrent users (browse + upload) with a report in `infra/loadtest/` (SC-003)
-- [ ] T087 [P] Security hardening pass: verify no secrets in repo, prod CORS allow-list, presigned-URL scope, rate limiting
-- [ ] T088 [P] Confirm `users.email` is excluded from every response; add cleanup-migration note
-- [ ] T089 Run full `quickstart.md` validation (steps 1–10) against a prod-like deploy
-- [ ] T090 Production deploy + smoke test on AliCloud with ICP filing active (SC-010, deadline 2026-09-15)
+- [X] T085 [P] EN/ZH/RU string-parity audit across `frontend/src/locales/*` and `backend/src/i18n/*` (SC-004)
+- [X] T086 Load test sustaining 150 concurrent users (browse + upload) with a report in `infra/loadtest/` (SC-003)
+- [X] T087 [P] Security hardening pass: verify no secrets in repo, prod CORS allow-list, presigned-URL scope, rate limiting
+- [X] T088 [P] Confirm `users.email` is excluded from every response; add cleanup-migration note
+- [ ] T089 Run full `quickstart.md` validation (steps 1–10) against a prod-like deploy — BLOCKED: needs deployed stack (core flows covered by 62 tests + frontend build; see docs/DEPLOY.md)
+- [ ] T090 Production deploy + smoke test on AliCloud with ICP filing active (SC-010, deadline 2026-09-15) — BLOCKED: requires AliCloud account + active ICP filing (operator task; runbook in docs/DEPLOY.md)
 
 ---
 
