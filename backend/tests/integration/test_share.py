@@ -1,10 +1,9 @@
 """T055: POST /share + GET /share/{token} — access count, expiry, hidden safety (US5)."""
 
-from datetime import datetime, timedelta, timezone
-
-from tests.conftest import TestSession, auth_headers, seed_media, seed_user
+from datetime import UTC, datetime, timedelta
 
 from src.models.media import Media
+from tests.conftest import TestSession, auth_headers, seed_media, seed_user
 
 
 async def test_gallery_share_resolves_and_counts_access(client):
@@ -37,7 +36,7 @@ async def test_item_share_returns_media(client):
 
 async def test_expired_link_denied(client):
     headers = await auth_headers(client, "Sharer3")
-    past = (datetime.now(timezone.utc) - timedelta(hours=1)).isoformat()
+    past = (datetime.now(UTC) - timedelta(hours=1)).isoformat()
     token = (
         await client.post("/api/v1/share", json={"expires_at": past}, headers=headers)
     ).json()["token"]

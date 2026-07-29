@@ -2,19 +2,19 @@
 
 import pytest
 from starlette.testclient import TestClient
+from starlette.websockets import WebSocketDisconnect
 
 from src.config import get_settings
 from src.main import app
+from src.models.user import User
 from src.services import auth as auth_service
 from src.services.websocket_manager import ConnectionManager
-from src.models.user import User
 
 
 def test_ws_rejects_without_valid_token():
     client = TestClient(app)
-    with pytest.raises(Exception):
-        with client.websocket_connect("/ws"):
-            pass
+    with pytest.raises(WebSocketDisconnect), client.websocket_connect("/ws"):
+        pass
 
 
 def test_ws_accepts_valid_token_and_sends_hello():

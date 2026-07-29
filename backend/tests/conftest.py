@@ -15,15 +15,15 @@ os.environ.setdefault("JWT_SECRET", "test-secret")
 os.environ.setdefault("DEBUG", "false")  # skip lifespan create_all; the fixture owns schema
 os.environ.setdefault("STORAGE_DIR", tempfile.mkdtemp(prefix="wmp-storage-"))
 
-import pytest_asyncio  # noqa: E402
-from httpx import ASGITransport, AsyncClient  # noqa: E402
-from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine  # noqa: E402
-from sqlalchemy.pool import StaticPool  # noqa: E402
+import pytest_asyncio
+from httpx import ASGITransport, AsyncClient
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+from sqlalchemy.pool import StaticPool
 
-from src.db import get_db  # noqa: E402
-from src.main import app  # noqa: E402
-from src.models import Base  # noqa: E402
-from src.models.event_config import SINGLETON_ID, EventConfig  # noqa: E402
+from src.db import get_db
+from src.main import app
+from src.models import Base
+from src.models.event_config import SINGLETON_ID, EventConfig
 
 EVENT_PASSWORD = "dev-only-event-pass"
 

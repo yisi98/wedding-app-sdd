@@ -7,8 +7,11 @@ test), publish == local broadcast.
 """
 
 import json
+import logging
 
 from ..config import get_settings
+
+logger = logging.getLogger("wmp.websocket")
 
 
 class ConnectionManager:
@@ -40,8 +43,8 @@ class ConnectionManager:
                 client = aioredis.from_url(settings.redis_url)
                 await client.publish(settings.activity_channel, json.dumps(message))
                 await client.aclose()
-            except Exception:  # noqa: BLE001 — real-time is best-effort
-                pass
+            except Exception:
+                logger.warning("Redis publish failed; continuing without it", exc_info=True)
 
 
 manager = ConnectionManager()

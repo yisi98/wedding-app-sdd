@@ -188,7 +188,7 @@ async def get_visible_item(session: AsyncSession, media_id: int, lang: str = "en
 
 
 def _hamming(a: str, b: str) -> int:
-    return bin(int(a, 16) ^ int(b, 16)).count("1")
+    return (int(a, 16) ^ int(b, 16)).bit_count()
 
 
 async def find_similar(

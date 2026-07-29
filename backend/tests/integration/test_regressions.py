@@ -1,7 +1,8 @@
 """Regression tests for QA-identified bugs."""
 
-from datetime import date
+from datetime import UTC, datetime
 
+from src.models.event_config import SINGLETON_ID, EventConfig
 from tests.conftest import (
     TestSession,
     admin_headers,
@@ -11,8 +12,6 @@ from tests.conftest import (
     seed_user,
     sha256_hex,
 )
-
-from src.models.event_config import SINGLETON_ID, EventConfig
 
 
 async def _upload(client, headers, name="o.png", color=(3, 4, 5)):
@@ -113,7 +112,7 @@ async def test_raw_upload_rejects_oversize_actual_bytes(client):
 async def test_gallery_date_to_is_inclusive(client):
     headers = await auth_headers(client, "Dater")
     await seed_media(await seed_user("DateOwner"), filename="today.png")
-    today = date.today().isoformat()
+    today = datetime.now(UTC).date().isoformat()
     r = await client.get(f"/api/v1/media?date_to={today}", headers=headers)
     assert any(m["original_filename"] == "today.png" for m in r.json()["items"])
 
