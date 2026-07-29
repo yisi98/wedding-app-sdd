@@ -129,14 +129,14 @@ navigates + shows similar; hidden media absent
 
 ### Tests for User Story 3 ⚠️
 
-- [ ] T040 [P] [US3] Integration test for `GET /media` (filters, sort, search, pagination, excludes hidden/non-ready) in `backend/tests/integration/test_gallery_list.py`
-- [ ] T041 [P] [US3] Integration test for `GET /media/{id}` (hidden → 404) and `GET /media/{id}/similar` in `backend/tests/integration/test_media_detail.py`
+- [X] T040 [P] [US3] Integration test for `GET /media` (filters, sort, search, pagination, excludes hidden/non-ready) in `backend/tests/integration/test_gallery_list.py`
+- [X] T041 [P] [US3] Integration test for `GET /media/{id}` (hidden → 404) and `GET /media/{id}/similar` in `backend/tests/integration/test_media_detail.py`
 
 ### Implementation for User Story 3
 
-- [ ] T042 [US3] Implement gallery query in `backend/src/services/media.py` (type/uploader/date/`q` ILIKE filters, sort newest/oldest/most_viewed/most_liked, `is_visible`+`ready` guard, denormalized counts)
-- [ ] T043 [US3] Implement pHash "similar" lookup in `backend/src/services/media.py`
-- [ ] T044 [US3] Implement `backend/src/routers/media.py` read endpoints (`GET /media`, `/media/{id}`, `/media/{id}/similar`)
+- [X] T042 [US3] Implement gallery query in `backend/src/services/media.py` (type/uploader/date/`q` ILIKE filters, sort newest/oldest/most_viewed/most_liked, `is_visible`+`ready` guard, denormalized counts)
+- [X] T043 [US3] Implement pHash "similar" lookup in `backend/src/services/media.py`
+- [X] T044 [US3] Implement `backend/src/routers/media.py` read endpoints (`GET /media`, `/media/{id}`, `/media/{id}/similar`)
 - [ ] T045 [P] [US3] Build infinite-scroll gallery grid with lazy loading + skeletons in `frontend/src/components/GalleryGrid.tsx` and `frontend/src/stores/gallery.ts`
 - [ ] T046 [P] [US3] Build lightbox (image/video, keyboard/swipe nav, download, similar strip) in `frontend/src/components/Lightbox.tsx`
 

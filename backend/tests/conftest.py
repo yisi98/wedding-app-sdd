@@ -85,3 +85,52 @@ def sha256_hex(data: bytes) -> str:
     import hashlib
 
     return hashlib.sha256(data).hexdigest()
+
+
+async def seed_user(name: str, role: str = "guest") -> int:
+    from src.models.user import User
+
+    async with TestSession() as session:
+        user = User(username=name, hashed_password="!", role=role)
+        session.add(user)
+        await session.commit()
+        await session.refresh(user)
+        return user.id
+
+
+async def seed_media(
+    uploader_id: int,
+    *,
+    filename: str = "pic.png",
+    media_type: str = "image",
+    status: str = "ready",
+    is_visible: bool = True,
+    view_count: int = 0,
+    reaction_count: int = 0,
+    phash: str | None = None,
+    file_hash: str | None = None,
+) -> int:
+    import secrets
+
+    from src.models.media import Media
+
+    async with TestSession() as session:
+        media = Media(
+            uploader_id=uploader_id,
+            filename=filename,
+            original_filename=filename,
+            file_hash=file_hash or secrets.token_hex(32),
+            file_size=100,
+            mime_type="image/png",
+            media_type=media_type,
+            storage_path=f"media/{secrets.token_hex(8)}/{filename}",
+            status=status,
+            is_visible=is_visible,
+            view_count=view_count,
+            reaction_count=reaction_count,
+            phash=phash,
+        )
+        session.add(media)
+        await session.commit()
+        await session.refresh(media)
+        return media.id
