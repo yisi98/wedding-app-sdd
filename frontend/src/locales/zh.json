@@ -1,0 +1,60 @@
+{
+  "app": { "title": "我们的婚礼" },
+  "login": {
+    "displayName": "你的名字",
+    "eventPassword": "活动密码",
+    "enter": "进入",
+    "error": "活动密码不正确"
+  },
+  "nav": { "gallery": "相册", "favorites": "收藏", "admin": "管理", "logout": "退出", "upload": "上传" },
+  "gallery": {
+    "empty": "还没有照片——快来第一个上传吧！",
+    "search": "按文件名搜索",
+    "all": "全部",
+    "images": "照片",
+    "videos": "视频",
+    "sortNewest": "最新",
+    "sortOldest": "最早",
+    "sortMostViewed": "最多浏览",
+    "sortMostLiked": "最多点赞",
+    "loadMore": "加载更多"
+  },
+  "lightbox": {
+    "download": "下载",
+    "similar": "相似照片",
+    "comments": "评论",
+    "addComment": "添加评论……",
+    "send": "发送",
+    "share": "分享",
+    "close": "关闭"
+  },
+  "upload": {
+    "drop": "将照片和视频拖到此处，或点击选择",
+    "uploading": "上传中……",
+    "done": "完成",
+    "duplicate": "已上传",
+    "closed": "上传已关闭"
+  },
+  "share": {
+    "title": "分享",
+    "copy": "复制链接",
+    "copied": "已复制！",
+    "gallery": "整个相册",
+    "expired": "此链接已过期"
+  },
+  "admin": {
+    "stats": "统计",
+    "users": "用户",
+    "media": "媒体",
+    "totalMedia": "媒体",
+    "totalUsers": "宾客",
+    "totalViews": "浏览",
+    "storage": "存储",
+    "promote": "设为管理员",
+    "deactivate": "停用",
+    "hide": "隐藏",
+    "show": "显示",
+    "export": "导出 CSV"
+  },
+  "activity": { "title": "动态", "new_upload": "上传了", "new_reaction": "点赞了", "new_comment": "评论了", "new_favorite": "收藏了" }
+}

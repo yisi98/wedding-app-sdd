@@ -1,8 +1,7 @@
 """T031: POST /media/upload/init — validation, size limits, duplicate, uploads-paused (US2)."""
 
-from tests.conftest import TestSession, auth_headers, make_png, sha256_hex
-
 from src.models.event_config import SINGLETON_ID, EventConfig
+from tests.conftest import TestSession, auth_headers, make_png, sha256_hex
 
 
 def _init_body(data: bytes, mime="image/png", name="pic.png", size=None) -> dict:

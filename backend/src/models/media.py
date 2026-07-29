@@ -1,8 +1,7 @@
 """Media entity — an uploaded photo or video, content-addressed by SHA-256 hash."""
 
-from datetime import datetime
 
-from sqlalchemy import JSON, Boolean, DateTime, Float, ForeignKey, Integer, String, Text
+from sqlalchemy import JSON, Boolean, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from .base import Base, TimestampMixin
@@ -41,5 +40,10 @@ class Media(Base, TimestampMixin):
     lqip: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     view_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    # Denormalized engagement counts for fast gallery rendering/sort (maintained by the
+    # social service in US4).
+    reaction_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    comment_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    favorite_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     status: Mapped[str] = mapped_column(String(20), nullable=False, default=STATUS_PENDING)
     is_visible: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
