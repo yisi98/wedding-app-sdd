@@ -1,0 +1,35 @@
+# Production stack (AliCloud). Postgres = AliCloud RDS, object storage = AliCloud OSS —
+# both external and configured via backend/.env; not run as containers here.
+services:
+  backend:
+    build: ../backend
+    env_file: ../backend/.env
+    restart: always
+    command: >
+      sh -c "uv run alembic upgrade head &&
+             uv run uvicorn src.main:app --host 0.0.0.0 --port 8000"
+
+  worker:
+    build: ../backend
+    env_file: ../backend/.env
+    restart: always
+    command: uv run celery -A src.workers.celery_app worker --loglevel=info
+
+  redis:
+    image: redis:7
+    restart: always
+
+  frontend:
+    build: ../frontend
+    restart: always
+    environment:
+      NEXT_PUBLIC_API_BASE: ${PUBLIC_API_BASE}
+
+  nginx:
+    image: nginx:1.27
+    restart: always
+    depends_on: [backend, frontend]
+    ports: ["80:80", "443:443"]
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/certs:/etc/nginx/certs:ro
