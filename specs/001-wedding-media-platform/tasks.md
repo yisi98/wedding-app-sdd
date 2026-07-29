@@ -53,8 +53,8 @@ and demoed independently. MVP = US1 + US2 + US3.
 - [X] T009 Implement `backend/src/config.py` with `@lru_cache get_settings()` reading `.env` (document restart-to-reload behavior)
 - [X] T010 Implement async engine/session in `backend/src/db.py`
 - [X] T011 Create the FastAPI app factory in `backend/src/main.py` (router registration, env-based CORS: `["*"]` when DEBUG else explicit allow-list)
-- [ ] T012 Initialize Alembic in `backend/alembic/` and wire the async migration environment
-- [ ] T013 Author migration `0001_initial_schema` (users, refresh_tokens, media, event_config) in `backend/alembic/versions/`
+- [X] T012 Initialize Alembic in `backend/alembic/` and wire the async migration environment
+- [X] T013 Author migration `0001_initial_schema` (users, refresh_tokens, media, event_config) in `backend/alembic/versions/`
 - [X] T014 [P] Create base ORM models in `backend/src/models/` for `user.py`, `refresh_token.py`, `media.py`, `event_config.py` per data-model.md
 - [X] T015 [P] Create Celery app in `backend/src/workers/celery_app.py` (Redis broker; `--pool=solo` note for Windows)
 - [X] T016 [P] Implement `backend/src/services/storage.py` (boto3 S3 client, presigned URL init/confirm, MinIO↔OSS parity)
