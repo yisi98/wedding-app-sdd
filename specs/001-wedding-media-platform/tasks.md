@@ -153,16 +153,16 @@ comment; favorite appears in list; views increment
 
 ### Tests for User Story 4 ⚠️
 
-- [ ] T047 [P] [US4] Integration test for reactions toggle/replace invariant in `backend/tests/integration/test_reactions.py`
-- [ ] T048 [P] [US4] Integration test for comments add/soft-delete (author vs admin) in `backend/tests/integration/test_comments.py`
-- [ ] T049 [P] [US4] Integration test for favorites (list, uniqueness) + view increment in `backend/tests/integration/test_favorites_views.py`
+- [X] T047 [P] [US4] Integration test for reactions toggle/replace invariant in `backend/tests/integration/test_reactions.py`
+- [X] T048 [P] [US4] Integration test for comments add/soft-delete (author vs admin) in `backend/tests/integration/test_comments.py`
+- [X] T049 [P] [US4] Integration test for favorites (list, uniqueness) + view increment in `backend/tests/integration/test_favorites_views.py`
 
 ### Implementation for User Story 4
 
 - [ ] T050 [P] [US4] Add migration `0002_phase3_social_search_sharing` (reactions, comments, favorites, share_links + indexes) in `backend/alembic/versions/`
-- [ ] T051 [P] [US4] Create `reaction.py`, `comment.py`, `favorite.py` models in `backend/src/models/`
-- [ ] T052 [US4] Implement `backend/src/services/social.py` (reaction toggle/replace, comment soft-delete rules, favorites, view increment, denormalized count updates)
-- [ ] T053 [US4] Implement social endpoints in `backend/src/routers/social.py` (`/media/{id}/reactions|comments|favorites|view`, `GET /media/favorites`)
+- [X] T051 [P] [US4] Create `reaction.py`, `comment.py`, `favorite.py` models in `backend/src/models/`
+- [X] T052 [US4] Implement `backend/src/services/social.py` (reaction toggle/replace, comment soft-delete rules, favorites, view increment, denormalized count updates)
+- [X] T053 [US4] Implement social endpoints in `backend/src/routers/social.py` (`/media/{id}/reactions|comments|favorites|view`, `GET /media/favorites`)
 - [ ] T054 [P] [US4] Add reaction/comment/favorite UI to `frontend/src/components/Lightbox.tsx` and a favorites view in `frontend/src/app/favorites/page.tsx`
 
 **Checkpoint**: US1–US4 independently functional
