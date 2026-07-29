@@ -17,6 +17,7 @@ from .models.event_config import SINGLETON_ID, EventConfig
 from .routers import auth as auth_router
 from .routers import health as health_router
 from .routers import media as media_router
+from .routers import share as share_router
 from .routers import social as social_router
 
 
@@ -61,6 +62,7 @@ def create_app() -> FastAPI:
     # social before media so /media/favorites resolves before /media/{media_id}
     app.include_router(social_router.router)
     app.include_router(media_router.router)
+    app.include_router(share_router.router)
     return app
 
 
