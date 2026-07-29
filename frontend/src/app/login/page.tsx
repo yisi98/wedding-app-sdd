@@ -42,6 +42,7 @@ export default function LoginPage() {
           <h1 className="text-xl font-semibold text-blush">{t("app.title")}</h1>
           <LanguageSwitcher />
         </div>
+        <p className="text-sm text-gray-500">{t("login.hint")}</p>
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}

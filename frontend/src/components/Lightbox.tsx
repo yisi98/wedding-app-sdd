@@ -64,7 +64,10 @@ export default function Lightbox({
   return (
     <div className="fixed inset-0 z-40 flex flex-col overflow-auto bg-black/90 text-white">
       <div className="flex items-center justify-between p-3">
-        <span className="text-sm">{media.original_filename}</span>
+        <span className="text-sm">
+          {media.original_filename}
+          <span className="ml-2 text-white/60">{t("gallery.uploadedBy", { name: media.uploader_name })}</span>
+        </span>
         <button onClick={onClose} aria-label="close" className="text-2xl">
           ×
         </button>
