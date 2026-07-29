@@ -14,6 +14,8 @@
     "all": "All",
     "images": "Photos",
     "videos": "Videos",
+    "allUploaders": "Everyone",
+    "uploadedBy": "uploaded by {{name}}",
     "sortNewest": "Newest",
     "sortOldest": "Oldest",
     "sortMostViewed": "Most viewed",

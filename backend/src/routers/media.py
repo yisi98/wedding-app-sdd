@@ -122,6 +122,11 @@ async def upload_confirm(
     return MediaOut.model_validate(media)
 
 
+@router.get("/uploaders", response_model=list[str])
+async def list_uploaders(user: CurrentUser, session: DbDep) -> list[str]:
+    return await media_service.list_uploaders(session)
+
+
 @router.get("/{media_id}", response_model=MediaOut)
 async def get_media(media_id: int, user: CurrentUser, session: DbDep) -> MediaOut:
     media = await media_service.get_visible_item(session, media_id, user.language_preference)

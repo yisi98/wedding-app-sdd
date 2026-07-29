@@ -14,6 +14,8 @@
     "all": "全部",
     "images": "照片",
     "videos": "视频",
+    "allUploaders": "所有人",
+    "uploadedBy": "由 {{name}} 上传",
     "sortNewest": "最新",
     "sortOldest": "最早",
     "sortMostViewed": "最多浏览",

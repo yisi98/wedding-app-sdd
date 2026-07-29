@@ -14,6 +14,8 @@
     "all": "Все",
     "images": "Фото",
     "videos": "Видео",
+    "allUploaders": "Все гости",
+    "uploadedBy": "загрузил(а) {{name}}",
     "sortNewest": "Новые",
     "sortOldest": "Старые",
     "sortMostViewed": "Популярные",
