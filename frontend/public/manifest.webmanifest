@@ -1,0 +1,12 @@
+{
+  "name": "Wedding Media",
+  "short_name": "Wedding",
+  "description": "Share photos and videos from our wedding",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#2d2a32",
+  "theme_color": "#e8b4bc",
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

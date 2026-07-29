@@ -144,6 +144,13 @@ Storage: PostgreSQL 15 via async SQLAlchemy 2, migrated with Alembic. All tables
 - **refresh_tokens**: active → revoked (on rotation or logout); a rotated token is never
   reusable (FR-005).
 
+## Legacy `users.email` (T088)
+
+The `users.email` column is retained by the schema but is **intentionally excluded from
+every API response and the admin CSV export** (verified). It is a legacy remnant; a future
+cleanup migration may drop it once confirmed unused by any consumer. Do not add it to any
+response schema.
+
 ## Migrations
 
 - `0001_initial_schema` — users, refresh_tokens, media, event_config (US1–US3 core).

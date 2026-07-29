@@ -33,6 +33,7 @@ class MediaOut(BaseModel):
     file_hash: str
     media_type: str
     mime_type: str
+    storage_path: str
     status: str
     width: int | None = None
     height: int | None = None
@@ -41,5 +42,14 @@ class MediaOut(BaseModel):
     thumbnail_path: str | None = None
     optimized_path: str | None = None
     view_count: int
+    reaction_count: int
+    comment_count: int
+    favorite_count: int
     is_visible: bool
     created_at: datetime
+
+
+class GalleryResponse(BaseModel):
+    items: list["MediaOut"]
+    has_more: bool
+    next_offset: int | None = None

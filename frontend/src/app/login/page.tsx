@@ -1,0 +1,71 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+
+import { api } from "@/lib/api";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
+import { useAuthStore } from "@/stores/auth";
+
+export default function LoginPage() {
+  const { t } = useTranslation();
+  const router = useRouter();
+  const setSession = useAuthStore((s) => s.setSession);
+  const [name, setName] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    setError(false);
+    try {
+      const { data } = await api.post("/auth/login", {
+        display_name: name,
+        event_password: password,
+      });
+      setSession(data.access_token, data.refresh_token, data.user);
+      router.replace("/gallery");
+    } catch {
+      setError(true);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <main className="flex min-h-screen items-center justify-center p-4">
+      <form onSubmit={submit} className="w-full max-w-sm space-y-4 rounded-xl bg-white p-8 shadow">
+        <div className="flex items-center justify-between">
+          <h1 className="text-xl font-semibold text-blush">{t("app.title")}</h1>
+          <LanguageSwitcher />
+        </div>
+        <input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder={t("login.displayName")}
+          required
+          className="w-full rounded border px-3 py-2"
+        />
+        <input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder={t("login.eventPassword")}
+          required
+          className="w-full rounded border px-3 py-2"
+        />
+        {error && <p className="text-sm text-red-500">{t("login.error")}</p>}
+        <button
+          type="submit"
+          disabled={busy}
+          className="w-full rounded bg-blush py-2 font-medium text-ink disabled:opacity-50"
+        >
+          {t("login.enter")}
+        </button>
+      </form>
+    </main>
+  );
+}

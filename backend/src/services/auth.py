@@ -9,7 +9,7 @@ Implements the password-only, get-or-create model (ADR-002 / FR-AUTH):
 
 import hashlib
 import secrets
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import bcrypt
 from jose import JWTError, jwt
@@ -49,7 +49,7 @@ async def get_or_create_user(session: AsyncSession, display_name: str) -> User:
 
 
 def create_access_token(user: User, settings: Settings) -> str:
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     payload = {
         "sub": str(user.id),
         "role": user.role,
@@ -75,7 +75,7 @@ async def issue_refresh_token(
 ) -> str:
     """Create and persist a new refresh token; return the raw (unhashed) token to the client."""
     raw = secrets.token_urlsafe(48)
-    expires = datetime.now(timezone.utc) + timedelta(days=settings.refresh_token_ttl_days)
+    expires = datetime.now(UTC) + timedelta(days=settings.refresh_token_ttl_days)
     session.add(
         RefreshToken(user_id=user.id, token_hash=_hash_token(raw), expires_at=expires)
     )
@@ -100,8 +100,8 @@ async def rotate_refresh_token(
 
     expires_at = token.expires_at
     if expires_at.tzinfo is None:
-        expires_at = expires_at.replace(tzinfo=timezone.utc)
-    if expires_at < datetime.now(timezone.utc):
+        expires_at = expires_at.replace(tzinfo=UTC)
+    if expires_at < datetime.now(UTC):
         return None
 
     user = await session.get(User, token.user_id)

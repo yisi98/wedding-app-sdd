@@ -1,8 +1,7 @@
 """T033: background processing outputs — derivations + end-to-end ready (US2 / FR-009)."""
 
-from tests.conftest import auth_headers, make_png, sha256_hex
-
 from src.workers.media_processing import process_image
+from tests.conftest import auth_headers, make_png, sha256_hex
 
 
 def test_process_image_produces_derivations():

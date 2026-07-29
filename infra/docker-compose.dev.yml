@@ -1,0 +1,49 @@
+# Local development stack. Copy backend/.env.example to backend/.env first.
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: wedding
+      POSTGRES_PASSWORD: wedding
+      POSTGRES_DB: wedding
+    ports: ["5432:5432"]
+    volumes: ["pgdata:/var/lib/postgresql/data"]
+
+  redis:
+    image: redis:7
+    ports: ["6379:6379"]
+
+  minio:
+    image: minio/minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports: ["9000:9000", "9001:9001"]
+    volumes: ["miniodata:/data"]
+
+  backend:
+    build: ../backend
+    env_file: ../backend/.env
+    depends_on: [postgres, redis, minio]
+    ports: ["8000:8000"]
+    command: >
+      sh -c "uv run alembic upgrade head &&
+             uv run uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload"
+
+  worker:
+    build: ../backend
+    env_file: ../backend/.env
+    depends_on: [redis, minio, postgres]
+    command: uv run celery -A src.workers.celery_app worker --loglevel=info --pool=solo
+
+  frontend:
+    build: ../frontend
+    depends_on: [backend]
+    ports: ["3000:3000"]
+    environment:
+      NEXT_PUBLIC_API_BASE: http://localhost:8000
+
+volumes:
+  pgdata:
+  miniodata:
