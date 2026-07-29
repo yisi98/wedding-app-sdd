@@ -4,7 +4,8 @@
     "displayName": "Your name",
     "eventPassword": "Event password",
     "enter": "Enter",
-    "error": "Incorrect event password"
+    "error": "Incorrect event password",
+    "hint": "Please use your real name to sign in. There's no separate registration — as long as you enter the correct event password, any name will work, but using your real name helps us know who uploaded what."
   },
   "nav": { "gallery": "Gallery", "favorites": "Favorites", "admin": "Admin", "logout": "Log out", "upload": "Upload" },
   "gallery": {
