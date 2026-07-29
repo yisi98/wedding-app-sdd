@@ -28,6 +28,7 @@ class MediaOut(BaseModel):
 
     id: int
     uploader_id: int
+    uploader_name: str
     filename: str
     original_filename: str
     file_hash: str

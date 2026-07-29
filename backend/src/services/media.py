@@ -179,6 +179,18 @@ async def list_gallery(
     return rows[:limit], has_more
 
 
+async def list_uploaders(session: AsyncSession) -> list[str]:
+    """Distinct usernames with at least one ready + visible upload, for the gallery filter."""
+    stmt = (
+        select(User.username)
+        .join(Media, Media.uploader_id == User.id)
+        .where(Media.status == STATUS_READY, Media.is_visible.is_(True))
+        .distinct()
+        .order_by(User.username)
+    )
+    return list((await session.execute(stmt)).scalars().all())
+
+
 async def get_visible_item(session: AsyncSession, media_id: int, lang: str = "en") -> Media:
     """A single ready + visible item; hidden or non-ready → 404 (FR-015)."""
     media = await session.get(Media, media_id)

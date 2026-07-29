@@ -39,10 +39,29 @@ class Settings(BaseSettings):
 
     # Upload validation
     allowed_image_types: list[str] = Field(
-        default_factory=lambda: ["image/jpeg", "image/png", "image/webp", "image/gif", "image/heic"]
+        default_factory=lambda: [
+            "image/jpeg",
+            "image/png",
+            "image/webp",
+            "image/gif",
+            "image/heic",
+            "image/heif",
+            "image/bmp",
+            "image/tiff",
+            "image/avif",
+        ]
     )
     allowed_video_types: list[str] = Field(
-        default_factory=lambda: ["video/mp4", "video/quicktime", "video/webm"]
+        default_factory=lambda: [
+            "video/mp4",
+            "video/quicktime",
+            "video/webm",
+            "video/x-msvideo",
+            "video/x-matroska",
+            "video/mpeg",
+            "video/3gpp",
+            "video/x-ms-wmv",
+        ]
     )
 
     # Real-time
