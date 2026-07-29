@@ -122,6 +122,12 @@ async def confirm_upload(
     else:
         # Dev/test: process inline (eager).
         await process_media(session, media)
+
+    if media.status == STATUS_READY:
+        from ..models.activity_event import EVENT_NEW_UPLOAD
+        from ..services import activity as activity_service
+
+        await activity_service.record(session, EVENT_NEW_UPLOAD, user, media.id)
     return media
 
 
