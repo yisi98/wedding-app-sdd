@@ -72,6 +72,12 @@ async def auth_headers(client: AsyncClient, name: str = "Anna") -> dict:
     return {"Authorization": f"Bearer {token}"}
 
 
+async def admin_headers(client: AsyncClient, name: str = "Boss") -> dict:
+    await seed_user(name, role="admin")  # create as admin, then log in as them
+    token = (await login(client, name)).json()["access_token"]
+    return {"Authorization": f"Bearer {token}"}
+
+
 def make_png(width: int = 32, height: int = 24, color: tuple = (200, 100, 50)) -> bytes:
     """A small valid PNG for upload/processing tests."""
     from PIL import Image
