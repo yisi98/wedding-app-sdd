@@ -35,6 +35,9 @@ export default function MediaGrid({
               ▶
             </span>
           )}
+          <span className="pointer-events-none absolute bottom-1 left-1 max-w-[80%] truncate rounded bg-black/60 px-1 text-xs text-white">
+            {m.uploader_name}
+          </span>
           {selectable && (
             <input
               type="checkbox"

@@ -2,9 +2,10 @@
 
 
 from sqlalchemy import JSON, Boolean, Float, ForeignKey, Integer, String, Text
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base, TimestampMixin
+from .user import User
 
 MEDIA_IMAGE = "image"
 MEDIA_VIDEO = "video"
@@ -20,6 +21,9 @@ class Media(Base, TimestampMixin):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     uploader_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True, nullable=False)
+    # selectin: async-safe eager load, so `uploader_name` below works for every read path
+    # (gallery list, single item, similar, admin, share) without touching each call site.
+    uploader: Mapped[User] = relationship(lazy="selectin")
     filename: Mapped[str] = mapped_column(String(255), nullable=False)
     original_filename: Mapped[str] = mapped_column(String(255), nullable=False)
     # SHA-256 content hash — unique dedup key (Principle VI).
@@ -47,3 +51,7 @@ class Media(Base, TimestampMixin):
     favorite_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     status: Mapped[str] = mapped_column(String(20), nullable=False, default=STATUS_PENDING)
     is_visible: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+
+    @property
+    def uploader_name(self) -> str:
+        return self.uploader.username

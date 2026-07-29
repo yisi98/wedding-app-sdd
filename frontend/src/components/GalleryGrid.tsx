@@ -18,6 +18,8 @@ export default function GalleryGrid({ refreshKey }: { refreshKey: number }) {
   const [offset, setOffset] = useState(0);
   const [hasMore, setHasMore] = useState(false);
   const [type, setType] = useState("");
+  const [uploader, setUploader] = useState("");
+  const [uploaders, setUploaders] = useState<string[]>([]);
   const [sort, setSort] = useState("newest");
   const [q, setQ] = useState("");
   const [active, setActive] = useState<Media | null>(null);
@@ -28,19 +30,24 @@ export default function GalleryGrid({ refreshKey }: { refreshKey: number }) {
       const nextOffset = reset ? 0 : offset;
       const params = new URLSearchParams({ sort, limit: String(PAGE), offset: String(nextOffset) });
       if (type) params.set("media_type", type);
+      if (uploader) params.set("uploader", uploader);
       if (q) params.set("q", q);
       const { data } = await api.get(`/media?${params.toString()}`);
       setItems((prev) => (reset ? data.items : [...prev, ...data.items]));
       setHasMore(data.has_more);
       setOffset(nextOffset + PAGE);
     },
-    [offset, sort, type, q]
+    [offset, sort, type, uploader, q]
   );
 
   useEffect(() => {
     load(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sort, type, q, refreshKey]);
+  }, [sort, type, uploader, q, refreshKey]);
+
+  useEffect(() => {
+    api.get("/media/uploaders").then(({ data }) => setUploaders(data));
+  }, [refreshKey]);
 
   function toggleSelect(id: number) {
     setSelected((prev) => {
@@ -74,6 +81,18 @@ export default function GalleryGrid({ refreshKey }: { refreshKey: number }) {
           <option value="">{t("gallery.all")}</option>
           <option value="image">{t("gallery.images")}</option>
           <option value="video">{t("gallery.videos")}</option>
+        </select>
+        <select
+          value={uploader}
+          onChange={(e) => setUploader(e.target.value)}
+          className="rounded border px-2 py-1 text-sm"
+        >
+          <option value="">{t("gallery.allUploaders")}</option>
+          {uploaders.map((name) => (
+            <option key={name} value={name}>
+              {name}
+            </option>
+          ))}
         </select>
         <select value={sort} onChange={(e) => setSort(e.target.value)} className="rounded border px-2 py-1 text-sm">
           <option value="newest">{t("gallery.sortNewest")}</option>
