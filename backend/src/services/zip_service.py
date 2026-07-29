@@ -8,6 +8,7 @@ Note: assembled in-memory here for simplicity; a production build should stream 
 """
 
 import io
+import logging
 import zipfile
 
 from sqlalchemy import select
@@ -15,6 +16,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..models.media import STATUS_READY, Media
 from ..services.storage import get_storage
+
+logger = logging.getLogger("wmp.zip")
 
 
 async def build_zip(session: AsyncSession, media_ids: list[int]) -> bytes:
@@ -36,7 +39,8 @@ async def build_zip(session: AsyncSession, media_ids: list[int]) -> bytes:
         for media in rows:
             try:
                 data = storage.get(media.storage_path)
-            except Exception:  # noqa: BLE001 — skip anything we can't read
+            except Exception:
+                logger.warning("Skipping unreadable media %s in bulk ZIP", media.id, exc_info=True)
                 continue
             archive.writestr(f"{media.id}_{media.original_filename}", data)
     return buffer.getvalue()

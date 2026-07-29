@@ -8,14 +8,15 @@ import asyncio
 import os
 import sys
 
-from alembic import context
 from sqlalchemy import pool
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
+from alembic import context
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from src.config import get_settings  # noqa: E402
-from src.models import Base  # noqa: E402
+from src.config import get_settings
+from src.models import Base
 
 config = context.config
 target_metadata = Base.metadata

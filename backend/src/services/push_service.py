@@ -52,9 +52,9 @@ def send_push(subscription: PushSubscription, payload: dict, settings: Settings)
     if not settings.vapid_private_key:
         return False
     try:
-        from pywebpush import webpush  # imported lazily
-
         import json
+
+        from pywebpush import webpush  # imported lazily
 
         webpush(
             subscription_info={

@@ -6,7 +6,7 @@ never modify or delete their own admin account (prevents self-lockout, FR-031).
 
 import csv
 import io
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from fastapi import HTTPException, status
 from sqlalchemy import func, select
@@ -49,7 +49,7 @@ async def get_stats(session: AsyncSession) -> dict:
         ).all()
     }
 
-    week_ago = datetime.now(timezone.utc) - timedelta(days=7)
+    week_ago = datetime.now(UTC) - timedelta(days=7)
     uploads_last_7 = (
         await session.scalar(select(func.count(Media.id)).where(Media.created_at >= week_ago)) or 0
     )

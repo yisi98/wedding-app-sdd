@@ -1,6 +1,6 @@
 """T023: POST /auth/login — get-or-create, wrong password 401, no email leak (US1)."""
 
-from tests.conftest import EVENT_PASSWORD, login
+from tests.conftest import login
 
 
 async def test_login_creates_guest_and_returns_tokens(client):

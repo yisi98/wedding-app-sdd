@@ -6,7 +6,7 @@ become hidden, non-ready, or deleted.
 """
 
 import secrets
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from fastapi import HTTPException, status
 from sqlalchemy import select
@@ -49,8 +49,8 @@ async def resolve_share(session: AsyncSession, token: str) -> tuple[str, ShareLi
     if link.expires_at is not None:
         expires = link.expires_at
         if expires.tzinfo is None:
-            expires = expires.replace(tzinfo=timezone.utc)
-        if expires < datetime.now(timezone.utc):
+            expires = expires.replace(tzinfo=UTC)
+        if expires < datetime.now(UTC):
             raise HTTPException(status.HTTP_410_GONE, detail=t("media_not_found"))
 
     link.access_count += 1

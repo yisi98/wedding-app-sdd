@@ -41,7 +41,6 @@ async def lifespan(app: FastAPI):
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
         # Ensure the singleton event_config row exists.
-        from sqlalchemy import select
 
         from .db import async_session_factory
 
