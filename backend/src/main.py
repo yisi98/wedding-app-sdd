@@ -14,6 +14,7 @@ from .config import get_settings
 from .db import engine
 from .models import Base
 from .models.event_config import SINGLETON_ID, EventConfig
+from .routers import admin as admin_router
 from .routers import auth as auth_router
 from .routers import health as health_router
 from .routers import media as media_router
@@ -67,6 +68,7 @@ def create_app() -> FastAPI:
     app.include_router(share_router.router)
     app.include_router(notifications_router.router)
     app.include_router(ws_router.router)
+    app.include_router(admin_router.router)
     return app
 
 
