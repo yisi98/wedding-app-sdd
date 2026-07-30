@@ -6,6 +6,7 @@ never modify or delete their own admin account (prevents self-lockout, FR-031).
 
 import csv
 import io
+import logging
 from datetime import UTC, datetime, timedelta
 
 from fastapi import HTTPException, status
@@ -14,9 +15,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..i18n import t
 from ..models.comment import Comment
+from ..models.event_config import SINGLETON_ID, EventConfig
 from ..models.media import Media
 from ..models.reaction import Reaction
 from ..models.user import User
+from ..services.storage import get_storage
+
+logger = logging.getLogger("wmp.admin")
 
 
 async def get_stats(session: AsyncSession) -> dict:
@@ -147,6 +152,48 @@ async def set_visibility(
     media.is_visible = is_visible
     await session.flush()
     return media
+
+
+async def delete_media(session: AsyncSession, admin: User, media_id: int) -> None:
+    """Remove a media item and its stored objects (FR-032).
+
+    Storage removal is best-effort: a missing or unreadable object must not stop the row
+    from going away, or an admin cannot clear content they need gone.
+    """
+    media = await session.get(Media, media_id)
+    if media is None:
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND, detail=t("media_not_found", admin.language_preference)
+        )
+    storage = get_storage()
+    for key in (media.storage_path, media.thumbnail_path, media.optimized_path):
+        if not key:
+            continue
+        try:
+            storage.delete(key)
+        except Exception:
+            logger.warning("Could not delete stored object %s", key, exc_info=True)
+    await session.delete(media)
+    await session.flush()
+
+
+async def get_event_config(session: AsyncSession) -> EventConfig:
+    config = await session.get(EventConfig, SINGLETON_ID)
+    if config is None:  # first touch on a database seeded without the singleton
+        config = EventConfig(id=SINGLETON_ID)
+        session.add(config)
+        await session.flush()
+    return config
+
+
+async def update_event_config(session: AsyncSession, **fields) -> EventConfig:
+    """Patch the singleton settings row; `None` values leave a field untouched (FR-010)."""
+    config = await get_event_config(session)
+    for name, value in fields.items():
+        if value is not None:
+            setattr(config, name, value)
+    await session.flush()
+    return config
 
 
 async def export_media_csv(session: AsyncSession) -> str:

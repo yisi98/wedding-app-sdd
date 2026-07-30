@@ -11,7 +11,7 @@ async def test_admin_media_includes_hidden_and_toggles_visibility(client):
 
     # Admin list includes hidden.
     admin_list = await client.get("/api/v1/admin/media", headers=admin)
-    assert hidden_id in {m["id"] for m in admin_list.json()}
+    assert hidden_id in {m["id"] for m in admin_list.json()["items"]}
 
     # Guest cannot see it.
     assert (await client.get(f"/api/v1/media/{hidden_id}", headers=guest)).status_code == 404
@@ -34,3 +34,36 @@ async def test_export_media_csv(client):
     assert r.headers["content-type"].startswith("text/csv")
     assert "export_me.png" in r.text
     assert "email" not in r.text.splitlines()[0]  # no email column
+
+
+async def test_admin_media_paginates(client):
+    admin = await admin_headers(client)
+    uid = await seed_user("PageOwner")
+    for i in range(5):
+        await seed_media(uid, filename=f"p{i}.png")
+
+    first = await client.get("/api/v1/admin/media?limit=2&offset=0", headers=admin)
+    assert len(first.json()["items"]) == 2
+    assert first.json()["has_more"] is True
+
+    last = await client.get("/api/v1/admin/media?limit=2&offset=4", headers=admin)
+    assert last.json()["has_more"] is False
+
+
+async def test_admin_deletes_media(client):
+    admin = await admin_headers(client)
+    guest = await auth_headers(client, "DelViewer")
+    uid = await seed_user("DelOwner")
+    media_id = await seed_media(uid, filename="remove_me.png")
+
+    assert (await client.get(f"/api/v1/media/{media_id}", headers=guest)).status_code == 200
+
+    r = await client.delete(f"/api/v1/admin/media/{media_id}", headers=admin)
+    assert r.status_code == 204
+
+    assert (await client.get(f"/api/v1/media/{media_id}", headers=guest)).status_code == 404
+    listed = await client.get("/api/v1/admin/media", headers=admin)
+    assert media_id not in {m["id"] for m in listed.json()["items"]}
+
+    # Deleting something already gone is a clean 404, not a 500.
+    assert (await client.delete(f"/api/v1/admin/media/{media_id}", headers=admin)).status_code == 404

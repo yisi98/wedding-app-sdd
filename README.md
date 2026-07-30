@@ -85,6 +85,10 @@ specs/       Spec-Kit artifacts for feature 001
 
 - **Auth**: display name + one shared event password; accounts auto-created (get-or-create).
   No email, no per-user password, no registration.
+- **Admin**: one built-in account, seeded automatically when the database is created —
+  username `admin`, password `dev-only-admin-pass` (override with `ADMIN_USERNAME` /
+  `ADMIN_PASSWORD`). It signs in on the same screen as guests but with its own password;
+  the shared event password never grants admin. **Change the password before go-live.**
 - **Dedup**: every media file is content-addressed by a unique SHA-256 hash.
 - **Media URLs**: served via CDN in prod (`NEXT_PUBLIC_MEDIA_BASE`); in dev the backend
   serves bytes at `GET /media-object/{key}`.
