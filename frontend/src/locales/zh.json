@@ -39,7 +39,9 @@
     "uploading": "上传中……",
     "done": "完成",
     "duplicate": "已上传",
-    "closed": "上传已关闭"
+    "closed": "上传已关闭",
+    "failed": "失败",
+    "errorGeneric": "上传失败——请检查网络连接后重试。"
   },
   "share": {
     "title": "分享",
