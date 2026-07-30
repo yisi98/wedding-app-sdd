@@ -45,3 +45,32 @@ async def test_gallery_sorts_by_most_viewed(client):
 async def test_gallery_requires_auth(client):
     r = await client.get("/api/v1/media")
     assert r.status_code == 401
+
+
+async def test_gallery_ids_matches_current_filter_unpaginated(client):
+    """Backs "select all matching filter" — same filters as GET /media, no page limit."""
+    headers = await auth_headers(client)
+    uid = await seed_user("GalleryIdsDana")
+    for i in range(30):
+        await seed_media(uid, filename=f"img{i}.png", media_type="image")
+    await seed_media(uid, filename="vid.mp4", media_type="video")
+    await seed_media(uid, filename="hidden.png", media_type="image", is_visible=False)
+
+    r = await client.get("/api/v1/media/ids?media_type=image", headers=headers)
+    assert r.status_code == 200
+    ids = r.json()
+    assert len(ids) == 30  # every matching image, not capped at the default page size
+    assert isinstance(ids[0], int)
+
+
+async def test_uploaders_endpoint_lists_distinct_names(client):
+    headers = await auth_headers(client)
+    anna = await seed_user("UploaderAnna")
+    boris = await seed_user("UploaderBoris")
+    await seed_media(anna, filename="a1.png")
+    await seed_media(anna, filename="a2.png")
+    await seed_media(boris, filename="b1.png")
+
+    r = await client.get("/api/v1/media/uploaders", headers=headers)
+    assert r.status_code == 200
+    assert set(r.json()) == {"UploaderAnna", "UploaderBoris"}
