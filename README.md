@@ -9,12 +9,12 @@ Production deadline: **2026-09-15** (wedding 2026-10-10).
 
 ## Status
 
-Built spec-first: constitution → spec → plan → tasks → implementation. **88 / 90 tasks done.**
+Built spec-first: constitution → spec → plan → tasks → implementation. **88 / 90 spec tasks done**, plus post-audit fixes and hardening.
 
 | Area | Status |
 |------|--------|
-| Backend (US1–US9) | ✅ Complete — **68 integration tests passing** |
-| Alembic migrations (0001–0003) | ✅ Verified (upgrade + downgrade) |
+| Backend (US1–US9) | ✅ Complete — **101 integration tests passing** |
+| Alembic migrations (0001–0004) | ✅ Verified (upgrade + downgrade) |
 | Frontend (Next.js 14 PWA) | ✅ `npm run build` passes (8 routes) |
 | Infra (Docker, nginx, CI) | ✅ Config complete |
 | EN/ZH/RU parity | ✅ `node scripts/check_i18n_parity.mjs` → OK |
@@ -44,21 +44,35 @@ Browser (Next.js PWA) ──HTTP + WebSocket──► nginx (TLS, WS, rate-limit
 
 ## Quick start
 
-**Backend only, no Docker** (tests use in-memory SQLite + filesystem storage):
+**Run the whole app locally — one command, no Docker, no external services:**
+
+```bash
+./scripts/dev.sh            # app on http://localhost:3000, API on :8000
+./scripts/dev.sh --reset    # same, but wipe the local database and uploads first
+```
+
+It creates `backend/.env` and `frontend/.env.local` on first run, installs
+dependencies, and starts both servers. Requires `uv` and Node 20+; `ffmpeg` is optional
+(without it videos still upload, but get no thumbnail, duration, or transcode).
+
+Sign in with **any name** plus the event password `let-us-celebrate`, or as the
+built-in admin: **`admin` / `admin12345`**.
+
+To reach it from a phone on the same wi-fi, browse to `http://<your-LAN-IP>:3000` and
+point `NEXT_PUBLIC_API_BASE` in `frontend/.env.local` at `http://<your-LAN-IP>:8000` —
+otherwise the phone's browser calls `localhost` and finds nothing.
+
+**Running the pieces individually:**
 
 ```bash
 cd backend
 uv sync
-uv run pytest -q            # 68 integration tests
+uv run pytest -q            # 101 integration tests
 uv run uvicorn src.main:app --reload   # dev API on :8000 (creates tables under DEBUG)
-```
 
-**Frontend**:
-
-```bash
 cd frontend
 npm install
-npm run build              # or: npm run dev  (http://localhost:3000)
+npm run dev                 # http://localhost:3000   (npm run build to type-check)
 ```
 
 **Full stack with real infra** (PostgreSQL + Redis + MinIO):
@@ -77,7 +91,7 @@ backend/     FastAPI app (src/{routers,services,models,schemas,workers,i18n}), A
 frontend/    Next.js PWA (src/{app,components,stores,lib,locales}, public/{manifest,sw.js})
 infra/       docker-compose.dev/prod, nginx (TLS+WS+rate-limit), loadtest (locust)
 docs/        SECURITY.md, DEPLOY.md
-scripts/     check_i18n_parity.mjs
+scripts/     dev.sh (run everything locally), check_i18n_parity.mjs
 specs/       Spec-Kit artifacts for feature 001
 ```
 
@@ -98,7 +112,7 @@ specs/       Spec-Kit artifacts for feature 001
 ## Testing
 
 ```bash
-cd backend && uv run pytest -q       # backend integration suite
+cd backend && uv run pytest -q       # 101 backend integration tests
 cd frontend && npm run build         # frontend type-check + build
 node scripts/check_i18n_parity.mjs   # EN/ZH/RU parity
 ```
