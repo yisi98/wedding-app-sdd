@@ -1,0 +1,34 @@
+# Try the app with nothing installed locally except Docker.
+#
+#   docker compose -f infra/docker-compose.local.yml up --build
+#   → http://localhost:3000
+#
+# Two containers, no PostgreSQL/Redis/MinIO: the backend runs the zero-infra path
+# (SQLite + local filesystem + inline media processing), so there is no .env to prepare.
+# For the production-shaped stack use docker-compose.dev.yml instead.
+#
+# NEXT_PUBLIC_API_BASE is not set here on purpose: Next.js inlines NEXT_PUBLIC_* at build
+# time, and the client already defaults to http://localhost:8000, which is what the
+# published port below exposes.
+services:
+  backend:
+    build: ../backend
+    ports: ["8000:8000"]
+    environment:
+      DEBUG: "true"
+      DATABASE_URL: sqlite+aiosqlite:////data/wedding.db
+      STORAGE_DIR: /data/media
+      EVENT_PASSWORD: dev-only-event-pass
+      JWT_SECRET: local-dev-only-not-a-real-secret
+      ADMIN_USERNAME: admin
+      ADMIN_PASSWORD: dev-only-admin-pass
+    volumes:
+      - localdata:/data
+
+  frontend:
+    build: ../frontend
+    depends_on: [backend]
+    ports: ["3000:3000"]
+
+volumes:
+  localdata:

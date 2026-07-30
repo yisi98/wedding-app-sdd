@@ -75,6 +75,16 @@ npm install
 npm run dev                 # http://localhost:3000   (npm run build to type-check)
 ```
 
+**Only Docker installed, nothing else?**
+
+```bash
+docker compose -f infra/docker-compose.local.yml up --build
+```
+
+Two containers, zero-infra path (SQLite + local filesystem), no `.env` to prepare —
+same sign-in credentials as above. Slower to start than `scripts/dev.sh` (it builds
+images) but needs nothing on the host beyond Docker itself.
+
 **Full stack with real infra** (PostgreSQL + Redis + MinIO):
 
 ```bash
