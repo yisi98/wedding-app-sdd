@@ -31,7 +31,8 @@
     "sortOldest": "Oldest",
     "sortMostViewed": "Most viewed",
     "sortMostLiked": "Most liked",
-    "loadMore": "Load more"
+    "loadMore": "Load more",
+    "loading": "Loading…"
   },
   "lightbox": {
     "download": "Download",
@@ -40,7 +41,10 @@
     "addComment": "Add a comment…",
     "send": "Send",
     "share": "Share",
-    "close": "Close"
+    "close": "Close",
+    "previous": "Previous photo",
+    "next": "Next photo",
+    "deleteComment": "Delete comment"
   },
   "upload": {
     "drop": "Drag photos & videos here, or click to select",
@@ -49,14 +53,16 @@
     "duplicate": "Already uploaded",
     "closed": "Uploads are closed",
     "failed": "Failed",
-    "errorGeneric": "Upload failed — check your connection and try again."
+    "errorGeneric": "Upload failed — check your connection and try again.",
+    "overall": "{{done}} of {{total}} done"
   },
   "share": {
     "title": "Share",
     "copy": "Copy link",
     "copied": "Copied!",
     "gallery": "Whole gallery",
-    "expired": "This link has expired"
+    "expired": "This link has expired",
+    "close": "Close"
   },
   "admin": {
     "stats": "Statistics",
@@ -99,5 +105,11 @@
     "new_reaction": "reacted",
     "new_comment": "commented",
     "new_favorite": "favorited"
+  },
+  "push": {
+    "enable": "Notify me",
+    "disable": "Stop notifying",
+    "blocked": "Notifications are blocked in your browser settings",
+    "unsupported": "Notifications aren't supported on this device"
   }
 }
