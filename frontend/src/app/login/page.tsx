@@ -16,6 +16,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -54,13 +55,22 @@ export default function LoginPage() {
           className="w-full rounded border px-3 py-2"
         />
         <input
-          type="password"
+          type={showPassword ? "text" : "password"}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder={t("login.eventPassword")}
           required
           className="w-full rounded border px-3 py-2"
         />
+        <label className="flex items-center gap-2 text-sm text-gray-500">
+          <input
+            type="checkbox"
+            checked={showPassword}
+            onChange={(e) => setShowPassword(e.target.checked)}
+            className="h-4 w-4"
+          />
+          {t("login.showPassword")}
+        </label>
         {error && <p className="text-sm text-red-500">{t("login.error")}</p>}
         <button
           type="submit"
