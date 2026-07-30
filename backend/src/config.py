@@ -23,6 +23,12 @@ class Settings(BaseSettings):
     event_password: str = "let-us-celebrate"
     event_password_hash: str | None = None
 
+    # Default admin account, seeded when the database is first created. Unlike guests
+    # (who share the event password), this account signs in with its own password.
+    # CHANGE ADMIN_PASSWORD before going live — the default is public knowledge.
+    admin_username: str = "admin"
+    admin_password: str = "admin12345"
+
     # Auth / JWT
     jwt_secret: str = "dev-secret-change-me"
     jwt_algorithm: str = "HS256"

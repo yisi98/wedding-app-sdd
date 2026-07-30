@@ -8,6 +8,7 @@ Implements the password-only, get-or-create model (ADR-002 / FR-AUTH):
 """
 
 import hashlib
+import logging
 import secrets
 from datetime import UTC, datetime, timedelta
 
@@ -18,10 +19,16 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..config import Settings
 from ..models.refresh_token import RefreshToken
-from ..models.user import ROLE_GUEST, User
+from ..models.user import ROLE_ADMIN, ROLE_GUEST, User
+
+logger = logging.getLogger("wmp.auth")
 
 # Sentinel stored in users.hashed_password for password-less guests.
 GUEST_PASSWORD_SENTINEL = "!"
+
+
+def hash_password(password: str) -> str:
+    return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
 
 def verify_event_password(password: str, settings: Settings) -> bool:
@@ -36,6 +43,18 @@ def verify_event_password(password: str, settings: Settings) -> bool:
     return secrets.compare_digest(password, settings.event_password)
 
 
+def has_own_password(user: User) -> bool:
+    """True for accounts that sign in with their own password rather than the shared one."""
+    return user.hashed_password != GUEST_PASSWORD_SENTINEL
+
+
+def verify_user_password(password: str, user: User) -> bool:
+    try:
+        return bcrypt.checkpw(password.encode("utf-8"), user.hashed_password.encode("utf-8"))
+    except ValueError:
+        return False
+
+
 async def get_or_create_user(session: AsyncSession, display_name: str) -> User:
     """Return the existing user for this display name, or create a new guest."""
     display_name = display_name.strip()
@@ -46,6 +65,50 @@ async def get_or_create_user(session: AsyncSession, display_name: str) -> User:
         session.add(user)
         await session.flush()
     return user
+
+
+async def authenticate(
+    session: AsyncSession, display_name: str, password: str, settings: Settings
+) -> User | None:
+    """Resolve a login to a user, or None when the credentials don't check out.
+
+    Two paths: an account holding its own bcrypt hash (the seeded admin) is verified
+    against that hash, so the shared event password never grants admin. Everyone else is
+    a guest gated by the shared event password, created on first use (FR-001/FR-003).
+    """
+    display_name = display_name.strip()
+    existing = (
+        await session.execute(select(User).where(User.username == display_name))
+    ).scalar_one_or_none()
+
+    if existing is not None and has_own_password(existing):
+        if not verify_user_password(password, existing):
+            return None
+        return existing if existing.is_active else None
+
+    if not verify_event_password(password, settings):
+        return None
+    user = existing if existing is not None else await get_or_create_user(session, display_name)
+    return user if user.is_active else None
+
+
+async def ensure_default_admin(session: AsyncSession, settings: Settings) -> None:
+    """Create the built-in admin account if it is missing. Idempotent; never overwrites
+    an existing account, so a changed password is not reverted on the next restart."""
+    existing = (
+        await session.execute(select(User).where(User.username == settings.admin_username))
+    ).scalar_one_or_none()
+    if existing is not None:
+        return
+    session.add(
+        User(
+            username=settings.admin_username,
+            role=ROLE_ADMIN,
+            hashed_password=hash_password(settings.admin_password),
+        )
+    )
+    await session.commit()
+    logger.info("Created default admin account %r", settings.admin_username)
 
 
 def create_access_token(user: User, settings: Settings) -> str:

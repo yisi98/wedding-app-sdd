@@ -32,23 +32,33 @@ from .routers import objects as objects_router
 from .routers import share as share_router
 from .routers import social as social_router
 from .routers import ws as ws_router
+from .services import auth as auth_service
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     settings = get_settings()
+    from .db import async_session_factory
+
     if settings.debug:
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
         # Ensure the singleton event_config row exists.
-
-        from .db import async_session_factory
-
         async with async_session_factory() as session:
             existing = await session.get(EventConfig, SINGLETON_ID)
             if existing is None:
                 session.add(EventConfig(id=SINGLETON_ID))
                 await session.commit()
+
+    # Seed the built-in admin on every start, not just in debug: production schema comes
+    # from Alembic rather than create_all, and this keeps the account recoverable if it
+    # is ever removed. Idempotent, and tolerant of a database that isn't migrated yet.
+    try:
+        async with async_session_factory() as session:
+            await auth_service.ensure_default_admin(session, settings)
+    except Exception:
+        logger.warning("Could not seed the default admin account", exc_info=True)
+
     yield
 
 
