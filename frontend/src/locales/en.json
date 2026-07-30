@@ -7,7 +7,8 @@
     "eventPassword": "Event password",
     "enter": "Enter",
     "error": "Incorrect event password",
-    "hint": "Please use your real name to sign in. There's no separate registration — as long as you enter the correct event password, any name will work, but using your real name helps us know who uploaded what."
+    "hint": "Please use your real name to sign in. There's no separate registration — as long as you enter the correct event password, any name will work, but using your real name helps us know who uploaded what.",
+    "showPassword": "Show password"
   },
   "nav": {
     "gallery": "Gallery",

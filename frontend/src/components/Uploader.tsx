@@ -1,10 +1,13 @@
 "use client";
 
 import axios from "axios";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { api, API_BASE } from "@/lib/api";
+
+/** How long finished upload rows stay on screen before clearing themselves. */
+const CLEAR_AFTER_MS = 3000;
 
 interface Item {
   name: string;
@@ -40,6 +43,18 @@ export default function Uploader({ onUploaded }: { onUploaded: () => void }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [items, setItems] = useState<Item[]>([]);
   const [dragging, setDragging] = useState(false);
+
+  // Once nothing is still uploading, tidy the list away so it doesn't sit there for the
+  // rest of the evening. Rejections stay put — a guest needs time to read why a file
+  // failed and to retry it.
+  useEffect(() => {
+    if (items.length === 0) return;
+    const busy = items.some((it) => it.status === "uploading");
+    const failed = items.some((it) => it.status === "error");
+    if (busy || failed) return;
+    const timer = setTimeout(() => setItems([]), CLEAR_AFTER_MS);
+    return () => clearTimeout(timer);
+  }, [items]);
 
   async function uploadOne(file: File, index: number) {
     const setStatus = (patch: Partial<Item>) =>
