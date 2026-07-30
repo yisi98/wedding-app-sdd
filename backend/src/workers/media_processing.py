@@ -93,16 +93,24 @@ def _lqip(image) -> str:
 
 
 def process_image(data: bytes) -> ImageDerivations:
-    from PIL import Image
+    from PIL import Image, ImageOps
 
-    image = Image.open(io.BytesIO(data))
-    image.load()
-    width, height = image.width, image.height
+    original = Image.open(io.BytesIO(data))
+    original.load()
 
+    # Capture EXIF from the original: exif_transpose() drops the Orientation tag once it
+    # has been applied, and the metadata is worth keeping for the record.
     exif: dict = {}
-    raw_exif = getattr(image, "_getexif", lambda: None)()
+    raw_exif = getattr(original, "_getexif", lambda: None)()
     if raw_exif:
         exif = {str(k): str(v) for k, v in raw_exif.items()}
+
+    # Phones store a landscape frame plus an Orientation tag rather than rotating pixels.
+    # Browsers honour that tag on the original file, but every derivative below is
+    # re-encoded and loses it — so bake the rotation in first, or portrait photos show up
+    # sideways in the grid and the lightbox and report transposed dimensions.
+    image = ImageOps.exif_transpose(original) or original
+    width, height = image.width, image.height
 
     thumb = image.convert("RGB").copy()
     thumb.thumbnail(THUMBNAIL_SIZE)

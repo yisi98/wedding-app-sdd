@@ -87,6 +87,26 @@ def make_png(width: int = 32, height: int = 24, color: tuple = (200, 100, 50)) -
     return buf.getvalue()
 
 
+def make_jpeg_with_orientation(orientation: int, width: int = 200, height: int = 100) -> bytes:
+    """A JPEG whose stored pixels are `width`x`height` plus an EXIF Orientation tag.
+
+    This is how phones record a rotated shot: the sensor frame is saved as-is and the tag
+    says how to turn it for display. Tags 5-8 transpose the axes.
+    """
+    from PIL import Image
+
+    img = Image.new("RGB", (width, height), (200, 60, 60))
+    # A marker stripe makes it obvious which edge ended up where if a test fails.
+    for x in range(min(10, width)):
+        for y in range(height):
+            img.putpixel((x, y), (0, 0, 255))
+    exif = img.getexif()
+    exif[274] = orientation  # 274 == Orientation
+    buf = io.BytesIO()
+    img.save(buf, format="JPEG", exif=exif)
+    return buf.getvalue()
+
+
 def make_heic(width: int = 32, height: int = 24, color: tuple = (60, 120, 180)) -> bytes:
     """A small valid HEIC for upload/processing tests (via pillow-heif)."""
     import pillow_heif
