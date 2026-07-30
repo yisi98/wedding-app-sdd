@@ -24,6 +24,7 @@ export default function GalleryGrid({ refreshKey }: { refreshKey: number }) {
   const [q, setQ] = useState("");
   const [active, setActive] = useState<Media | null>(null);
   const [selected, setSelected] = useState<Set<number>>(new Set());
+  const [selectingAll, setSelectingAll] = useState(false);
 
   const load = useCallback(
     async (reset: boolean) => {
@@ -49,6 +50,12 @@ export default function GalleryGrid({ refreshKey }: { refreshKey: number }) {
     api.get("/media/uploaders").then(({ data }) => setUploaders(data));
   }, [refreshKey]);
 
+  // A selection made under one filter combination doesn't necessarily make sense under
+  // another (it may include items no longer shown), so changing filters clears it.
+  useEffect(() => {
+    setSelected(new Set());
+  }, [type, uploader, q]);
+
   function toggleSelect(id: number) {
     setSelected((prev) => {
       const next = new Set(prev);
@@ -56,6 +63,20 @@ export default function GalleryGrid({ refreshKey }: { refreshKey: number }) {
       else next.add(id);
       return next;
     });
+  }
+
+  async function selectAllMatching() {
+    setSelectingAll(true);
+    try {
+      const params = new URLSearchParams();
+      if (type) params.set("media_type", type);
+      if (uploader) params.set("uploader", uploader);
+      if (q) params.set("q", q);
+      const { data } = await api.get(`/media/ids?${params.toString()}`);
+      setSelected(new Set<number>(data));
+    } finally {
+      setSelectingAll(false);
+    }
   }
 
   async function bulkDownload() {
@@ -106,12 +127,29 @@ export default function GalleryGrid({ refreshKey }: { refreshKey: number }) {
           placeholder={t("gallery.search")}
           className="flex-1 rounded border px-2 py-1 text-sm"
         />
-        {selected.size > 0 && (
-          <button onClick={bulkDownload} className="rounded bg-sage px-3 py-1 text-sm text-white">
-            ⬇ {selected.size}
-          </button>
-        )}
       </div>
+
+      {items.length > 0 && (
+        <div className="mb-3 flex flex-wrap items-center gap-2">
+          <button
+            onClick={selectAllMatching}
+            disabled={selectingAll}
+            className="rounded border px-2 py-1 text-sm disabled:opacity-50"
+          >
+            {selectingAll ? t("gallery.selecting") : t("gallery.selectAllMatching")}
+          </button>
+          {selected.size > 0 && (
+            <>
+              <button onClick={() => setSelected(new Set())} className="rounded border px-2 py-1 text-sm">
+                {t("gallery.clearSelection")}
+              </button>
+              <button onClick={bulkDownload} className="rounded bg-sage px-3 py-1 text-sm text-white">
+                ⬇ {selected.size}
+              </button>
+            </>
+          )}
+        </div>
+      )}
 
       {items.length === 0 ? (
         <p className="py-10 text-center text-gray-400">{t("gallery.empty")}</p>

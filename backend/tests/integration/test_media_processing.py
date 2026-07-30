@@ -1,7 +1,16 @@
 """T033: background processing outputs — derivations + end-to-end ready (US2 / FR-009)."""
 
-from src.workers.media_processing import process_image
-from tests.conftest import auth_headers, make_png, sha256_hex
+import shutil
+
+import pytest
+
+from src.workers.media_processing import WEB_SAFE_VIDEO_TYPES, process_image, process_video
+from tests.conftest import auth_headers, make_heic, make_mp4, make_png, sha256_hex
+
+needs_ffmpeg = pytest.mark.skipif(
+    shutil.which("ffmpeg") is None or shutil.which("ffprobe") is None,
+    reason="requires the system ffmpeg/ffprobe binaries",
+)
 
 
 def test_process_image_produces_derivations():
@@ -11,6 +20,33 @@ def test_process_image_produces_derivations():
     assert d.thumbnail and d.optimized
     assert d.lqip.startswith("data:image/jpeg;base64,")
     assert len(d.phash) == 16  # 8x8 dHash → 16 hex chars
+
+
+def test_process_image_decodes_heic():
+    heic = make_heic(width=40, height=30)
+    d = process_image(heic)
+    assert d.width == 40 and d.height == 30
+    assert d.thumbnail and d.optimized
+
+
+@needs_ffmpeg
+def test_process_video_produces_thumbnail_and_duration():
+    mp4 = make_mp4(duration=1.0, fmt="mp4")
+    v = process_video(mp4, "video/mp4")
+    assert v.duration is not None and v.duration > 0
+    assert v.thumbnail is not None
+    # mp4 is already web-safe — no transcode needed.
+    assert v.playable is None
+
+
+@needs_ffmpeg
+def test_process_video_transcodes_non_web_safe_container():
+    avi = make_mp4(duration=1.0, fmt="avi")
+    assert "video/x-msvideo" not in WEB_SAFE_VIDEO_TYPES
+    v = process_video(avi, "video/x-msvideo")
+    assert v.duration is not None
+    assert v.thumbnail is not None
+    assert v.playable is not None  # transcoded to a browser-playable MP4
 
 
 async def test_end_to_end_upload_becomes_ready_with_derivations(client):
@@ -33,3 +69,26 @@ async def test_end_to_end_upload_becomes_ready_with_derivations(client):
     assert media["width"] == 50 and media["height"] == 40
     assert media["lqip"].startswith("data:image/jpeg;base64,")
     assert media["thumbnail_path"] and media["optimized_path"]
+
+
+@needs_ffmpeg
+async def test_end_to_end_video_upload_gets_thumbnail_and_transcode(client):
+    headers = await auth_headers(client)
+    avi = make_mp4(duration=1.0, fmt="avi")
+    body = {
+        "original_filename": "clip.avi",
+        "mime_type": "video/x-msvideo",
+        "file_size": len(avi),
+        "file_hash": sha256_hex(avi),
+    }
+    init = await client.post("/api/v1/media/upload/init", json=body, headers=headers)
+    key = init.json()["storage_key"]
+    await client.put(f"/api/v1/media/upload/raw?key={key}", content=avi, headers=headers)
+    confirm = await client.post(
+        "/api/v1/media/upload/confirm", json={"media_id": init.json()["media_id"]}, headers=headers
+    )
+    media = confirm.json()
+    assert media["status"] == "ready"
+    assert media["duration"] is not None and media["duration"] > 0
+    assert media["thumbnail_path"]  # poster frame
+    assert media["optimized_path"]  # transcoded playable MP4

@@ -87,6 +87,48 @@ def make_png(width: int = 32, height: int = 24, color: tuple = (200, 100, 50)) -
     return buf.getvalue()
 
 
+def make_heic(width: int = 32, height: int = 24, color: tuple = (60, 120, 180)) -> bytes:
+    """A small valid HEIC for upload/processing tests (via pillow-heif)."""
+    import pillow_heif
+    from PIL import Image
+
+    pillow_heif.register_heif_opener()
+    buf = io.BytesIO()
+    Image.new("RGB", (width, height), color).save(buf, format="HEIF")
+    return buf.getvalue()
+
+
+def make_mp4(width: int = 64, height: int = 48, duration: float = 1.0, fmt: str = "mp4") -> bytes:
+    """A tiny real video via the system ffmpeg, for processing tests. `fmt="avi"` for a
+    non-web-safe container that should trigger the MP4 transcode path."""
+    import shutil
+    import subprocess
+    import tempfile
+
+    if shutil.which("ffmpeg") is None:
+        return b""
+    with tempfile.NamedTemporaryFile(suffix=f".{fmt}") as dst:
+        subprocess.run(
+            [
+                "ffmpeg",
+                "-y",
+                "-loglevel",
+                "error",
+                "-f",
+                "lavfi",
+                "-i",
+                f"testsrc=size={width}x{height}:rate=10:duration={duration}",
+                "-pix_fmt",
+                "yuv420p",
+                dst.name,
+            ],
+            check=True,
+            timeout=30,
+        )
+        dst.seek(0)
+        return dst.read()
+
+
 def sha256_hex(data: bytes) -> str:
     import hashlib
 

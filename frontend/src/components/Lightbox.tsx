@@ -59,7 +59,10 @@ export default function Lightbox({
   }
 
   const isVideo = media.media_type === "video";
-  const fullSrc = mediaUrl(isVideo ? media.storage_path : media.optimized_path || media.storage_path);
+  // optimized_path is a browser-safe derivative when set (WebP for images; an H.264/AAC MP4
+  // transcode for videos whose original container/codec most browsers can't play natively).
+  // The original at storage_path is unchanged and is what downloads always serve.
+  const fullSrc = mediaUrl(media.optimized_path || media.storage_path);
 
   return (
     <div className="fixed inset-0 z-40 flex flex-col overflow-auto bg-black/90 text-white">
@@ -96,7 +99,7 @@ export default function Lightbox({
           {favorited ? "★" : "☆"}
         </button>
         <a
-          href={fullSrc}
+          href={mediaUrl(media.storage_path)}
           download={media.original_filename}
           className="rounded bg-white/10 px-2 py-1 text-sm"
         >

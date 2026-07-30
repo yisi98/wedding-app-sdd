@@ -56,7 +56,12 @@ class Settings(BaseSettings):
             "video/mp4",
             "video/quicktime",
             "video/webm",
+            # Browsers/OSes disagree on the AVI mime type (Chrome on Linux reports
+            # video/vnd.avi; others report video/x-msvideo or video/avi) — accept all.
             "video/x-msvideo",
+            "video/avi",
+            "video/vnd.avi",
+            "video/msvideo",
             "video/x-matroska",
             "video/mpeg",
             "video/3gpp",

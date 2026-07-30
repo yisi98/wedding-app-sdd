@@ -57,6 +57,22 @@ async def list_gallery(
     )
 
 
+@router.get("/ids", response_model=list[int])
+async def list_gallery_ids(
+    user: CurrentUser,
+    session: DbDep,
+    media_type: Annotated[Literal["image", "video"] | None, Query()] = None,
+    uploader: Annotated[str | None, Query()] = None,
+    date_from: Annotated[date | None, Query()] = None,
+    date_to: Annotated[date | None, Query()] = None,
+    q: Annotated[str | None, Query()] = None,
+) -> list[int]:
+    """All media ids matching the given filters — backs "select all matching filter"."""
+    return await media_service.list_gallery_ids(
+        session, media_type=media_type, uploader=uploader, date_from=date_from, date_to=date_to, q=q
+    )
+
+
 @router.post("/upload/init", response_model=UploadInitResponse)
 async def upload_init(
     body: UploadInitRequest, user: CurrentUser, session: DbDep, settings: SettingsDep
