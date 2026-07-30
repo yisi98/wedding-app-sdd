@@ -5,11 +5,11 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { api } from "@/lib/api";
-import LanguageSwitcher from "@/components/LanguageSwitcher";
+import LanguageSwitcher, { syncLanguageToServer } from "@/components/LanguageSwitcher";
 import { useAuthStore } from "@/stores/auth";
 
 export default function LoginPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const router = useRouter();
   const setSession = useAuthStore((s) => s.setSession);
   const [name, setName] = useState("");
@@ -27,6 +27,9 @@ export default function LoginPage() {
         event_password: password,
       });
       setSession(data.access_token, data.refresh_token, data.user);
+      // Carry the language picked on this screen over to the account, so server-side
+      // messages match the UI from the very first upload.
+      syncLanguageToServer((i18n.language || "en").split("-")[0]);
       router.replace("/gallery");
     } catch {
       setError(true);

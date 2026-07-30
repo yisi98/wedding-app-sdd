@@ -39,7 +39,9 @@
     "uploading": "Uploading…",
     "done": "Done",
     "duplicate": "Already uploaded",
-    "closed": "Uploads are closed"
+    "closed": "Uploads are closed",
+    "failed": "Failed",
+    "errorGeneric": "Upload failed — check your connection and try again."
   },
   "share": {
     "title": "Share",

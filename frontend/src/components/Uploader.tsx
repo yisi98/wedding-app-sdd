@@ -10,6 +10,21 @@ interface Item {
   name: string;
   progress: number;
   status: "uploading" | "done" | "duplicate" | "error";
+  /** The server's reason for a rejection, shown to the guest. */
+  message?: string;
+}
+
+/** The API localizes its own error messages (EN/ZH/RU), so prefer its `detail` over a
+ * generic client-side string — it's what distinguishes "wrong type" from "too large"
+ * from "uploads are closed". Shapes vary: a plain string, or `{message, ...}` for 409. */
+function serverMessage(err: unknown): string | undefined {
+  if (!axios.isAxiosError(err)) return undefined;
+  const detail = err.response?.data?.detail;
+  if (typeof detail === "string") return detail;
+  if (detail && typeof detail === "object" && typeof detail.message === "string") {
+    return detail.message;
+  }
+  return undefined;
 }
 
 async function sha256Hex(file: File): Promise<string> {
@@ -55,8 +70,13 @@ export default function Uploader({ onUploaded }: { onUploaded: () => void }) {
       await api.post("/media/upload/confirm", { media_id });
       setStatus({ progress: 100, status: "done" });
     } catch (err) {
-      const status = axios.isAxiosError(err) && err.response?.status === 409 ? "duplicate" : "error";
-      setStatus({ status });
+      const isDuplicate = axios.isAxiosError(err) && err.response?.status === 409;
+      setStatus({
+        status: isDuplicate ? "duplicate" : "error",
+        // No response at all (offline, server unreachable) means there is no server
+        // message to show — fall back to something actionable.
+        message: isDuplicate ? undefined : (serverMessage(err) ?? t("upload.errorGeneric")),
+      });
     }
   }
 
@@ -100,17 +120,32 @@ export default function Uploader({ onUploaded }: { onUploaded: () => void }) {
       {items.length > 0 && (
         <ul className="mt-2 space-y-1 text-xs">
           {items.map((it, i) => (
-            <li key={i} className="flex items-center gap-2">
-              <span className="flex-1 truncate">{it.name}</span>
-              <span>
-                {it.status === "done"
-                  ? t("upload.done")
-                  : it.status === "duplicate"
-                    ? t("upload.duplicate")
-                    : it.status === "error"
-                      ? "!"
-                      : `${it.progress}%`}
-              </span>
+            <li key={i} className="flex flex-col gap-0.5">
+              <div className="flex items-center gap-2">
+                <span className="flex-1 truncate">{it.name}</span>
+                <span
+                  className={
+                    it.status === "error"
+                      ? "shrink-0 font-medium text-red-600"
+                      : it.status === "duplicate"
+                        ? "shrink-0 text-gray-500"
+                        : "shrink-0"
+                  }
+                >
+                  {it.status === "done"
+                    ? t("upload.done")
+                    : it.status === "duplicate"
+                      ? t("upload.duplicate")
+                      : it.status === "error"
+                        ? t("upload.failed")
+                        : `${it.progress}%`}
+                </span>
+              </div>
+              {it.status === "error" && it.message && (
+                <span role="alert" className="text-red-600">
+                  {it.message}
+                </span>
+              )}
             </li>
           ))}
         </ul>
