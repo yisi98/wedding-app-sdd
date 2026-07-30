@@ -118,6 +118,29 @@ export default function Uploader({ onUploaded }: { onUploaded: () => void }) {
         />
       </div>
       {items.length > 0 && (
+        <>
+          {/* FR-006 aggregate progress across the batch, alongside the per-file rows. */}
+          {(() => {
+            const finished = items.filter((it) => it.status !== "uploading").length;
+            const overall = Math.round(
+              items.reduce((sum, it) => sum + (it.status === "uploading" ? it.progress : 100), 0) /
+                items.length
+            );
+            return (
+              <div className="mt-2 text-xs">
+                <div className="mb-1 flex justify-between text-gray-500">
+                  <span>{t("upload.overall", { done: finished, total: items.length })}</span>
+                  <span>{overall}%</span>
+                </div>
+                <div className="h-1 w-full overflow-hidden rounded bg-gray-200">
+                  <div className="h-full bg-blush transition-all" style={{ width: `${overall}%` }} />
+                </div>
+              </div>
+            );
+          })()}
+        </>
+      )}
+      {items.length > 0 && (
         <ul className="mt-2 space-y-1 text-xs">
           {items.map((it, i) => (
             <li key={i} className="flex flex-col gap-0.5">

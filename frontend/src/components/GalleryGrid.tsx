@@ -1,11 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { api, API_BASE } from "@/lib/api";
 import type { Media } from "@/lib/types";
 import { useAuthStore } from "@/stores/auth";
+import { useRealtimeStore } from "@/stores/realtime";
 
 import Lightbox from "./Lightbox";
 import MediaGrid from "./MediaGrid";
@@ -25,6 +26,9 @@ export default function GalleryGrid({ refreshKey }: { refreshKey: number }) {
   const [active, setActive] = useState<Media | null>(null);
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [selectingAll, setSelectingAll] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const uploadTick = useRealtimeStore((s) => s.uploadTick);
+  const sentinel = useRef<HTMLDivElement | null>(null);
 
   const load = useCallback(
     async (reset: boolean) => {
@@ -33,10 +37,15 @@ export default function GalleryGrid({ refreshKey }: { refreshKey: number }) {
       if (type) params.set("media_type", type);
       if (uploader) params.set("uploader", uploader);
       if (q) params.set("q", q);
-      const { data } = await api.get(`/media?${params.toString()}`);
-      setItems((prev) => (reset ? data.items : [...prev, ...data.items]));
-      setHasMore(data.has_more);
-      setOffset(nextOffset + PAGE);
+      setLoading(true);
+      try {
+        const { data } = await api.get(`/media?${params.toString()}`);
+        setItems((prev) => (reset ? data.items : [...prev, ...data.items]));
+        setHasMore(data.has_more);
+        setOffset(nextOffset + PAGE);
+      } finally {
+        setLoading(false);
+      }
     },
     [offset, sort, type, uploader, q]
   );
@@ -48,7 +57,30 @@ export default function GalleryGrid({ refreshKey }: { refreshKey: number }) {
 
   useEffect(() => {
     api.get("/media/uploaders").then(({ data }) => setUploaders(data));
-  }, [refreshKey]);
+  }, [refreshKey, uploadTick]);
+
+  // Someone else uploaded: pull the first page again so the new photo actually appears,
+  // instead of only announcing it via a toast (FR-022).
+  useEffect(() => {
+    if (uploadTick === 0) return;
+    load(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [uploadTick]);
+
+  // FR-011 infinite scroll: fetch the next page as the sentinel comes into view. The
+  // "Load more" button stays as a fallback for browsers without IntersectionObserver.
+  useEffect(() => {
+    const node = sentinel.current;
+    if (!node || typeof IntersectionObserver === "undefined") return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loading) load(false);
+      },
+      { rootMargin: "300px" }
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [hasMore, loading, load]);
 
   // A selection made under one filter combination doesn't necessarily make sense under
   // another (it may include items no longer shown), so changing filters clears it.
@@ -163,15 +195,28 @@ export default function GalleryGrid({ refreshKey }: { refreshKey: number }) {
         />
       )}
 
+      <div ref={sentinel} aria-hidden className="h-1" />
+
       {hasMore && (
         <div className="mt-4 text-center">
-          <button onClick={() => load(false)} className="rounded bg-blush px-4 py-2 text-sm">
-            {t("gallery.loadMore")}
+          <button
+            onClick={() => load(false)}
+            disabled={loading}
+            className="rounded bg-blush px-4 py-2 text-sm disabled:opacity-50"
+          >
+            {loading ? t("gallery.loading") : t("gallery.loadMore")}
           </button>
         </div>
       )}
 
-      {active && <Lightbox media={active} onClose={() => setActive(null)} onOpenMedia={setActive} />}
+      {active && (
+        <Lightbox
+          media={active}
+          items={items}
+          onClose={() => setActive(null)}
+          onOpenMedia={setActive}
+        />
+      )}
     </div>
   );
 }

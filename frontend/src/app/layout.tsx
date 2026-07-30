@@ -7,6 +7,14 @@ export const metadata: Metadata = {
   title: "Our Wedding",
   description: "Share photos and videos from our wedding",
   manifest: "/manifest.webmanifest",
+  // FR-037: a private, password-gated gallery must never be indexable. Emitted as
+  // <meta name="robots"> on every page; robots.ts and nginx repeat it at their layers.
+  robots: {
+    index: false,
+    follow: false,
+    nocache: true,
+    googleBot: { index: false, follow: false, noimageindex: true },
+  },
 };
 
 export const viewport: Viewport = {

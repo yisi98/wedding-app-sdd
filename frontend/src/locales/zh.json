@@ -31,7 +31,8 @@
     "sortOldest": "最早",
     "sortMostViewed": "最多浏览",
     "sortMostLiked": "最多点赞",
-    "loadMore": "加载更多"
+    "loadMore": "加载更多",
+    "loading": "加载中……"
   },
   "lightbox": {
     "download": "下载",
@@ -40,7 +41,10 @@
     "addComment": "添加评论……",
     "send": "发送",
     "share": "分享",
-    "close": "关闭"
+    "close": "关闭",
+    "previous": "上一张",
+    "next": "下一张",
+    "deleteComment": "删除评论"
   },
   "upload": {
     "drop": "将照片和视频拖到此处，或点击选择",
@@ -49,14 +53,16 @@
     "duplicate": "已上传",
     "closed": "上传已关闭",
     "failed": "失败",
-    "errorGeneric": "上传失败——请检查网络连接后重试。"
+    "errorGeneric": "上传失败——请检查网络连接后重试。",
+    "overall": "已完成 {{done}} / {{total}}"
   },
   "share": {
     "title": "分享",
     "copy": "复制链接",
     "copied": "已复制！",
     "gallery": "整个相册",
-    "expired": "此链接已过期"
+    "expired": "此链接已过期",
+    "close": "关闭"
   },
   "admin": {
     "stats": "统计",
@@ -99,5 +105,11 @@
     "new_reaction": "点赞了",
     "new_comment": "评论了",
     "new_favorite": "收藏了"
+  },
+  "push": {
+    "enable": "开启通知",
+    "disable": "关闭通知",
+    "blocked": "通知已在浏览器设置中被阻止",
+    "unsupported": "此设备不支持通知"
   }
 }

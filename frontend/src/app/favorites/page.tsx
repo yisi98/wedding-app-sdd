@@ -33,7 +33,14 @@ export default function FavoritesPage() {
           <MediaGrid items={items} onOpen={setActive} />
         )}
       </main>
-      {active && <Lightbox media={active} onClose={() => setActive(null)} onOpenMedia={setActive} />}
+      {active && (
+        <Lightbox
+          media={active}
+          items={items}
+          onClose={() => setActive(null)}
+          onOpenMedia={setActive}
+        />
+      )}
     </>
   );
 }

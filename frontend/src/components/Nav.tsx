@@ -8,6 +8,7 @@ import { api } from "@/lib/api";
 import { useAuthStore } from "@/stores/auth";
 
 import LanguageSwitcher from "./LanguageSwitcher";
+import PushToggle from "./PushToggle";
 
 export default function Nav() {
   const { t } = useTranslation();
@@ -39,6 +40,7 @@ export default function Nav() {
         </Link>
       )}
       <div className="ml-auto flex items-center gap-3">
+        <PushToggle />
         <LanguageSwitcher />
         <button onClick={logout} className="text-sm text-gray-600 hover:underline">
           {t("nav.logout")}

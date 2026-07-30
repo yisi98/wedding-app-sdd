@@ -4,12 +4,33 @@ Records activity events and pushes them live to connected clients. Called from t
 and social services when notable actions occur.
 """
 
+import logging
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ..config import get_settings
 from ..models.activity_event import ActivityEvent
 from ..models.user import User
+from ..services import push_service
 from ..services.websocket_manager import manager
+
+logger = logging.getLogger("wmp.activity")
+
+# Notification copy is English-only: a push is composed server-side for many recipients at
+# once, and the payload carries no per-recipient language. The in-app feed is translated.
+_PUSH_TITLES = {
+    "new_upload": "New photo",
+    "new_reaction": "New reaction",
+    "new_comment": "New comment",
+    "new_favorite": "New favourite",
+}
+_PUSH_BODIES = {
+    "new_upload": "added something new",
+    "new_reaction": "reacted to a photo",
+    "new_comment": "left a comment",
+    "new_favorite": "favourited a photo",
+}
 
 
 async def record(
@@ -25,14 +46,31 @@ async def record(
     )
     session.add(event)
     await session.flush()
-    await manager.publish(
-        {
-            "event_type": event_type,
-            "user": user.username,
-            "media_id": media_id,
-            "payload": payload,
-        }
-    )
+    message = {
+        "event_type": event_type,
+        "user": user.username,
+        "media_id": media_id,
+        "payload": payload,
+    }
+    await manager.publish(message)
+
+    # Also reach guests who don't have the app open (FR-024). No-op when VAPID isn't
+    # configured, and never allowed to fail the action that triggered it.
+    try:
+        await push_service.notify_subscribers(
+            session,
+            {
+                "title": _PUSH_TITLES.get(event_type, "Our Wedding"),
+                "body": f"{user.username} {_PUSH_BODIES.get(event_type, '')}".strip(),
+                "event_type": event_type,
+                "url": f"/gallery?media={media_id}" if media_id else "/gallery",
+            },
+            user,
+            get_settings(),
+        )
+    except Exception:
+        logger.warning("Push fan-out failed for %s", event_type, exc_info=True)
+
     return event
 
 
