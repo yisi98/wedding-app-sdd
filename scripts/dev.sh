@@ -8,6 +8,13 @@
 #
 #   ./scripts/dev.sh          start both servers
 #   ./scripts/dev.sh --reset  start fresh, discarding the local database and uploads
+# This check must come before `set -o pipefail`, which dash rejects outright — otherwise
+# `sh scripts/dev.sh` dies with "Illegal option -o pipefail" instead of something useful.
+if [ -z "${BASH_VERSION:-}" ]; then
+  echo "Run this with bash, not sh:  ./scripts/dev.sh   (or: bash scripts/dev.sh)" >&2
+  exit 1
+fi
+
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -20,8 +27,21 @@ bold() { printf '\033[1m%s\033[0m\n' "$1"; }
 warn() { printf '\033[33m%s\033[0m\n' "$1"; }
 die()  { printf '\033[31m%s\033[0m\n' "$1" >&2; exit 1; }
 
-command -v uv   >/dev/null || die "uv is required — https://docs.astral.sh/uv/getting-started/installation/"
-command -v node >/dev/null || die "Node 20+ is required — https://nodejs.org"
+# uv and nvm-managed node install to per-user directories that a non-login shell often
+# hasn't picked up yet, so look there before declaring them missing.
+for extra in "$HOME/.local/bin" "$HOME/.cargo/bin" "/opt/homebrew/bin" "/usr/local/bin"; do
+  [[ -d "$extra" ]] && case ":$PATH:" in *":$extra:"*) ;; *) PATH="$PATH:$extra" ;; esac
+done
+export PATH
+
+if ! command -v uv >/dev/null 2>&1; then
+  die "uv not found on PATH.
+  Install:  curl -LsSf https://astral.sh/uv/install.sh | sh
+  If you just installed it, open a new terminal (or: export PATH=\"\$HOME/.local/bin:\$PATH\").
+  Already have Python? You can skip this script — see 'Running the pieces individually'
+  in the README."
+fi
+command -v node >/dev/null 2>&1 || die "Node 20+ not found on PATH — https://nodejs.org"
 command -v ffmpeg >/dev/null 2>&1 || warn "ffmpeg not found: videos will upload but get no thumbnail, duration, or transcode."
 
 if [[ "${1:-}" == "--reset" ]]; then
