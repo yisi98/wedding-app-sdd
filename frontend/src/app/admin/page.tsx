@@ -275,7 +275,7 @@ export default function AdminPage() {
               value={userQuery}
               onChange={(e) => search(e.target.value)}
               placeholder={t("admin.searchUsers")}
-              className="rounded border px-2 py-1 text-sm"
+              className="rounded border px-2 py-1 text-base sm:text-sm"
             />
           </div>
           <table className="w-full text-sm">

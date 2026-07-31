@@ -44,6 +44,7 @@ export default function SharePage() {
             lqip={media.lqip}
             alt={media.original_filename}
             className="mx-auto max-h-[70vh] w-auto"
+            fit="contain"
           />
         )
       )}
