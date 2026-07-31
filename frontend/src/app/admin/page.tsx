@@ -133,7 +133,7 @@ export default function AdminPage() {
   return (
     <>
       <Nav />
-      <main className="mx-auto max-w-5xl space-y-6 p-4">
+      <main className="mx-auto max-w-5xl space-y-6 p-4 pb-24 md:mx-0 md:ml-56 md:pb-4">
         <section>
           <h2 className="mb-2 font-serif font-semibold">{t("admin.stats")}</h2>
           {stats && (

@@ -44,6 +44,17 @@ export default function Uploader({ onUploaded }: { onUploaded: () => void }) {
   const [items, setItems] = useState<Item[]>([]);
   const [dragging, setDragging] = useState(false);
 
+  // The nav's "+ Upload" shortcut links here with ?upload=1 to open the file picker
+  // immediately, from any page. Plain useEffect + history.replaceState rather than
+  // useSearchParams(), which would force this (and the gallery page around it) into a
+  // Suspense boundary just to read a value we only need once, on arrival.
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("upload") === "1") {
+      inputRef.current?.click();
+      window.history.replaceState(null, "", "/gallery");
+    }
+  }, []);
+
   // Once nothing is still uploading, tidy the list away so it doesn't sit there for the
   // rest of the evening. Rejections stay put — a guest needs time to read why a file
   // failed and to retry it.

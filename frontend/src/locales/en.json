@@ -15,7 +15,8 @@
     "favorites": "Favorites",
     "admin": "Admin",
     "logout": "Log out",
-    "upload": "Upload"
+    "upload": "Upload",
+    "profile": "Profile"
   },
   "gallery": {
     "empty": "No photos yet — be the first to upload!",
