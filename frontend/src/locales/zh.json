@@ -1,26 +1,40 @@
 {
-  "app": { "title": "我们的婚礼" },
+  "app": {
+    "title": "娜塔莎和易斯的婚礼"
+  },
   "login": {
     "displayName": "你的名字",
     "eventPassword": "活动密码",
     "enter": "进入",
     "error": "活动密码不正确",
-    "hint": "请使用您的真实姓名登录。无需单独注册——只要输入正确的活动密码，任何名字都可以登录，但使用真实姓名有助于我们知道是谁上传的照片。"
+    "hint": "请使用您的真实姓名登录。无需单独注册——只要输入正确的活动密码，任何名字都可以登录，但使用真实姓名有助于我们知道是谁上传的照片。",
+    "showPassword": "显示密码"
   },
-  "nav": { "gallery": "相册", "favorites": "收藏", "admin": "管理", "logout": "退出", "upload": "上传" },
+  "nav": {
+    "gallery": "相册",
+    "favorites": "收藏",
+    "admin": "管理",
+    "logout": "退出",
+    "upload": "上传",
+    "profile": "我的"
+  },
   "gallery": {
     "empty": "还没有照片——快来第一个上传吧！",
-    "search": "按文件名搜索",
     "all": "全部",
     "images": "照片",
     "videos": "视频",
     "allUploaders": "所有人",
     "uploadedBy": "由 {{name}} 上传",
+    "deletedGuest": "已删除的宾客",
+    "selectAllMatching": "全选符合条件的",
+    "selecting": "选择中……",
+    "clearSelection": "清除选择",
     "sortNewest": "最新",
     "sortOldest": "最早",
     "sortMostViewed": "最多浏览",
     "sortMostLiked": "最多点赞",
-    "loadMore": "加载更多"
+    "loadMore": "加载更多",
+    "loading": "加载中……"
   },
   "lightbox": {
     "download": "下载",
@@ -28,22 +42,24 @@
     "comments": "评论",
     "addComment": "添加评论……",
     "send": "发送",
-    "share": "分享",
-    "close": "关闭"
+    "close": "关闭",
+    "previous": "上一张",
+    "next": "下一张",
+    "deleteComment": "删除评论"
   },
   "upload": {
     "drop": "将照片和视频拖到此处，或点击选择",
     "uploading": "上传中……",
     "done": "完成",
     "duplicate": "已上传",
-    "closed": "上传已关闭"
+    "closed": "上传已关闭",
+    "failed": "失败",
+    "errorGeneric": "上传失败——请检查网络连接后重试。",
+    "overall": "已完成 {{done}} / {{total}}"
   },
   "share": {
-    "title": "分享",
-    "copy": "复制链接",
-    "copied": "已复制！",
-    "gallery": "整个相册",
-    "expired": "此链接已过期"
+    "archiveFilename": "娜塔莎和易斯的婚礼.zip",
+    "downloadFailed": "下载失败——请检查网络连接后重试。"
   },
   "admin": {
     "stats": "统计",
@@ -57,7 +73,38 @@
     "deactivate": "停用",
     "hide": "隐藏",
     "show": "显示",
-    "export": "导出 CSV"
+    "export": "导出 CSV",
+    "totalReactions": "点赞",
+    "totalComments": "评论",
+    "byType": "按类型",
+    "topByViews": "最多浏览",
+    "searchUsers": "搜索宾客",
+    "delete": "删除",
+    "demote": "设为宾客",
+    "activate": "重新启用",
+    "prev": "上一页",
+    "next": "下一页",
+    "noneYet": "暂无",
+    "settings": "活动设置",
+    "archiveOn": "上传已开放——宾客可以添加照片",
+    "archiveOff": "上传已关闭——归档模式",
+    "confirmDeleteUser": "确定删除此宾客及其账户？",
+    "confirmDeleteMedia": "确定永久删除此文件？",
+    "you": "你",
+    "closeUploads": "关闭上传",
+    "openUploads": "开放上传"
   },
-  "activity": { "title": "动态", "new_upload": "上传了", "new_reaction": "点赞了", "new_comment": "评论了", "new_favorite": "收藏了" }
+  "activity": {
+    "title": "动态",
+    "new_upload": "上传了",
+    "new_reaction": "点赞了",
+    "new_comment": "评论了",
+    "new_favorite": "收藏了"
+  },
+  "push": {
+    "enable": "开启通知",
+    "disable": "关闭通知",
+    "blocked": "通知已在浏览器设置中被阻止",
+    "unsupported": "此设备不支持通知"
+  }
 }

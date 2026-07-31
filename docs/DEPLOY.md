@@ -11,6 +11,19 @@ executed by the operator, not automatable from a dev machine.
 - [ ] `backend/.env` filled: `DATABASE_URL` (asyncpg → RDS), `REDIS_URL`, OSS
       `STORAGE_*`, `EVENT_PASSWORD_HASH`, `JWT_SECRET`, `VAPID_*`, `CORS_ORIGINS`,
       `DEBUG=false`. Set `NEXT_PUBLIC_API_BASE` / `NEXT_PUBLIC_MEDIA_BASE` (CDN) for the frontend.
+- [ ] **Set `ADMIN_PASSWORD`** (and optionally `ADMIN_USERNAME`) before the first
+      `alembic upgrade head`. The admin account is seeded on migration/startup and
+      defaults to `admin` / `admin12345`, which is public knowledge — anyone who
+      reaches the site could otherwise sign in and delete guests and media. Seeding
+      never overwrites an existing account, so if the default was already created,
+      rotate it by signing in and changing it rather than by editing the env alone.
+
+## Admin access
+The panel lives at `/admin` and is visible only to the admin account. Sign in on the
+normal login screen with the admin username and `ADMIN_PASSWORD` — the shared event
+password does not grant admin. From there: dashboard stats, guest management
+(promote/demote, deactivate/reactivate, delete), media moderation (hide/show, delete),
+CSV export, and the archive-mode switch that closes uploads after the event.
 
 ## Deploy
 ```bash

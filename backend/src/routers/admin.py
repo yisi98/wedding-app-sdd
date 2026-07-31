@@ -7,6 +7,9 @@ from fastapi import APIRouter, Query, Response
 from ..deps import AdminUser, DbDep
 from ..schemas.admin import (
     AdminStats,
+    EventConfigOut,
+    EventConfigUpdate,
+    MediaListResponse,
     UserAdminOut,
     UserListResponse,
     UserUpdateRequest,
@@ -53,15 +56,17 @@ async def delete_user(user_id: int, admin: AdminUser, session: DbDep) -> None:
     await session.commit()
 
 
-@router.get("/media", response_model=list[MediaOut])
+@router.get("/media", response_model=MediaListResponse)
 async def list_media(
     admin: AdminUser,
     session: DbDep,
     limit: Annotated[int, Query(ge=1, le=100)] = 50,
     offset: Annotated[int, Query(ge=0)] = 0,
-) -> list[MediaOut]:
-    items, _ = await admin_service.list_all_media(session, limit, offset)
-    return [MediaOut.model_validate(m) for m in items]
+) -> MediaListResponse:
+    items, has_more = await admin_service.list_all_media(session, limit, offset)
+    return MediaListResponse(
+        items=[MediaOut.model_validate(m) for m in items], has_more=has_more
+    )
 
 
 @router.patch("/media/{media_id}/visibility", response_model=MediaOut)
@@ -71,6 +76,28 @@ async def set_visibility(
     media = await admin_service.set_visibility(session, admin, media_id, body.is_visible)
     await session.commit()
     return MediaOut.model_validate(media)
+
+
+@router.delete("/media/{media_id}", status_code=204)
+async def delete_media(media_id: int, admin: AdminUser, session: DbDep) -> None:
+    await admin_service.delete_media(session, admin, media_id)
+    await session.commit()
+
+
+@router.get("/config", response_model=EventConfigOut)
+async def get_config(admin: AdminUser, session: DbDep) -> EventConfigOut:
+    config = await admin_service.get_event_config(session)
+    await session.commit()
+    return EventConfigOut.model_validate(config)
+
+
+@router.patch("/config", response_model=EventConfigOut)
+async def update_config(
+    body: EventConfigUpdate, admin: AdminUser, session: DbDep
+) -> EventConfigOut:
+    config = await admin_service.update_event_config(session, **body.model_dump())
+    await session.commit()
+    return EventConfigOut.model_validate(config)
 
 
 @router.get("/export/media")

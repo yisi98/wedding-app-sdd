@@ -3,7 +3,12 @@
 from fastapi import APIRouter, status
 
 from ..deps import CurrentUser, DbDep, SettingsDep
-from ..schemas.notifications import ActivityOut, PushSubscribeRequest, VapidKeyResponse
+from ..schemas.notifications import (
+    ActivityOut,
+    PushSubscribeRequest,
+    PushUnsubscribeRequest,
+    VapidKeyResponse,
+)
 from ..services import activity as activity_service
 from ..services import push_service
 
@@ -34,7 +39,7 @@ async def subscribe(body: PushSubscribeRequest, user: CurrentUser, session: DbDe
 
 
 @router.delete("/push/subscribe", status_code=status.HTTP_204_NO_CONTENT)
-async def unsubscribe(body: PushSubscribeRequest, user: CurrentUser, session: DbDep) -> None:
+async def unsubscribe(body: PushUnsubscribeRequest, user: CurrentUser, session: DbDep) -> None:
     await push_service.unsubscribe(session, user, body.endpoint)
     await session.commit()
 

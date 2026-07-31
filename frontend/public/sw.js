@@ -14,6 +14,41 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
+// Web push (FR-024). Without these handlers a delivered push shows nothing at all.
+self.addEventListener("push", (event) => {
+  let payload = {};
+  try {
+    payload = event.data ? event.data.json() : {};
+  } catch {
+    payload = { body: event.data ? event.data.text() : "" };
+  }
+  const title = payload.title || "Our Wedding";
+  event.waitUntil(
+    self.registration.showNotification(title, {
+      body: payload.body || "",
+      icon: "/icon.svg",
+      badge: "/icon.svg",
+      // Collapse bursts of activity into one notification per kind.
+      tag: payload.tag || payload.event_type || "wmp",
+      data: { url: payload.url || "/gallery" },
+    })
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const target = (event.notification.data && event.notification.data.url) || "/gallery";
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clients) => {
+      // Focus an already-open tab rather than piling up new ones.
+      for (const client of clients) {
+        if ("focus" in client) return client.focus();
+      }
+      return self.clients.openWindow(target);
+    })
+  );
+});
+
 // Network-first for API, cache-first with runtime caching for everything else.
 self.addEventListener("fetch", (event) => {
   const { request } = event;
