@@ -122,7 +122,7 @@ export default function GalleryGrid({ refreshKey }: { refreshKey: number }) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "wedding-media.zip";
+    a.download = t("share.archiveFilename");
     a.click();
     URL.revokeObjectURL(url);
   }
@@ -157,7 +157,7 @@ export default function GalleryGrid({ refreshKey }: { refreshKey: number }) {
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder={t("gallery.search")}
-          className="flex-1 rounded border px-2 py-1 text-sm"
+          className="flex-1 rounded border px-2 py-1 text-base sm:text-sm"
         />
       </div>
 
