@@ -65,7 +65,8 @@
     "gallery": "Whole gallery",
     "expired": "This link has expired",
     "close": "Close",
-    "archiveFilename": "Natasha and Yisi Wedding.zip"
+    "archiveFilename": "Natasha and Yisi Wedding.zip",
+    "downloadFailed": "Download failed — check your connection and try again."
   },
   "admin": {
     "stats": "Statistics",
@@ -82,9 +83,7 @@
     "export": "Export CSV",
     "totalReactions": "Reactions",
     "totalComments": "Comments",
-    "uploads7d": "Uploads (7d)",
     "byType": "By type",
-    "byStatus": "By status",
     "topByViews": "Most viewed",
     "searchUsers": "Search guests",
     "delete": "Delete",

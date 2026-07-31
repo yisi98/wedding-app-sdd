@@ -65,7 +65,8 @@
     "gallery": "Вся галерея",
     "expired": "Срок действия ссылки истёк",
     "close": "Закрыть",
-    "archiveFilename": "Свадьба Natasha и Yisi.zip"
+    "archiveFilename": "Свадьба Natasha и Yisi.zip",
+    "downloadFailed": "Не удалось скачать — проверьте соединение и попробуйте снова."
   },
   "admin": {
     "stats": "Статистика",
@@ -82,9 +83,7 @@
     "export": "Экспорт CSV",
     "totalReactions": "Реакции",
     "totalComments": "Комментарии",
-    "uploads7d": "Загрузки (7д)",
     "byType": "По типу",
-    "byStatus": "По статусу",
     "topByViews": "Популярные",
     "searchUsers": "Поиск гостей",
     "delete": "Удалить",

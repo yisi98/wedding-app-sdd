@@ -58,7 +58,7 @@ MESSAGES: dict[str, dict[str, str]] = {
     },
     "archive_filename": {
         "en": "Natasha and Yisi Wedding.zip",
-        "zh": "Natasha和Yisi的婚礼.zip",
+        "zh": "娜塔莎和易斯的婚礼.zip",
         "ru": "Свадьба Natasha и Yisi.zip",
     },
 }
