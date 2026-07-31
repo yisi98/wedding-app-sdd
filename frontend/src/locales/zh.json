@@ -1,6 +1,6 @@
 {
   "app": {
-    "title": "Natasha 和 Yisi 的婚礼"
+    "title": "娜塔莎和易斯的婚礼"
   },
   "login": {
     "displayName": "你的名字",
@@ -65,7 +65,8 @@
     "gallery": "整个相册",
     "expired": "此链接已过期",
     "close": "关闭",
-    "archiveFilename": "Natasha和Yisi的婚礼.zip"
+    "archiveFilename": "娜塔莎和易斯的婚礼.zip",
+    "downloadFailed": "下载失败——请检查网络连接后重试。"
   },
   "admin": {
     "stats": "统计",
@@ -82,9 +83,7 @@
     "export": "导出 CSV",
     "totalReactions": "点赞",
     "totalComments": "评论",
-    "uploads7d": "近7天上传",
     "byType": "按类型",
-    "byStatus": "按状态",
     "topByViews": "最多浏览",
     "searchUsers": "搜索宾客",
     "delete": "删除",
