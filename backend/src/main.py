@@ -48,7 +48,21 @@ def _run_migrations() -> None:
     from alembic import command
 
     cfg = Config(str(Path(__file__).resolve().parent.parent / "alembic.ini"))
-    command.upgrade(cfg, "head")
+    try:
+        command.upgrade(cfg, "head")
+    except Exception as exc:
+        if "already exists" in str(exc):
+            # A wedding.db from before this project switched DEBUG from create_all to
+            # real migrations (see module docstring) has every table but no Alembic
+            # version stamped, so upgrade tries to create tables that are already
+            # there. Local dev data is disposable — starting over is the fix.
+            raise RuntimeError(
+                "Migration failed: the local database has tables but no Alembic "
+                "version recorded (likely created before this project used "
+                "migrations in DEBUG mode). Delete it and start fresh — "
+                "`./scripts/dev.sh --reset`, or `rm backend/wedding.db`."
+            ) from exc
+        raise
 
 
 @asynccontextmanager
