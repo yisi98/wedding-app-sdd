@@ -27,8 +27,8 @@ class MediaOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    uploader_id: int
-    uploader_name: str
+    uploader_id: int | None
+    uploader_name: str | None
     filename: str
     original_filename: str
     file_hash: str

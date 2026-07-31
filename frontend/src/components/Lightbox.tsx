@@ -149,7 +149,7 @@ export default function Lightbox({
         <span className="text-sm">
           {media.original_filename}
           <span className="ml-2 text-white/60">
-            {t("gallery.uploadedBy", { name: media.uploader_name })}
+            {t("gallery.uploadedBy", { name: media.uploader_name ?? t("gallery.deletedGuest") })}
           </span>
           {index >= 0 && items.length > 1 && (
             <span className="ml-2 text-white/40">
@@ -175,6 +175,7 @@ export default function Lightbox({
             lqip={media.lqip}
             alt={media.original_filename}
             className="max-h-[60vh] w-auto"
+            fit="contain"
           />
         )}
 

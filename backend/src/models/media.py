@@ -20,10 +20,14 @@ class Media(Base, TimestampMixin):
     __tablename__ = "media"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    uploader_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True, nullable=False)
+    # Nullable + SET NULL: a deleted guest's photos stay in the album (Principle: photos
+    # are communal), they just lose their attribution.
+    uploader_id: Mapped[int | None] = mapped_column(
+        ForeignKey("users.id", ondelete="SET NULL"), index=True, nullable=True
+    )
     # selectin: async-safe eager load, so `uploader_name` below works for every read path
     # (gallery list, single item, similar, admin, share) without touching each call site.
-    uploader: Mapped[User] = relationship(lazy="selectin")
+    uploader: Mapped[User | None] = relationship(lazy="selectin")
     filename: Mapped[str] = mapped_column(String(255), nullable=False)
     original_filename: Mapped[str] = mapped_column(String(255), nullable=False)
     # SHA-256 content hash — unique dedup key (Principle VI).
@@ -53,5 +57,5 @@ class Media(Base, TimestampMixin):
     is_visible: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
 
     @property
-    def uploader_name(self) -> str:
-        return self.uploader.username
+    def uploader_name(self) -> str | None:
+        return self.uploader.username if self.uploader else None
