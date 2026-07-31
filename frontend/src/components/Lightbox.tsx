@@ -203,7 +203,7 @@ export default function Lightbox({
             onClick={() => react(r)}
             disabled={busy}
             className={`rounded px-2 py-1 disabled:opacity-50 ${
-              myReaction === r ? "bg-blush text-ink" : "bg-white/10"
+              myReaction === r ? "bg-accent text-white" : "bg-white/10"
             }`}
           >
             {EMOJI[r]}
@@ -273,12 +273,12 @@ export default function Lightbox({
               if (e.key === "Enter") addComment();
             }}
             placeholder={t("lightbox.addComment")}
-            className="flex-1 rounded border-none px-2 py-1 text-ink"
+            className="flex-1 rounded border-none px-2 py-1 text-charcoal"
           />
           <button
             onClick={addComment}
             disabled={busy || !text.trim()}
-            className="rounded bg-blush px-3 py-1 text-ink disabled:opacity-50"
+            className="rounded bg-accent px-3 py-1 text-white disabled:opacity-50"
           >
             {t("lightbox.send")}
           </button>

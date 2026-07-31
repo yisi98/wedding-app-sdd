@@ -5,9 +5,9 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        blush: "#e8b4bc",
-        sage: "#9caf88",
-        ink: "#2d2a32",
+        paper: "#f7f3ee",
+        charcoal: "#23211f",
+        accent: "#c17a5a",
       },
     },
   },

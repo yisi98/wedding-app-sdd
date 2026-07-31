@@ -41,9 +41,12 @@ export default function LoginPage() {
 
   return (
     <main className="flex min-h-screen items-center justify-center p-4">
-      <form onSubmit={submit} className="w-full max-w-sm space-y-4 rounded-xl bg-white p-8 shadow">
+      <form
+        onSubmit={submit}
+        className="w-full max-w-sm space-y-4 rounded-md border border-charcoal/10 bg-paper p-8"
+      >
         <div className="flex items-center justify-between">
-          <h1 className="text-xl font-semibold text-blush">{t("app.title")}</h1>
+          <h1 className="font-serif text-xl font-semibold text-accent">{t("app.title")}</h1>
           <LanguageSwitcher />
         </div>
         <p className="text-sm text-gray-500">{t("login.hint")}</p>
@@ -75,7 +78,7 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={busy}
-          className="w-full rounded bg-blush py-2 font-medium text-ink disabled:opacity-50"
+          className="w-full rounded bg-accent py-2 font-medium text-white disabled:opacity-50"
         >
           {t("login.enter")}
         </button>

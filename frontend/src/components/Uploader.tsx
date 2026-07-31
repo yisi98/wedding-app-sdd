@@ -118,8 +118,8 @@ export default function Uploader({ onUploaded }: { onUploaded: () => void }) {
           setDragging(false);
           handleFiles(e.dataTransfer.files);
         }}
-        className={`cursor-pointer rounded-lg border-2 border-dashed p-6 text-center text-sm ${
-          dragging ? "border-blush bg-blush/10" : "border-gray-300"
+        className={`cursor-pointer rounded-md border-2 border-dashed p-6 text-center text-sm ${
+          dragging ? "border-accent bg-accent/10" : "border-charcoal/20"
         }`}
       >
         {t("upload.drop")}
@@ -147,8 +147,8 @@ export default function Uploader({ onUploaded }: { onUploaded: () => void }) {
                   <span>{t("upload.overall", { done: finished, total: items.length })}</span>
                   <span>{overall}%</span>
                 </div>
-                <div className="h-1 w-full overflow-hidden rounded bg-gray-200">
-                  <div className="h-full bg-blush transition-all" style={{ width: `${overall}%` }} />
+                <div className="h-1 w-full overflow-hidden rounded bg-charcoal/10">
+                  <div className="h-full bg-accent transition-all" style={{ width: `${overall}%` }} />
                 </div>
               </div>
             );

@@ -135,7 +135,7 @@ export default function AdminPage() {
       <Nav />
       <main className="mx-auto max-w-5xl space-y-6 p-4">
         <section>
-          <h2 className="mb-2 font-semibold">{t("admin.stats")}</h2>
+          <h2 className="mb-2 font-serif font-semibold">{t("admin.stats")}</h2>
           {stats && (
             <>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -156,7 +156,7 @@ export default function AdminPage() {
                   data={stats.media_by_type}
                   empty={t("admin.noneYet")}
                 />
-                <div className="rounded-lg bg-white p-3 shadow">
+                <div className="rounded-md border border-charcoal/10 bg-paper p-3">
                   <div className="mb-1 text-xs font-medium text-gray-500">
                     {t("admin.topByViews")}
                   </div>
@@ -179,13 +179,13 @@ export default function AdminPage() {
         </section>
 
         <section>
-          <h2 className="mb-2 font-semibold">{t("admin.settings")}</h2>
+          <h2 className="mb-2 font-serif font-semibold">{t("admin.settings")}</h2>
           {config && (
-            <div className="flex flex-wrap items-center gap-3 rounded-lg bg-white p-3 shadow">
+            <div className="flex flex-wrap items-center gap-3 rounded-md border border-charcoal/10 bg-paper p-3">
               <button
                 onClick={toggleUploads}
                 className={`rounded px-3 py-1 text-sm text-white ${
-                  config.uploads_enabled ? "bg-sage" : "bg-red-500"
+                  config.uploads_enabled ? "bg-accent" : "bg-red-500"
                 }`}
               >
                 {config.uploads_enabled ? t("admin.closeUploads") : t("admin.openUploads")}
@@ -199,8 +199,8 @@ export default function AdminPage() {
 
         <section>
           <div className="mb-2 flex items-center justify-between">
-            <h2 className="font-semibold">{t("admin.media")}</h2>
-            <button onClick={exportCsv} className="rounded bg-sage px-3 py-1 text-sm text-white">
+            <h2 className="font-serif font-semibold">{t("admin.media")}</h2>
+            <button onClick={exportCsv} className="rounded bg-accent px-3 py-1 text-sm text-white">
               {t("admin.export")}
             </button>
           </div>
@@ -262,7 +262,7 @@ export default function AdminPage() {
 
         <section>
           <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-            <h2 className="font-semibold">{t("admin.users")}</h2>
+            <h2 className="font-serif font-semibold">{t("admin.users")}</h2>
             <input
               value={userQuery}
               onChange={(e) => search(e.target.value)}
@@ -292,7 +292,7 @@ export default function AdminPage() {
                             onClick={() =>
                               patchUser(u.id, { role: u.role === "admin" ? "guest" : "admin" })
                             }
-                            className="text-blush hover:underline"
+                            className="text-accent hover:underline"
                           >
                             {u.role === "admin" ? t("admin.demote") : t("admin.promote")}
                           </button>
@@ -332,8 +332,8 @@ export default function AdminPage() {
 
 function Stat({ label, value }: { label: string; value: number | string }) {
   return (
-    <div className="rounded-lg bg-white p-3 text-center shadow">
-      <div className="text-2xl font-semibold">{value}</div>
+    <div className="rounded-md border border-charcoal/10 bg-paper p-3 text-center">
+      <div className="font-serif text-2xl font-semibold">{value}</div>
       <div className="text-xs text-gray-500">{label}</div>
     </div>
   );
@@ -350,7 +350,7 @@ function Breakdown({
 }) {
   const entries = Object.entries(data ?? {});
   return (
-    <div className="rounded-lg bg-white p-3 shadow">
+    <div className="rounded-md border border-charcoal/10 bg-paper p-3">
       <div className="mb-1 text-xs font-medium text-gray-500">{title}</div>
       {entries.length === 0 ? (
         <div className="text-xs text-gray-400">{empty}</div>
