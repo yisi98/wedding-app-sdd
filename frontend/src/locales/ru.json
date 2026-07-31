@@ -1,6 +1,6 @@
 {
   "app": {
-    "title": "Наша свадьба"
+    "title": "Свадьба Natasha и Yisi"
   },
   "login": {
     "displayName": "Ваше имя",
@@ -25,6 +25,7 @@
     "videos": "Видео",
     "allUploaders": "Все гости",
     "uploadedBy": "загрузил(а) {{name}}",
+    "deletedGuest": "удалённый гость",
     "selectAllMatching": "Выбрать все подходящие",
     "selecting": "Выбор…",
     "clearSelection": "Снять выбор",
@@ -63,7 +64,8 @@
     "copied": "Скопировано!",
     "gallery": "Вся галерея",
     "expired": "Срок действия ссылки истёк",
-    "close": "Закрыть"
+    "close": "Закрыть",
+    "archiveFilename": "Свадьба Natasha и Yisi.zip"
   },
   "admin": {
     "stats": "Статистика",

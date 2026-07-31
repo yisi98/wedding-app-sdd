@@ -1,7 +1,7 @@
 {
-  "name": "Wedding Media",
-  "short_name": "Wedding",
-  "description": "Share photos and videos from our wedding",
+  "name": "Natasha & Yisi's Wedding",
+  "short_name": "N&Y Wedding",
+  "description": "Share photos and videos from Natasha & Yisi's wedding",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#2d2a32",

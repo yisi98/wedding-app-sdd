@@ -1,6 +1,6 @@
 {
   "app": {
-    "title": "Our Wedding"
+    "title": "Natasha & Yisi's Wedding"
   },
   "login": {
     "displayName": "Your name",
@@ -25,6 +25,7 @@
     "videos": "Videos",
     "allUploaders": "Everyone",
     "uploadedBy": "uploaded by {{name}}",
+    "deletedGuest": "a deleted guest",
     "selectAllMatching": "Select all matching",
     "selecting": "Selecting…",
     "clearSelection": "Clear selection",
@@ -63,7 +64,8 @@
     "copied": "Copied!",
     "gallery": "Whole gallery",
     "expired": "This link has expired",
-    "close": "Close"
+    "close": "Close",
+    "archiveFilename": "Natasha and Yisi Wedding.zip"
   },
   "admin": {
     "stats": "Statistics",
