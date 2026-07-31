@@ -22,7 +22,6 @@ export default function GalleryGrid({ refreshKey }: { refreshKey: number }) {
   const [uploader, setUploader] = useState("");
   const [uploaders, setUploaders] = useState<string[]>([]);
   const [sort, setSort] = useState("newest");
-  const [q, setQ] = useState("");
   const [active, setActive] = useState<Media | null>(null);
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [selectingAll, setSelectingAll] = useState(false);
@@ -36,7 +35,6 @@ export default function GalleryGrid({ refreshKey }: { refreshKey: number }) {
       const params = new URLSearchParams({ sort, limit: String(PAGE), offset: String(nextOffset) });
       if (type) params.set("media_type", type);
       if (uploader) params.set("uploader", uploader);
-      if (q) params.set("q", q);
       setLoading(true);
       try {
         const { data } = await api.get(`/media?${params.toString()}`);
@@ -47,13 +45,13 @@ export default function GalleryGrid({ refreshKey }: { refreshKey: number }) {
         setLoading(false);
       }
     },
-    [offset, sort, type, uploader, q]
+    [offset, sort, type, uploader]
   );
 
   useEffect(() => {
     load(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sort, type, uploader, q, refreshKey]);
+  }, [sort, type, uploader, refreshKey]);
 
   useEffect(() => {
     api.get("/media/uploaders").then(({ data }) => setUploaders(data));
@@ -86,7 +84,7 @@ export default function GalleryGrid({ refreshKey }: { refreshKey: number }) {
   // another (it may include items no longer shown), so changing filters clears it.
   useEffect(() => {
     setSelected(new Set());
-  }, [type, uploader, q]);
+  }, [type, uploader]);
 
   function toggleSelect(id: number) {
     setSelected((prev) => {
@@ -103,7 +101,6 @@ export default function GalleryGrid({ refreshKey }: { refreshKey: number }) {
       const params = new URLSearchParams();
       if (type) params.set("media_type", type);
       if (uploader) params.set("uploader", uploader);
-      if (q) params.set("q", q);
       const { data } = await api.get(`/media/ids?${params.toString()}`);
       setSelected(new Set<number>(data));
     } finally {
@@ -153,12 +150,6 @@ export default function GalleryGrid({ refreshKey }: { refreshKey: number }) {
           <option value="most_viewed">{t("gallery.sortMostViewed")}</option>
           <option value="most_liked">{t("gallery.sortMostLiked")}</option>
         </select>
-        <input
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder={t("gallery.search")}
-          className="flex-1 rounded border px-2 py-1 text-base sm:text-sm"
-        />
       </div>
 
       {items.length > 0 && (

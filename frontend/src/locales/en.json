@@ -19,7 +19,6 @@
   },
   "gallery": {
     "empty": "No photos yet — be the first to upload!",
-    "search": "Search by filename",
     "all": "All",
     "images": "Photos",
     "videos": "Videos",
@@ -42,7 +41,6 @@
     "comments": "Comments",
     "addComment": "Add a comment…",
     "send": "Send",
-    "share": "Share",
     "close": "Close",
     "previous": "Previous photo",
     "next": "Next photo",
@@ -57,15 +55,6 @@
     "failed": "Failed",
     "errorGeneric": "Upload failed — check your connection and try again.",
     "overall": "{{done}} of {{total}} done"
-  },
-  "share": {
-    "title": "Share",
-    "copy": "Copy link",
-    "copied": "Copied!",
-    "gallery": "Whole gallery",
-    "expired": "This link has expired",
-    "close": "Close",
-    "archiveFilename": "Natasha and Yisi Wedding.zip"
   },
   "admin": {
     "stats": "Statistics",

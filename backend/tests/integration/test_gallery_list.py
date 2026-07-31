@@ -1,4 +1,4 @@
-"""T040: GET /media — filters, sort, search, excludes hidden/non-ready (US3)."""
+"""T040: GET /media — filters, sort, excludes hidden/non-ready (US3)."""
 
 from tests.conftest import auth_headers, seed_media, seed_user
 
@@ -18,7 +18,7 @@ async def test_gallery_lists_only_ready_visible(client):
     assert "hidden.png" not in names and "pending.png" not in names
 
 
-async def test_gallery_filters_by_type_and_search(client):
+async def test_gallery_filters_by_type(client):
     headers = await auth_headers(client)
     uid = await seed_user("GalleryBoris")
     await seed_media(uid, filename="beach.png", media_type="image")
@@ -26,9 +26,6 @@ async def test_gallery_filters_by_type_and_search(client):
 
     images = await client.get("/api/v1/media?media_type=image", headers=headers)
     assert {m["original_filename"] for m in images.json()["items"]} == {"beach.png"}
-
-    search = await client.get("/api/v1/media?q=dance", headers=headers)
-    assert {m["original_filename"] for m in search.json()["items"]} == {"dance.mp4"}
 
 
 async def test_gallery_sorts_by_most_viewed(client):

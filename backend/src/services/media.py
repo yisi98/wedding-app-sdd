@@ -153,9 +153,8 @@ def _gallery_filters(
     uploader: str | None,
     date_from: date | None,
     date_to: date | None,
-    q: str | None,
 ):
-    """Shared ready+visible / type / uploader / date / filename filters (FR-015, FR-012)."""
+    """Shared ready+visible / type / uploader / date filters (FR-015)."""
     stmt = stmt.where(Media.status == STATUS_READY, Media.is_visible.is_(True))
     if media_type:
         stmt = stmt.where(Media.media_type == media_type)
@@ -166,8 +165,6 @@ def _gallery_filters(
     if date_to:
         # Inclusive of the whole `date_to` day (created_at is a timestamp).
         stmt = stmt.where(Media.created_at < date_to + timedelta(days=1))
-    if q:
-        stmt = stmt.where(Media.original_filename.ilike(f"%{q}%"))
     return stmt
 
 
@@ -178,14 +175,13 @@ async def list_gallery(
     uploader: str | None = None,
     date_from: date | None = None,
     date_to: date | None = None,
-    q: str | None = None,
     sort: str = "newest",
     limit: int = 24,
     offset: int = 0,
 ) -> tuple[list[Media], bool]:
     """Ready + visible media only (FR-015). Returns (items, has_more)."""
     stmt = _gallery_filters(
-        select(Media), media_type=media_type, uploader=uploader, date_from=date_from, date_to=date_to, q=q
+        select(Media), media_type=media_type, uploader=uploader, date_from=date_from, date_to=date_to
     )
     stmt = stmt.order_by(SORT_COLUMNS.get(sort, SORT_COLUMNS["newest"]), desc(Media.id))
     stmt = stmt.limit(limit + 1).offset(offset)
@@ -201,11 +197,10 @@ async def list_gallery_ids(
     uploader: str | None = None,
     date_from: date | None = None,
     date_to: date | None = None,
-    q: str | None = None,
 ) -> list[int]:
     """All matching media ids (no pagination) — backs "select all matching filter"."""
     stmt = _gallery_filters(
-        select(Media.id), media_type=media_type, uploader=uploader, date_from=date_from, date_to=date_to, q=q
+        select(Media.id), media_type=media_type, uploader=uploader, date_from=date_from, date_to=date_to
     )
     return list((await session.execute(stmt)).scalars().all())
 
