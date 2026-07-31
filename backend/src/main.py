@@ -1,13 +1,21 @@
 """FastAPI application factory.
 
 CORS is environment-driven (research.md): DEBUG allows all origins with credentials off;
-production uses an explicit allow-list with credentials on. In DEBUG the schema is created
-from ORM metadata for zero-setup local runs; production uses Alembic migrations.
+production uses an explicit allow-list with credentials on. DEBUG runs Alembic migrations
+on startup for zero-setup local runs; production applies them as a separate deploy step.
+
+DEBUG used to take a `create_all` shortcut instead of running migrations, but that only
+creates tables that don't exist yet — it silently never applies a schema change (e.g. a new
+nullable/ondelete on an existing column) to a database file left over from an earlier run,
+so a fixed bug would keep reproducing in any dev environment with a pre-existing wedding.db.
+Migrations are idempotent, so running them on every DEBUG startup is still zero-setup.
 """
 
+import asyncio
 import logging
 import time
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -19,8 +27,6 @@ logging.basicConfig(
     level=logging.INFO, format="%(asctime)s %(levelname)s [%(name)s] %(message)s"
 )
 logger = logging.getLogger("wmp")
-from .db import engine
-from .models import Base
 from .models.event_config import SINGLETON_ID, EventConfig
 from .routers import admin as admin_router
 from .routers import auth as auth_router
@@ -35,14 +41,24 @@ from .routers import ws as ws_router
 from .services import auth as auth_service
 
 
+def _run_migrations() -> None:
+    # alembic's env.py drives its own asyncio.run(); called via run_in_executor so it gets
+    # a fresh thread with no event loop already running in it.
+    from alembic.config import Config
+
+    from alembic import command
+
+    cfg = Config(str(Path(__file__).resolve().parent.parent / "alembic.ini"))
+    command.upgrade(cfg, "head")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     settings = get_settings()
     from .db import async_session_factory
 
     if settings.debug:
-        async with engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
+        await asyncio.get_running_loop().run_in_executor(None, _run_migrations)
         # Ensure the singleton event_config row exists.
         async with async_session_factory() as session:
             existing = await session.get(EventConfig, SINGLETON_ID)
