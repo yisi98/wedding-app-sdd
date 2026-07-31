@@ -13,6 +13,7 @@ import os
 
 import bcrypt
 import sqlalchemy as sa
+
 from alembic import op
 
 revision: str = "0004"
