@@ -19,8 +19,6 @@ interface Stats {
   total_comments: number;
   storage_bytes: number;
   media_by_type: Record<string, number>;
-  media_by_status: Record<string, number>;
-  uploads_last_7_days: number;
   top_by_views: { id: number; filename: string; view_count: number }[];
 }
 
@@ -146,22 +144,16 @@ export default function AdminPage() {
                 <Stat label={t("admin.totalViews")} value={stats.total_views} />
                 <Stat label={t("admin.totalReactions")} value={stats.total_reactions} />
                 <Stat label={t("admin.totalComments")} value={stats.total_comments} />
-                <Stat label={t("admin.uploads7d")} value={stats.uploads_last_7_days} />
                 <Stat
                   label={t("admin.storage")}
                   value={`${(stats.storage_bytes / 1e6).toFixed(1)} MB`}
                 />
               </div>
 
-              <div className="mt-3 grid gap-3 sm:grid-cols-3">
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
                 <Breakdown
                   title={t("admin.byType")}
                   data={stats.media_by_type}
-                  empty={t("admin.noneYet")}
-                />
-                <Breakdown
-                  title={t("admin.byStatus")}
-                  data={stats.media_by_status}
                   empty={t("admin.noneYet")}
                 />
                 <div className="rounded-lg bg-white p-3 shadow">
