@@ -29,7 +29,6 @@ from .routers import health as health_router
 from .routers import media as media_router
 from .routers import notifications as notifications_router
 from .routers import objects as objects_router
-from .routers import share as share_router
 from .routers import social as social_router
 from .routers import ws as ws_router
 from .services import auth as auth_service
@@ -104,7 +103,6 @@ def create_app() -> FastAPI:
     # social before media so /media/favorites resolves before /media/{media_id}
     app.include_router(social_router.router)
     app.include_router(media_router.router)
-    app.include_router(share_router.router)
     app.include_router(notifications_router.router)
     app.include_router(ws_router.router)
     app.include_router(admin_router.router)

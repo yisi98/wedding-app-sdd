@@ -26,7 +26,7 @@ class Media(Base, TimestampMixin):
         ForeignKey("users.id", ondelete="SET NULL"), index=True, nullable=True
     )
     # selectin: async-safe eager load, so `uploader_name` below works for every read path
-    # (gallery list, single item, similar, admin, share) without touching each call site.
+    # (gallery list, single item, similar, admin) without touching each call site.
     uploader: Mapped[User | None] = relationship(lazy="selectin")
     filename: Mapped[str] = mapped_column(String(255), nullable=False)
     original_filename: Mapped[str] = mapped_column(String(255), nullable=False)
