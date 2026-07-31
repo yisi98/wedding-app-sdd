@@ -17,6 +17,9 @@ class ShareLink(Base, TimestampMixin):
     media_id: Mapped[int | None] = mapped_column(
         ForeignKey("media.id", ondelete="CASCADE"), nullable=True
     )
-    created_by_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    # Nullable + SET NULL: a share link outlives the guest who created it.
+    created_by_id: Mapped[int | None] = mapped_column(
+        ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+    )
     access_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)

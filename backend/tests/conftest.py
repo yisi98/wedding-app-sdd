@@ -17,6 +17,7 @@ os.environ.setdefault("STORAGE_DIR", tempfile.mkdtemp(prefix="wmp-storage-"))
 
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
+from sqlalchemy import event
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlalchemy.pool import StaticPool
 
@@ -33,6 +34,14 @@ test_engine = create_async_engine(
     poolclass=StaticPool,
 )
 TestSession = async_sessionmaker(test_engine, expire_on_commit=False)
+
+
+# SQLite ignores foreign keys unless told otherwise, unlike PostgreSQL (prod), which always
+# enforces them. Without this, a broken ondelete/nullable FK constraint would pass every
+# test here and only blow up in production.
+@event.listens_for(test_engine.sync_engine, "connect")
+def _enable_sqlite_fk(dbapi_conn, _record):
+    dbapi_conn.execute("PRAGMA foreign_keys=ON")
 
 
 async def _override_get_db():
