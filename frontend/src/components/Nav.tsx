@@ -26,8 +26,8 @@ export default function Nav() {
   }
 
   return (
-    <nav className="flex items-center gap-4 border-b bg-white px-4 py-3">
-      <span className="font-semibold text-blush">{t("app.title")}</span>
+    <nav className="flex items-center gap-4 border-b border-charcoal/10 bg-paper px-4 py-3">
+      <span className="font-serif font-semibold text-accent">{t("app.title")}</span>
       <Link href="/gallery" className="text-sm hover:underline">
         {t("nav.gallery")}
       </Link>

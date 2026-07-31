@@ -4,8 +4,8 @@
   "description": "Share photos and videos from Natasha & Yisi's wedding",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#2d2a32",
-  "theme_color": "#e8b4bc",
+  "background_color": "#f7f3ee",
+  "theme_color": "#c17a5a",
   "icons": [
     { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
   ]

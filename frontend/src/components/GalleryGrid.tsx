@@ -176,7 +176,7 @@ export default function GalleryGrid({ refreshKey }: { refreshKey: number }) {
               <button onClick={() => setSelected(new Set())} className="rounded border px-2 py-1 text-sm">
                 {t("gallery.clearSelection")}
               </button>
-              <button onClick={bulkDownload} className="rounded bg-sage px-3 py-1 text-sm text-white">
+              <button onClick={bulkDownload} className="rounded bg-accent px-3 py-1 text-sm text-white">
                 ⬇ {selected.size}
               </button>
             </>
@@ -203,7 +203,7 @@ export default function GalleryGrid({ refreshKey }: { refreshKey: number }) {
           <button
             onClick={() => load(false)}
             disabled={loading}
-            className="rounded bg-blush px-4 py-2 text-sm disabled:opacity-50"
+            className="rounded bg-accent px-4 py-2 text-sm text-white disabled:opacity-50"
           >
             {loading ? t("gallery.loading") : t("gallery.loadMore")}
           </button>

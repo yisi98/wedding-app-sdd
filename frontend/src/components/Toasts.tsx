@@ -12,7 +12,7 @@ function Toast({ toast, onDone }: { toast: ToastType; onDone: () => void }) {
     return () => clearTimeout(timer);
   }, [onDone]);
   return (
-    <div className="rounded bg-ink px-4 py-2 text-sm text-white shadow-lg">
+    <div className="rounded-md border border-white/10 bg-charcoal px-4 py-2 text-sm text-white">
       <b>{toast.user}</b> {t(`activity.${toast.event_type}`)}
     </div>
   );
