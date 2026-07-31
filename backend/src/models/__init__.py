@@ -9,7 +9,6 @@ from .media import Media
 from .push_subscription import PushSubscription
 from .reaction import Reaction
 from .refresh_token import RefreshToken
-from .share_link import ShareLink
 from .user import User
 
 __all__ = [
@@ -22,6 +21,5 @@ __all__ = [
     "PushSubscription",
     "Reaction",
     "RefreshToken",
-    "ShareLink",
     "User",
 ]

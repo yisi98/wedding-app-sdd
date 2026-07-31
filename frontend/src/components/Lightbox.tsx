@@ -8,7 +8,6 @@ import type { Comment, Media } from "@/lib/types";
 import { useAuthStore } from "@/stores/auth";
 
 import BlurImage from "./BlurImage";
-import ShareDialog from "./ShareDialog";
 
 const REACTIONS = ["like", "love", "laugh"] as const;
 const EMOJI: Record<string, string> = { like: "👍", love: "❤️", laugh: "😂" };
@@ -35,7 +34,6 @@ export default function Lightbox({
   const [myReaction, setMyReaction] = useState<string | null>(null);
   const [favorited, setFavorited] = useState(false);
   const [text, setText] = useState("");
-  const [showShare, setShowShare] = useState(false);
   const [busy, setBusy] = useState(false);
   const touchStartX = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
@@ -67,17 +65,16 @@ export default function Lightbox({
       const el = e.target as HTMLElement | null;
       const typing = el && /^(INPUT|TEXTAREA)$/.test(el.tagName);
       if (e.key === "Escape") {
-        // The share dialog is layered above and closes itself first.
-        if (!showShare) onClose();
+        onClose();
         return;
       }
-      if (typing || showShare) return;
+      if (typing) return;
       if (e.key === "ArrowLeft") goPrev();
       if (e.key === "ArrowRight") goNext();
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [goPrev, goNext, onClose, showShare]);
+  }, [goPrev, goNext, onClose]);
 
   function onTouchStart(e: React.TouchEvent) {
     touchStartX.current = e.touches[0].clientX;
@@ -227,9 +224,6 @@ export default function Lightbox({
         >
           {t("lightbox.download")}
         </a>
-        <button onClick={() => setShowShare(true)} className="rounded bg-white/10 px-2 py-1 text-sm">
-          {t("lightbox.share")}
-        </button>
       </div>
 
       {similar.length > 0 && (
@@ -290,8 +284,6 @@ export default function Lightbox({
           </button>
         </div>
       </div>
-
-      {showShare && <ShareDialog mediaId={media.id} onClose={() => setShowShare(false)} />}
     </div>
   );
 }
