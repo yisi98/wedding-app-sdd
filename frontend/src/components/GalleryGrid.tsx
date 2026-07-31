@@ -118,13 +118,23 @@ export default function GalleryGrid({ refreshKey }: { refreshKey: number }) {
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       body: JSON.stringify({ media_ids: Array.from(selected) }),
     });
+    if (!res.ok) {
+      alert(t("share.downloadFailed"));
+      return;
+    }
     const blob = await res.blob();
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
     a.download = t("share.archiveFilename");
+    // Safari (and some older WebKit builds) only honors a click-triggered download when
+    // the anchor is actually in the document; an unattached element silently no-ops there.
+    document.body.appendChild(a);
     a.click();
-    URL.revokeObjectURL(url);
+    a.remove();
+    // Revoking synchronously can race the browser's own read of the blob URL, so give it
+    // a moment before freeing it.
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
   return (
