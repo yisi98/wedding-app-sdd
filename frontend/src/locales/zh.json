@@ -15,7 +15,8 @@
     "favorites": "收藏",
     "admin": "管理",
     "logout": "退出",
-    "upload": "上传"
+    "upload": "上传",
+    "profile": "我的"
   },
   "gallery": {
     "empty": "还没有照片——快来第一个上传吧！",
