@@ -287,7 +287,7 @@ gallery, present in admin list; non-admin → 403; CSV export
 **Purpose**: Quality bars and go-live gates
 
 - [X] T085 [P] EN/ZH/RU string-parity audit across `frontend/src/locales/*` and `backend/src/i18n/*` (SC-004)
-- [ ] T086 Load test sustaining 150 concurrent users (browse + upload) with a report in `infra/loadtest/` (SC-003) — REOPENED 2026-08-17: the locust script is written, but the 150-user run needs the deployed stack and has never been executed; `infra/loadtest/README.md` holds no run summary. GO-LIVE GATE
+- [ ] T086 Load test sustaining 150 concurrent users (browse + upload) with a report in `infra/loadtest/` (SC-003) — GO-LIVE GATE. Reopened 2026-08-17 (had been marked done without ever running). Script now covers upload as well as browse, grades itself against numeric p95 budgets and exits non-zero on a miss; verified end-to-end against a local backend, including the failure path. **Remaining: the 150-user run against staging**, which needs the deployed stack
 - [X] T087 [P] Security hardening pass: verify no secrets in repo, prod CORS allow-list, presigned-URL scope, rate limiting
 - [X] T088 [P] Confirm `users.email` is excluded from every response; add cleanup-migration note
 - [ ] T089 Run full `quickstart.md` validation (steps 1–9) against a prod-like deploy — BLOCKED: needs deployed stack (core flows covered by 97 integration tests + frontend build; see docs/DEPLOY.md)

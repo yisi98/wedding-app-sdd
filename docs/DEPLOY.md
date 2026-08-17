@@ -46,12 +46,10 @@ withdrawn by constitution amendment 1.1.0.
 ## Load test (SC-003) — see infra/loadtest/
 Run 150 concurrent users against staging; require ~0% errors and p95 within budget.
 
-> **Before this run counts**: `locustfile.py` currently exercises login, gallery list,
-> activity and health only. SC-003 says "browsing **and uploading**", and upload is the
-> expensive path (presigned URL issue, then Celery thumbnail/WebP/pHash work). Add an
-> upload task and state the p95 budget as a number, or the pass will not mean what the
-> success criterion says. The event password is also hardcoded in the script — pass it
-> via the environment instead.
+> The script covers browse **and** upload, and grades itself: it exits non-zero if any
+> p95 budget or the 0.5% failure ratio is missed, so it can gate the release. Set
+> `LOADTEST_EVENT_PASSWORD` in the environment. Budgets and knobs are documented in
+> `infra/loadtest/README.md`. Purge the `loadtest-` accounts and media afterwards.
 
 ## Go-live checklist (T090)
 - [ ] ICP active · [ ] migrations applied · [ ] smoke test green · [ ] load test passed
