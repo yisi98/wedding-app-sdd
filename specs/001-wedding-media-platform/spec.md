@@ -13,7 +13,7 @@
 The platform serves two actors:
 
 - **Guest** — a wedding attendee who uploads media, browses the gallery, reacts,
-  comments, favorites, shares, and downloads.
+  comments, favorites, and downloads.
 - **Admin** — the couple or a helper. Can do everything a guest can, plus moderation,
   user management, statistics, and data export.
 
@@ -138,26 +138,15 @@ appears in personal favorites.
 
 ---
 
-### User Story 5 - Sharing (Priority: P2)
+### User Story 5 - Sharing — WITHDRAWN
 
-A guest or admin creates a share link for the whole gallery or a single item, presented
-with a QR code and a native share/copy option. Links track how often they are used and
-can optionally expire.
+Share links (a tokenised public link to the gallery or a single item, with QR code,
+access counting and optional expiry) were descoped by constitution amendment **1.1.0**
+on 2026-08-17. The story number is retired rather than reused, so US6–US9 keep their
+existing identifiers and every reference in `plan.md` and `tasks.md` stays unambiguous.
 
-**Why this priority**: Sharing broadens reach and is highly valued, but is secondary to
-capturing and viewing media.
-
-**Independent Test**: Generate a gallery share link → open it → reach the shared view;
-access count increments. Generate a single-item link with an expiry → after expiry it no
-longer grants access.
-
-**Acceptance Scenarios**:
-
-1. **Given** the gallery or a single item, **When** a user generates a share link,
-   **Then** they receive a link, a QR code, and native-share/copy options.
-2. **Given** a share link, **When** it is opened, **Then** its access count increments.
-3. **Given** a share link with an expiry, **When** the expiry has passed, **Then** the
-   link no longer grants access.
+Guests who want to pass media on use the bulk-download archive (US9 / FR-035). All
+content remains reachable only behind the shared event password, per FR-037.
 
 ---
 
@@ -268,8 +257,6 @@ archive containing exactly those items.
   behavior of frictionless access, not an error).
 - A guest loses connectivity mid-upload → in-progress files report failure and can be
   retried without creating duplicates.
-- A share link's underlying item is later hidden or deleted → the link no longer exposes
-  it.
 - An admin deactivates a user who is currently active → that user's sessions stop
   granting access.
 - Concurrent identical uploads race on the same content hash → only one copy is stored.
@@ -295,7 +282,9 @@ archive containing exactly those items.
 **Upload (FR-UPLOAD)**
 
 - **FR-006**: Guests MUST be able to upload multiple photos and videos with per-file and
-  aggregate progress feedback.
+  aggregate progress feedback. On pointer devices this MUST include drag-and-drop; on
+  touch devices the entry point is a single upload control that opens the native picker,
+  since drag-and-drop has no touch equivalent.
 - **FR-007**: The system MUST detect duplicate content by a content hash and MUST report
   duplicates without storing them again.
 - **FR-008**: The system MUST reject disallowed file types, images above the image size
@@ -329,12 +318,14 @@ archive containing exactly those items.
 - **FR-018**: Guests MUST be able to favorite items into a personal favorites list.
 - **FR-019**: The system MUST count views per item.
 
-**Sharing (FR-SHARE)**
+**Sharing (FR-SHARE) — WITHDRAWN**
 
-- **FR-020**: Users MUST be able to generate share links for the whole gallery or a
-  single item, presented with a QR code and native-share/copy options.
-- **FR-021**: The system MUST track each share link's access count and support an
-  optional expiry after which the link no longer grants access.
+- **FR-020** *(withdrawn 2026-08-17, constitution 1.1.0)*: share-link generation.
+- **FR-021** *(withdrawn 2026-08-17, constitution 1.1.0)*: share-link access counting
+  and expiry.
+
+These identifiers are retired, not reused. Sharing media outside the app is served by
+FR-035 (bulk download as a single archive).
 
 **Real-Time & Notifications (FR-RT)**
 
@@ -359,8 +350,12 @@ archive containing exactly those items.
 **Administration (FR-ADMIN)**
 
 - **FR-029**: Admins MUST see dashboard statistics: totals (media, users, views,
-  reactions, comments, storage used), media-by-type, media-by-status, uploads in the last
-  7 days, and top items by views.
+  reactions, comments, storage used), media-by-type, and top items by views.
+  *Amended 2026-08-17*: media-by-status and uploads-in-the-last-7-days were removed from
+  the dashboard by couple decision as low-signal for a single-event platform. The
+  `/admin/stats` response still carries `media_by_status` and `uploads_last_7_days`, so
+  the data remains available to the CSV export and to any later UI without a schema or
+  API change.
 - **FR-030**: Admins MUST be able to list, search, and paginate users, promote a guest to
   admin, deactivate, and delete users.
 - **FR-031**: The system MUST prevent an admin from modifying or deleting their own admin
@@ -398,8 +393,6 @@ archive containing exactly those items.
   guest per item.
 - **Comment**: A guest's text comment on a media item, individually removable.
 - **Favorite**: A guest's personal bookmark of a media item; unique per guest per item.
-- **Share Link**: A token granting access to the gallery or a single item, with an
-  access count and optional expiry, attributed to its creator.
 - **Activity Event**: A record of a notable action (new upload/reaction/comment/favorite)
   for the activity feed and live notifications.
 - **Push Subscription**: A user's registration to receive web-push notifications.

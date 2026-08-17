@@ -78,17 +78,6 @@ Storage: PostgreSQL 15 via async SQLAlchemy 2, migrated with Alembic. All tables
 | media_id | FK→media | |
 | — | **UNIQUE(user_id, media_id)** | personal bookmark, once per item |
 
-### share_links
-
-| Field | Type | Notes |
-|-------|------|-------|
-| id | PK | |
-| token | string, **unique** | opaque share token |
-| media_id | FK→media, nullable | **null ⇒ whole-gallery share** |
-| created_by_id | FK→users | attribution |
-| access_count | int | incremented on open |
-| expires_at | datetime, nullable | optional expiry |
-
 ### activity_events
 
 | Field | Type | Notes |
@@ -122,9 +111,8 @@ Storage: PostgreSQL 15 via async SQLAlchemy 2, migrated with Alembic. All tables
 ## Relationships (summary)
 
 - `users` 1─* `media`, `reactions`, `comments`, `favorites`, `refresh_tokens`,
-  `push_subscriptions`, `share_links`, `activity_events`.
-- `media` 1─* `reactions`, `comments`, `favorites`, `activity_events`; 1─* `share_links`
-  (or gallery-level when `media_id` is null).
+  `push_subscriptions`, `activity_events`.
+- `media` 1─* `reactions`, `comments`, `favorites`, `activity_events`.
 - Denormalized counts (reactions/comments/favorites/views) live on `media` for fast
   gallery rendering and are kept in sync by the service layer.
 
@@ -155,5 +143,15 @@ response schema.
 
 - `0001_initial_schema` — users, refresh_tokens, media, event_config (US1–US3 core).
 - `0002_phase3_social_search_sharing` — reactions, comments, favorites, share_links;
-  search/discovery indexes (US4, US5).
+  search/discovery indexes (US4; the share_links half is withdrawn — see below).
 - `0003_phase4_realtime_pwa` — activity_events, push_subscriptions (US6, US7).
+
+## Withdrawn tables
+
+- `share_links` — created by `0002_phase3_social_search_sharing`, dropped by
+  `0005_drop_share_links`. Withdrawn together with FR-020/FR-021 under constitution
+  amendment 1.1.0 (2026-08-17). Both migrations are kept so the history replays cleanly
+  on a fresh database; do not squash them.
+- `media.uploader_id` became nullable in `0006_nullable_uploader_fk` with
+  `ondelete="SET NULL"`, so deleting a user preserves that user's uploads rather than
+  failing on the foreign key.
