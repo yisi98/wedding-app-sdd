@@ -34,7 +34,8 @@ is China-resident with no blocked third-party dependencies.
 MinIO (dev) / AliCloud OSS (prod) via boto3; Redis 7 (cache, Celery broker, pub/sub)
 
 **Testing**: pytest with async integration tests covering every API endpoint (baseline
-119 tests, all passing); frontend component/E2E tests as needed
+**97 tests**, all passing, verified 2026-08-17); a Playwright PWA spec in
+`frontend/tests/` covers manifest, service-worker registration and offline cache
 
 **Target Platform**: Linux server (Docker) behind nginx TLS; mobile-first browsers /
 installable PWA. Deployed on AliCloud for mainland-China access.
@@ -51,8 +52,9 @@ public indexing, secrets only in `.env`); mobile-first + offline-tolerant (PWA +
 worker + LQIP required); SHA-256 dedup; full EN/ZH/RU parity; hard production deadline
 2026-09-15.
 
-**Scale/Scope**: Single wedding event, ~150 guests, ~10 database tables, ~30 API
-endpoints across 9 capability areas, 9 prioritized user stories.
+**Scale/Scope**: Single wedding event, ~150 guests, ~9 database tables, ~28 API
+endpoints across 8 capability areas, 8 active user stories (US5 sharing withdrawn by
+constitution amendment 1.1.0).
 
 ## Constitution Check
 
@@ -63,7 +65,7 @@ endpoints across 9 capability areas, 9 prioritized user stories.
 | I. China-First Infrastructure | AliCloud OSS + RDS + self-hosted assets; no Google/Facebook/AWS/external CDN; ICP filing tracked as a go-live gate. No blocked dependency appears in the dependency list. |
 | II. Frictionless Guest Access | Auth is name + shared event password with get-or-create; no `/register`, no email, no per-user password (see contracts/auth). |
 | III. Privacy by Default | All `/api/v1` routes require the event-gated session; secrets (password hash, JWT secret, VAPID keys, SMTP creds) sourced only from `.env`; no public indexing. |
-| IV. Full-Featured, Not MVP | All 9 user stories (US1–US9) are planned; none descoped. |
+| IV. Full-Featured, Not MVP | US1–US4 and US6–US9 are delivered in full. US5 (share links) is descoped by constitution amendment **1.1.0** (2026-08-17) with couple sign-off and rationale recorded in the Amendment Log — the escape hatch Principle IV requires, not a silent reduction. |
 | V. Mobile-First & Offline-Tolerant | Next.js PWA with manifest, service worker offline cache, and LQIP blur-up (US7) are first-class, not optional. |
 | VI. Deduplication & Integrity | `media.file_hash` is a unique SHA-256 column; upload-init rejects/deduplicates by hash. |
 | VII. Hard-Deadline Discipline | Incremental, independently shippable user stories; MVP (US1–US3) first; deadline 2026-09-15 is SC-010. |
@@ -71,7 +73,13 @@ endpoints across 9 capability areas, 9 prioritized user stories.
 | Quality: 150 concurrent | Load test is a Polish-phase task and a go-live gate. |
 | Quality: EN/ZH/RU parity | i18n scaffolding is Foundational; parity check is a Polish-phase task. |
 
-**Result**: PASS — no violations; Complexity Tracking is empty.
+**Result**: PASS with one recorded amendment. US5 (sharing) is descoped under
+constitution 1.1.0; the decision, rationale and migration impact are in the constitution's
+Amendment Log. No principle is violated and Complexity Tracking remains empty — a
+documented amendment is the sanctioned route under Principle IV, so it is not a deviation
+requiring justification here.
+
+*Re-checked 2026-08-17 after `/speckit-analyze`.*
 
 ## Project Structure
 
@@ -87,7 +95,6 @@ specs/001-wedding-media-platform/
 │   ├── auth.md
 │   ├── media.md
 │   ├── social.md
-│   ├── share.md
 │   ├── downloads.md
 │   ├── notifications.md
 │   ├── admin.md
@@ -106,7 +113,7 @@ backend/
 │   ├── main.py               # FastAPI app factory, router registration, CORS, health
 │   ├── config.py             # get_settings() (lru_cached) from .env
 │   ├── db.py                 # async engine/session
-│   ├── routers/              # HTTP layer: auth, media, social, share, downloads,
+│   ├── routers/              # HTTP layer: auth, media, social, downloads,
 │   │                         #   notifications, admin, ws, health
 │   ├── services/             # business logic: auth, media, social, activity, storage,
 │   │                         #   deduplication, email_service, push_service,
@@ -121,7 +128,7 @@ backend/
 
 frontend/
 ├── src/
-│   ├── app/                  # Next.js App Router routes (login, gallery, admin, share)
+│   ├── app/                  # Next.js App Router routes (login, gallery, admin)
 │   ├── components/           # UI components (gallery grid, lightbox, uploader, toasts)
 │   ├── stores/               # Zustand stores (auth, gallery, realtime)
 │   ├── lib/                  # axios client, ws client, i18n init

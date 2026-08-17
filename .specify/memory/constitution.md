@@ -1,19 +1,30 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version change: (none) → 1.0.0
-Bump rationale: Initial ratification of the project constitution (MAJOR baseline).
-Modified principles: n/a (initial adoption)
+Version change: 1.0.0 → 1.1.0
+Bump rationale: MINOR. Principle IV's mandated feature set is materially narrowed —
+  share links are descoped by explicit couple decision — and the test-coverage quality
+  bar is corrected to the verified suite size. No principle is removed or redefined.
+Modified principles:
+  - IV. Full-Featured, Not MVP — "sharing" removed from the mandated feature list;
+    descope of share links recorded below with rationale.
+Modified sections:
+  - Quality Bars & Additional Constraints — integration-test baseline corrected from
+    119 (aspirational, never achieved) to the verified 97 passing tests.
 Added sections:
-  - Core Principles (I–VII)
-  - Quality Bars & Additional Constraints
-  - Development Workflow & Deadline Governance
-  - Governance
+  - Amendment Log
 Removed sections: none
 Templates requiring updates:
-  - .specify/templates/plan-template.md ✅ compatible (Constitution Check gate is generic; principles map cleanly)
+  - .specify/templates/plan-template.md ✅ compatible (Constitution Check gate is generic)
   - .specify/templates/spec-template.md ✅ compatible (WHAT/WHY sections unaffected)
-  - .specify/templates/tasks-template.md ✅ compatible (test-per-endpoint & i18n parity captured as task types)
+  - .specify/templates/tasks-template.md ✅ compatible
+Downstream artifacts updated in the same change:
+  - specs/001-wedding-media-platform/spec.md (US5, FR-020, FR-021, Share Link entity)
+  - specs/001-wedding-media-platform/plan.md (Constitution Check row IV, test baseline)
+  - specs/001-wedding-media-platform/tasks.md (Phase 7 removed; T069/T086 reopened)
+  - specs/001-wedding-media-platform/contracts/share.md (deleted)
+  - specs/001-wedding-media-platform/data-model.md (share_links table + relationships)
+  - specs/001-wedding-media-platform/quickstart.md (share validation step)
 Follow-up TODOs: none
 -->
 
@@ -56,11 +67,17 @@ with a closed guest list, not publishing to the open web.
 ### IV. Full-Featured, Not MVP
 
 The platform MUST deliver the complete agreed feature set (auth, upload, gallery,
-social engagement, sharing, real-time, notifications, PWA, admin, bulk operations).
-Scope reduction is NOT the default response to schedule pressure; features are
-descoped only by explicit couple decision, documented as a constitution amendment.
-**Rationale**: The couple explicitly chose completeness over a minimal product; this is
-a one-time, non-repeatable event.
+social engagement, real-time, notifications, PWA, admin, bulk operations). Scope
+reduction is NOT the default response to schedule pressure; features are descoped only
+by explicit couple decision, documented as a constitution amendment. **Rationale**: The
+couple explicitly chose completeness over a minimal product; this is a one-time,
+non-repeatable event.
+
+**Descoped by amendment**: *Share links* (public tokenised links to the gallery or a
+single item, with QR code, access counting and optional expiry) were removed from the
+mandated set on 2026-08-17. Content stays reachable only behind the shared event
+password, which is the behaviour Principle III wants anyway; guests who want to pass
+media on use the bulk-download archive instead. See the Amendment Log.
 
 ### V. Mobile-First & Offline-Tolerant
 
@@ -87,7 +104,10 @@ zero value.
 ## Quality Bars & Additional Constraints
 
 - **Test coverage**: Every API endpoint MUST be covered by an integration test. The
-  suite MUST remain green (baseline: 119 passing integration tests).
+  suite MUST remain green and MUST NOT shrink (baseline: **97 passing integration
+  tests**, verified 2026-08-17). The earlier figure of 119 was an estimate recorded at
+  ratification and never matched a real run; it is corrected here rather than carried
+  forward as a false gate.
 - **Load**: The system MUST sustain 150 concurrent users without visible degradation.
   A load test MUST pass before go-live.
 - **Language parity**: Every user-facing string MUST have full parity across English,
@@ -121,4 +141,24 @@ Versioning follows semantic versioning:
 Compliance is reviewed at every pull request. Any deviation from a principle MUST be
 justified in the plan's Complexity Tracking section or the amendment MUST be made first.
 
-**Version**: 1.0.0 | **Ratified**: 2026-07-04 | **Last Amended**: 2026-07-04
+## Amendment Log
+
+### 1.1.0 — 2026-08-17 — Descope share links; correct the test baseline
+
+**Principle IV.** Share links are removed from the mandated feature set.
+
+*Decision*: taken by the couple. *Rationale*: the feature was implemented and then
+removed from the codebase during development; with the 2026-09-15 deployment deadline
+29 days out, rebuilding it competes with the go-live gates that Principle VII protects.
+Tokenised public links also sit in tension with Principle III, which requires all
+content to stay behind the shared event password. Guests who want to pass media on can
+use the bulk-download archive (FR-035), which is unaffected.
+
+*Migration impact*: `share_links` was already dropped by migration `0005_drop_share_links`;
+no further schema change is required. FR-020 and FR-021 are withdrawn and their
+identifiers retired rather than reused, so existing references stay unambiguous. User
+Story 5 is withdrawn; US6–US9 keep their numbers for the same reason.
+
+**Quality bars.** The integration-test baseline is corrected from 119 to the verified 97.
+
+**Version**: 1.1.0 | **Ratified**: 2026-07-04 | **Last Amended**: 2026-08-17
