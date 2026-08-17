@@ -32,17 +32,26 @@ docker compose -f docker-compose.prod.yml build
 docker compose -f docker-compose.prod.yml up -d      # runs alembic upgrade head on start
 ```
 
-## Smoke test (quickstart.md steps 1–10) — T089
+## Smoke test (quickstart.md steps 1–9) — T089
 Run the [quickstart](../specs/001-wedding-media-platform/quickstart.md) validation against
-the deployed URL: login → upload+dedup → gallery → social → share → real-time → PWA
-install/offline → admin moderation → bulk ZIP → `/health`.
+the deployed URL: login → upload+dedup → gallery → social → real-time → PWA
+install/offline → admin moderation → bulk ZIP → `/health`. There is no share step; US5 was
+withdrawn by constitution amendment 1.1.0.
 
-> Automated coverage already proves these flows: `cd backend && uv run pytest` = 62
-> integration tests green, and `cd frontend && npm run build` succeeds. The remaining
-> step is running the same scenarios end-to-end against the deployed stack.
+> Automated coverage already proves these flows: `cd backend && uv run pytest` = 97
+> integration tests green, `cd frontend && npm run test:pwa` = 4 PWA specs green, and
+> `npm run build` succeeds. The remaining step is running the same scenarios end-to-end
+> against the deployed stack, on a real phone over a mainland connection.
 
 ## Load test (SC-003) — see infra/loadtest/
 Run 150 concurrent users against staging; require ~0% errors and p95 within budget.
+
+> **Before this run counts**: `locustfile.py` currently exercises login, gallery list,
+> activity and health only. SC-003 says "browsing **and uploading**", and upload is the
+> expensive path (presigned URL issue, then Celery thumbnail/WebP/pHash work). Add an
+> upload task and state the p95 budget as a number, or the pass will not mean what the
+> success criterion says. The event password is also hardcoded in the script — pass it
+> via the environment instead.
 
 ## Go-live checklist (T090)
 - [ ] ICP active · [ ] migrations applied · [ ] smoke test green · [ ] load test passed
