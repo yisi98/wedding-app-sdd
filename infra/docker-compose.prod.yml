@@ -1,8 +1,17 @@
 # Production stack (AliCloud). Postgres = AliCloud RDS, object storage = AliCloud OSS —
 # both external and configured via backend/.env; not run as containers here.
+#
+# Mainland builds: docker compose reads infra/.env automatically. Set PYTHON_IMAGE,
+# NODE_IMAGE, UV_DEFAULT_INDEX, APT_MIRROR, NPM_REGISTRY, NGINX_IMAGE, REDIS_IMAGE
+# there to pull/build from Aliyun mirrors instead of the global registries.
 services:
   backend:
-    build: ../backend
+    build:
+      context: ../backend
+      args:
+        PYTHON_IMAGE: ${PYTHON_IMAGE:-python:3.12-slim}
+        UV_DEFAULT_INDEX: ${UV_DEFAULT_INDEX:-https://pypi.org/simple/}
+        APT_MIRROR: ${APT_MIRROR:-}
     env_file: ../backend/.env
     restart: always
     command: >
@@ -10,23 +19,37 @@ services:
              uv run uvicorn src.main:app --host 0.0.0.0 --port 8000"
 
   worker:
-    build: ../backend
+    build:
+      context: ../backend
+      args:
+        PYTHON_IMAGE: ${PYTHON_IMAGE:-python:3.12-slim}
+        UV_DEFAULT_INDEX: ${UV_DEFAULT_INDEX:-https://pypi.org/simple/}
+        APT_MIRROR: ${APT_MIRROR:-}
     env_file: ../backend/.env
     restart: always
     command: uv run celery -A src.workers.celery_app worker --loglevel=info
 
   redis:
-    image: redis:7
+    image: ${REDIS_IMAGE:-redis:7}
     restart: always
 
   frontend:
-    build: ../frontend
+    build:
+      context: ../frontend
+      args:
+        NODE_IMAGE: ${NODE_IMAGE:-node:20-slim}
+        NPM_REGISTRY: ${NPM_REGISTRY:-https://registry.npmjs.org}
+        # Baked into the client bundle at build time; runtime env does nothing here.
+        NEXT_PUBLIC_API_BASE: ${NEXT_PUBLIC_API_BASE:-}
+        NEXT_PUBLIC_MEDIA_BASE: ${NEXT_PUBLIC_MEDIA_BASE:-}
+        NEXT_PUBLIC_ICP_NUMBER: ${NEXT_PUBLIC_ICP_NUMBER:-}
+        NEXT_PUBLIC_PSB_NUMBER: ${NEXT_PUBLIC_PSB_NUMBER:-}
+        NEXT_PUBLIC_PSB_CODE: ${NEXT_PUBLIC_PSB_CODE:-}
+        NEXT_PUBLIC_PSB_LOGO: ${NEXT_PUBLIC_PSB_LOGO:-}
     restart: always
-    environment:
-      NEXT_PUBLIC_API_BASE: ${PUBLIC_API_BASE}
 
   nginx:
-    image: nginx:1.27
+    image: ${NGINX_IMAGE:-nginx:1.27}
     restart: always
     depends_on: [backend, frontend]
     ports: ["80:80", "443:443"]

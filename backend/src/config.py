@@ -41,6 +41,9 @@ class Settings(BaseSettings):
     storage_access_key: str | None = None
     storage_secret_key: str | None = None
     storage_bucket: str = "wedding-media"
+    # Region for S3-compatible signing. Required for AliCloud OSS (SigV4), e.g.
+    # cn-beijing for the oss-cn-beijing endpoint; MinIO accepts any value.
+    storage_region: str | None = None
     storage_dir: str = ".data"  # local backend base directory
 
     # Upload validation
