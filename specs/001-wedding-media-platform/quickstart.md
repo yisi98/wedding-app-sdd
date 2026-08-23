@@ -45,20 +45,21 @@ cd frontend && npm install && npm run dev
    lightbox → navigation, download, and a "similar photos" strip.
 4. **Social (US4/SC-007)**: react twice with the same type → net zero; switch type →
    count stays one. Add + delete your own comment. Favorite an item.
-5. **Share (US5)**: create a gallery share link → open it (access count increments).
-6. **Real-time (US6/SC-008)**: with two sessions, act in one → a live toast appears in the
+5. **Real-time (US6/SC-008)**: with two sessions, act in one → a live toast appears in the
    other; `/activity` lists the event.
-7. **PWA (US7/SC-006)**: install to home screen; go offline → previously loaded content
+6. **PWA (US7/SC-006)**: install to home screen; go offline → previously loaded content
    still viewable; images blur up.
-8. **Admin (US8/SC-005, SC-009)**: hide a media item → gone from the guest gallery, still
+7. **Admin (US8/SC-005, SC-009)**: hide a media item → gone from the guest gallery, still
    in `/admin/media`. Non-admin hitting `/admin/*` → 403. Export media CSV.
-9. **Bulk (US9)**: multi-select → bulk download returns one ZIP of those items.
-10. **Health (FR-038)**: `GET /api/v1/health` → 200; stop Redis → 503.
+8. **Bulk (US9)**: multi-select → bulk download returns one ZIP of those items.
+9. **Health (FR-038)**: `GET /api/v1/health` → 200; stop Redis → 503.
+
+US5 (sharing) was withdrawn by constitution amendment 1.1.0; there is no share step.
 
 ## Test suite
 
 ```bash
-cd backend && uv run pytest tests/integration -q   # every endpoint covered (baseline 119)
+cd backend && uv run pytest tests/integration -q   # every endpoint covered (baseline 97)
 ```
 
 ## Go-live gates (before 2026-09-15, SC-010)

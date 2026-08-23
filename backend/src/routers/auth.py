@@ -19,11 +19,11 @@ router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
 
 @router.post("/login", response_model=TokenResponse)
 async def login(body: LoginRequest, session: DbDep, settings: SettingsDep) -> TokenResponse:
-    if not auth_service.verify_event_password(body.event_password, settings):
+    user = await auth_service.authenticate(session, body.display_name, body.event_password, settings)
+    if user is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail=t("invalid_event_password")
         )
-    user = await auth_service.get_or_create_user(session, body.display_name)
     access = auth_service.create_access_token(user, settings)
     refresh = await auth_service.issue_refresh_token(session, user, settings)
     await session.commit()

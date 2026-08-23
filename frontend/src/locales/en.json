@@ -1,26 +1,40 @@
 {
-  "app": { "title": "Our Wedding" },
+  "app": {
+    "title": "Natasha & Yisi's Wedding"
+  },
   "login": {
     "displayName": "Your name",
     "eventPassword": "Event password",
     "enter": "Enter",
     "error": "Incorrect event password",
-    "hint": "Please use your real name to sign in. There's no separate registration — as long as you enter the correct event password, any name will work, but using your real name helps us know who uploaded what."
+    "hint": "Please use your real name to sign in. There's no separate registration — as long as you enter the correct event password, any name will work, but using your real name helps us know who uploaded what.",
+    "showPassword": "Show password"
   },
-  "nav": { "gallery": "Gallery", "favorites": "Favorites", "admin": "Admin", "logout": "Log out", "upload": "Upload" },
+  "nav": {
+    "gallery": "Gallery",
+    "favorites": "Favorites",
+    "admin": "Admin",
+    "logout": "Log out",
+    "upload": "Upload",
+    "profile": "Profile"
+  },
   "gallery": {
     "empty": "No photos yet — be the first to upload!",
-    "search": "Search by filename",
     "all": "All",
     "images": "Photos",
     "videos": "Videos",
     "allUploaders": "Everyone",
     "uploadedBy": "uploaded by {{name}}",
+    "deletedGuest": "a deleted guest",
+    "selectAllMatching": "Select all matching",
+    "selecting": "Selecting…",
+    "clearSelection": "Clear selection",
     "sortNewest": "Newest",
     "sortOldest": "Oldest",
     "sortMostViewed": "Most viewed",
     "sortMostLiked": "Most liked",
-    "loadMore": "Load more"
+    "loadMore": "Load more",
+    "loading": "Loading…"
   },
   "lightbox": {
     "download": "Download",
@@ -28,22 +42,24 @@
     "comments": "Comments",
     "addComment": "Add a comment…",
     "send": "Send",
-    "share": "Share",
-    "close": "Close"
+    "close": "Close",
+    "previous": "Previous photo",
+    "next": "Next photo",
+    "deleteComment": "Delete comment"
   },
   "upload": {
     "drop": "Drag photos & videos here, or click to select",
     "uploading": "Uploading…",
     "done": "Done",
     "duplicate": "Already uploaded",
-    "closed": "Uploads are closed"
+    "closed": "Uploads are closed",
+    "failed": "Failed",
+    "errorGeneric": "Upload failed — check your connection and try again.",
+    "overall": "{{done}} of {{total}} done"
   },
   "share": {
-    "title": "Share",
-    "copy": "Copy link",
-    "copied": "Copied!",
-    "gallery": "Whole gallery",
-    "expired": "This link has expired"
+    "archiveFilename": "Natasha and Yisi Wedding.zip",
+    "downloadFailed": "Download failed — check your connection and try again."
   },
   "admin": {
     "stats": "Statistics",
@@ -57,7 +73,38 @@
     "deactivate": "Deactivate",
     "hide": "Hide",
     "show": "Show",
-    "export": "Export CSV"
+    "export": "Export CSV",
+    "totalReactions": "Reactions",
+    "totalComments": "Comments",
+    "byType": "By type",
+    "topByViews": "Most viewed",
+    "searchUsers": "Search guests",
+    "delete": "Delete",
+    "demote": "Make guest",
+    "activate": "Reactivate",
+    "prev": "Previous",
+    "next": "Next",
+    "noneYet": "Nothing yet",
+    "settings": "Event settings",
+    "archiveOn": "Uploads are OPEN — guests can add photos",
+    "archiveOff": "Uploads are CLOSED — archive mode",
+    "confirmDeleteUser": "Delete this guest and their account?",
+    "confirmDeleteMedia": "Permanently delete this file?",
+    "you": "you",
+    "closeUploads": "Close uploads",
+    "openUploads": "Open uploads"
   },
-  "activity": { "title": "Activity", "new_upload": "uploaded", "new_reaction": "reacted", "new_comment": "commented", "new_favorite": "favorited" }
+  "activity": {
+    "title": "Activity",
+    "new_upload": "uploaded",
+    "new_reaction": "reacted",
+    "new_comment": "commented",
+    "new_favorite": "favorited"
+  },
+  "push": {
+    "enable": "Notify me",
+    "disable": "Stop notifying",
+    "blocked": "Notifications are blocked in your browser settings",
+    "unsupported": "Notifications aren't supported on this device"
+  }
 }

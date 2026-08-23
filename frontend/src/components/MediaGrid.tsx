@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
+
 import { mediaUrl } from "@/lib/api";
 import type { Media } from "@/lib/types";
 
@@ -18,6 +20,7 @@ export default function MediaGrid({
   selected?: Set<number>;
   onToggleSelect?: (id: number) => void;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
       {items.map((m) => (
@@ -36,7 +39,7 @@ export default function MediaGrid({
             </span>
           )}
           <span className="pointer-events-none absolute bottom-1 left-1 max-w-[80%] truncate rounded bg-black/60 px-1 text-xs text-white">
-            {m.uploader_name}
+            {m.uploader_name ?? t("gallery.deletedGuest")}
           </span>
           {selectable && (
             <input

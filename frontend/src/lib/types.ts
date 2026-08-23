@@ -8,8 +8,8 @@ export interface User {
 
 export interface Media {
   id: number;
-  uploader_id: number;
-  uploader_name: string;
+  uploader_id: number | null;
+  uploader_name: string | null;
   filename: string;
   original_filename: string;
   file_hash: string;

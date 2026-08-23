@@ -56,6 +56,11 @@ MESSAGES: dict[str, dict[str, str]] = {
         "zh": "未找到媒体。",
         "ru": "Медиа не найдено.",
     },
+    "archive_filename": {
+        "en": "Natasha and Yisi Wedding.zip",
+        "zh": "娜塔莎和易斯的婚礼.zip",
+        "ru": "Свадьба Natasha и Yisi.zip",
+    },
 }
 
 DEFAULT_LANG = "en"

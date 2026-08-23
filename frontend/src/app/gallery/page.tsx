@@ -18,7 +18,7 @@ export default function GalleryPage() {
     <>
       <Nav />
       <ActivityFeed />
-      <main className="mx-auto max-w-5xl p-4">
+      <main className="mx-auto max-w-5xl p-4 pb-24 md:mx-0 md:ml-56 md:pb-4">
         <Uploader onUploaded={() => setRefreshKey((k) => k + 1)} />
         <GalleryGrid refreshKey={refreshKey} />
       </main>

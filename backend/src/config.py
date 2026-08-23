@@ -23,6 +23,12 @@ class Settings(BaseSettings):
     event_password: str = "dev-only-event-pass"
     event_password_hash: str | None = None
 
+    # Default admin account, seeded when the database is first created. Unlike guests
+    # (who share the event password), this account signs in with its own password.
+    # CHANGE ADMIN_PASSWORD before going live — the default is public knowledge.
+    admin_username: str = "admin"
+    admin_password: str = "dev-only-admin-pass"
+
     # Auth / JWT
     jwt_secret: str = "dev-secret-change-me"
     jwt_algorithm: str = "HS256"
@@ -56,7 +62,12 @@ class Settings(BaseSettings):
             "video/mp4",
             "video/quicktime",
             "video/webm",
+            # Browsers/OSes disagree on the AVI mime type (Chrome on Linux reports
+            # video/vnd.avi; others report video/x-msvideo or video/avi) — accept all.
             "video/x-msvideo",
+            "video/avi",
+            "video/vnd.avi",
+            "video/msvideo",
             "video/x-matroska",
             "video/mpeg",
             "video/3gpp",

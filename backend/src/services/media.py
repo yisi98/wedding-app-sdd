@@ -146,20 +146,16 @@ async def confirm_upload(
 
 # --- US3: Gallery & discovery -------------------------------------------------
 
-async def list_gallery(
-    session: AsyncSession,
+def _gallery_filters(
+    stmt,
     *,
-    media_type: str | None = None,
-    uploader: str | None = None,
-    date_from: date | None = None,
-    date_to: date | None = None,
-    q: str | None = None,
-    sort: str = "newest",
-    limit: int = 24,
-    offset: int = 0,
-) -> tuple[list[Media], bool]:
-    """Ready + visible media only (FR-015). Returns (items, has_more)."""
-    stmt = select(Media).where(Media.status == STATUS_READY, Media.is_visible.is_(True))
+    media_type: str | None,
+    uploader: str | None,
+    date_from: date | None,
+    date_to: date | None,
+):
+    """Shared ready+visible / type / uploader / date filters (FR-015)."""
+    stmt = stmt.where(Media.status == STATUS_READY, Media.is_visible.is_(True))
     if media_type:
         stmt = stmt.where(Media.media_type == media_type)
     if uploader:
@@ -169,14 +165,44 @@ async def list_gallery(
     if date_to:
         # Inclusive of the whole `date_to` day (created_at is a timestamp).
         stmt = stmt.where(Media.created_at < date_to + timedelta(days=1))
-    if q:
-        stmt = stmt.where(Media.original_filename.ilike(f"%{q}%"))
+    return stmt
 
+
+async def list_gallery(
+    session: AsyncSession,
+    *,
+    media_type: str | None = None,
+    uploader: str | None = None,
+    date_from: date | None = None,
+    date_to: date | None = None,
+    sort: str = "newest",
+    limit: int = 24,
+    offset: int = 0,
+) -> tuple[list[Media], bool]:
+    """Ready + visible media only (FR-015). Returns (items, has_more)."""
+    stmt = _gallery_filters(
+        select(Media), media_type=media_type, uploader=uploader, date_from=date_from, date_to=date_to
+    )
     stmt = stmt.order_by(SORT_COLUMNS.get(sort, SORT_COLUMNS["newest"]), desc(Media.id))
     stmt = stmt.limit(limit + 1).offset(offset)
     rows = list((await session.execute(stmt)).scalars().all())
     has_more = len(rows) > limit
     return rows[:limit], has_more
+
+
+async def list_gallery_ids(
+    session: AsyncSession,
+    *,
+    media_type: str | None = None,
+    uploader: str | None = None,
+    date_from: date | None = None,
+    date_to: date | None = None,
+) -> list[int]:
+    """All matching media ids (no pagination) — backs "select all matching filter"."""
+    stmt = _gallery_filters(
+        select(Media.id), media_type=media_type, uploader=uploader, date_from=date_from, date_to=date_to
+    )
+    return list((await session.execute(stmt)).scalars().all())
 
 
 async def list_uploaders(session: AsyncSession) -> list[str]:

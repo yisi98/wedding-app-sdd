@@ -35,6 +35,10 @@ jobs:
       - run: npm ci
       - run: npm run lint --if-present
       - run: npm run build
+      # T069 / SC-006 — installability, service-worker activation, offline shell.
+      # The config builds and serves the app itself, so no extra server step here.
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:pwa
 
   docker-build:
     runs-on: ubuntu-latest

@@ -25,7 +25,7 @@ export default function FavoritesPage() {
   return (
     <>
       <Nav />
-      <main className="mx-auto max-w-5xl p-4">
+      <main className="mx-auto max-w-5xl p-4 pb-24 md:mx-0 md:ml-56 md:pb-4">
         <h1 className="mb-3 text-lg font-semibold">{t("nav.favorites")}</h1>
         {items.length === 0 ? (
           <p className="py-10 text-center text-gray-400">{t("gallery.empty")}</p>
@@ -33,7 +33,14 @@ export default function FavoritesPage() {
           <MediaGrid items={items} onOpen={setActive} />
         )}
       </main>
-      {active && <Lightbox media={active} onClose={() => setActive(null)} onOpenMedia={setActive} />}
+      {active && (
+        <Lightbox
+          media={active}
+          items={items}
+          onClose={() => setActive(null)}
+          onOpenMedia={setActive}
+        />
+      )}
     </>
   );
 }
