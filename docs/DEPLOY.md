@@ -1,5 +1,7 @@
 # Deployment Runbook (AliCloud) — go-live by 2026-09-15
 
+For a mainland-only setup, follow [DEPLOY-CHINA.md](./DEPLOY-CHINA.md) — this file covers the general/Hong Kong path.
+
 Supports T089 (prod-like validation) and T090 (production deploy). These are **go-live
 gates that require live AliCloud infrastructure and an active ICP filing** — they are
 executed by the operator, not automatable from a dev machine.
