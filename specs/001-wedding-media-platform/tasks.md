@@ -291,7 +291,7 @@ gallery, present in admin list; non-admin → 403; CSV export
 - [X] T087 [P] Security hardening pass: verify no secrets in repo, prod CORS allow-list, presigned-URL scope, rate limiting
 - [X] T088 [P] Confirm `users.email` is excluded from every response; add cleanup-migration note
 - [ ] T089 Run full `quickstart.md` validation (steps 1–9) against a prod-like deploy — BLOCKED: needs deployed stack (core flows covered by 97 integration tests + frontend build; see docs/DEPLOY.md)
-- [ ] T090 Production deploy + smoke test on AliCloud with ICP filing active (SC-010, deadline 2026-09-15) — BLOCKED: requires AliCloud account + active ICP filing (operator task; runbook in docs/DEPLOY.md)
+- [ ] T090 Production deploy + smoke test on AliCloud with ICP filing active (SC-010, deadline 2026-09-15) — BLOCKED on the ICP filing (operator task; runbook in docs/DEPLOY.md). Note: filing requires a mainland ECS on a 3-month subscription to already exist, so buying it is step 1 of the filing, not blocked by it. T086/T089 do not need ICP and can run on a Hong Kong region now — see "Staging without ICP" in the runbook
 
 ---
 
