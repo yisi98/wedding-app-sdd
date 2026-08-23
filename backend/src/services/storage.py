@@ -18,7 +18,7 @@ from ..config import get_settings
 
 
 class Storage(Protocol):
-    def presigned_put_url(self, key: str) -> str: ...
+    def presigned_put_url(self, key: str, content_type: str) -> str: ...
     def put(self, key: str, data: bytes) -> None: ...
     def get(self, key: str) -> bytes: ...
     def exists(self, key: str) -> bool: ...
@@ -37,7 +37,7 @@ class LocalStorage:
         path.parent.mkdir(parents=True, exist_ok=True)
         return path
 
-    def presigned_put_url(self, key: str) -> str:
+    def presigned_put_url(self, key: str, content_type: str) -> str:
         # Dev stand-in for a real presigned OSS URL; the client PUTs bytes here.
         return f"/api/v1/media/upload/raw?key={key}"
 
@@ -57,20 +57,34 @@ class LocalStorage:
 class S3Storage:
     """S3-compatible backend (MinIO / AliCloud OSS)."""
 
-    def __init__(self, endpoint: str | None, access_key: str, secret_key: str, bucket: str) -> None:
+    def __init__(
+        self,
+        endpoint: str | None,
+        access_key: str,
+        secret_key: str,
+        bucket: str,
+        region: str | None = None,
+    ) -> None:
         import boto3  # imported lazily so local/dev needs no boto3
 
         self.bucket = bucket
+        # AliCloud OSS signs with SigV4, which requires a region (e.g. cn-beijing for
+        # oss-cn-beijing); without it presigning raises NoRegionError. MinIO accepts any.
         self.client = boto3.client(
             "s3",
             endpoint_url=endpoint,
+            region_name=region,
             aws_access_key_id=access_key,
             aws_secret_access_key=secret_key,
         )
 
-    def presigned_put_url(self, key: str) -> str:
+    def presigned_put_url(self, key: str, content_type: str) -> str:
+        # Content-Type must be part of the signature: the client PUTs with it, and OSS
+        # (unlike MinIO) rejects the request with SignatureDoesNotMatch otherwise.
         return self.client.generate_presigned_url(
-            "put_object", Params={"Bucket": self.bucket, "Key": key}, ExpiresIn=3600
+            "put_object",
+            Params={"Bucket": self.bucket, "Key": key, "ContentType": content_type},
+            ExpiresIn=3600,
         )
 
     def put(self, key: str, data: bytes) -> None:
@@ -96,5 +110,11 @@ class S3Storage:
 def get_storage() -> Storage:
     s = get_settings()
     if s.storage_access_key and s.storage_secret_key:
-        return S3Storage(s.storage_endpoint, s.storage_access_key, s.storage_secret_key, s.storage_bucket)
+        return S3Storage(
+            s.storage_endpoint,
+            s.storage_access_key,
+            s.storage_secret_key,
+            s.storage_bucket,
+            s.storage_region,
+        )
     return LocalStorage(s.storage_dir)
