@@ -1,6 +1,6 @@
 """T074: admin user management — list/search, promote, deactivate, self-guard (US8)."""
 
-from tests.conftest import admin_headers, seed_user
+from tests.conftest import admin_headers, seed_media, seed_user
 
 
 async def _me_id(client, headers) -> int:
@@ -51,3 +51,17 @@ async def test_delete_other_user(client):
     uid = await seed_user("Deletable")
     r = await client.delete(f"/api/v1/admin/users/{uid}", headers=headers)
     assert r.status_code == 204
+
+
+async def test_delete_user_with_uploads_keeps_their_media(client):
+    headers = await admin_headers(client)
+    uid = await seed_user("Uploader")
+    media_id = await seed_media(uid)
+
+    r = await client.delete(f"/api/v1/admin/users/{uid}", headers=headers)
+    assert r.status_code == 204
+
+    media = await client.get(f"/api/v1/media/{media_id}", headers=headers)
+    assert media.status_code == 200
+    assert media.json()["uploader_id"] is None
+    assert media.json()["uploader_name"] is None

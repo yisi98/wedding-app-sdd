@@ -39,3 +39,26 @@ async def test_bulk_download_returns_zip_of_selected(client):
     assert len(names) == 2  # hidden item excluded
     assert any(n.endswith("one.png") for n in names)
     assert any(n.endswith("two.png") for n in names)
+
+
+async def test_bulk_download_empty_selection_is_a_valid_empty_zip(client):
+    headers = await auth_headers(client, "EmptyDownloader")
+    r = await client.post("/api/v1/downloads/bulk", json={"media_ids": []}, headers=headers)
+    assert r.status_code == 200
+    assert zipfile.ZipFile(io.BytesIO(r.content)).namelist() == []
+
+
+async def test_select_all_matching_filter_then_bulk_download(client):
+    """The "select all matching filter" UX: GET /media/ids for the active filter, then
+    bulk-download exactly those ids."""
+    headers = await auth_headers(client, "SelectAllGuest")
+    await _upload_ready(client, headers, "sun.png", (255, 200, 0))
+    await _upload_ready(client, headers, "moon.png", (10, 10, 40))
+
+    ids_resp = await client.get("/api/v1/media/ids?media_type=image", headers=headers)
+    ids = ids_resp.json()
+    assert len(ids) == 2
+
+    r = await client.post("/api/v1/downloads/bulk", json={"media_ids": ids}, headers=headers)
+    names = zipfile.ZipFile(io.BytesIO(r.content)).namelist()
+    assert len(names) == 2

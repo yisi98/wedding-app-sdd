@@ -169,24 +169,24 @@ comment; favorite appears in list; views increment
 
 ---
 
-## Phase 7: User Story 5 - Sharing (Priority: P2)
+## Phase 7: User Story 5 - Sharing — WITHDRAWN
 
-**Goal**: Token share links (gallery or item) with QR, access counting, optional expiry
+**Descoped by constitution amendment 1.1.0 (2026-08-17).** The feature was built, then
+removed from the codebase during development; the amendment records the couple's decision
+to leave it out rather than rebuild it before the 2026-09-15 deadline.
 
-**Independent Test**: Create link → open → resolves + increments; expired link → no access
+T055–T059 are **withdrawn, not completed**. They had been marked `[X]`, but none of their
+artifacts exist: `test_share.py`, `models/share_link.py`, `services/share.py`,
+`routers/share.py`, `components/ShareDialog.tsx`, `app/share/[token]/page.tsx`. The IDs
+are retired and not reused.
 
-### Tests for User Story 5 ⚠️
+- ~~T055 [P] [US5] Integration test for `POST /share` + `GET /share/{token}`~~ — withdrawn
+- ~~T056 [P] [US5] Create `share_link.py` model~~ — withdrawn
+- ~~T057 [US5] Implement `backend/src/services/share.py`~~ — withdrawn
+- ~~T058 [US5] Implement `backend/src/routers/share.py`~~ — withdrawn
+- ~~T059 [P] [US5] Build share UI + share landing~~ — withdrawn
 
-- [X] T055 [P] [US5] Integration test for `POST /share` + `GET /share/{token}` (access count, expiry, hidden-item safety) in `backend/tests/integration/test_share.py`
-
-### Implementation for User Story 5
-
-- [X] T056 [P] [US5] Create `share_link.py` model in `backend/src/models/` (covered by 0002 migration)
-- [X] T057 [US5] Implement `backend/src/services/share.py` (token create, resolve, access-count, expiry, exclude hidden/deleted)
-- [X] T058 [US5] Implement `backend/src/routers/share.py` (`POST /share`, `GET /share/{token}`)
-- [X] T059 [P] [US5] Build share UI (QR code + Web Share API + copy-link) in `frontend/src/components/ShareDialog.tsx` and share landing in `frontend/src/app/share/[token]/page.tsx`
-
-**Checkpoint**: US1–US5 independently functional
+**Checkpoint**: US1–US4 independently functional
 
 ---
 
@@ -225,7 +225,7 @@ images blur up
 
 ### Tests for User Story 7 ⚠️
 
-- [X] T069 [P] [US7] Functional/E2E test: manifest present, service worker registers, offline cache serves prior content in `frontend/tests/pwa.spec.ts`
+- [X] T069 [P] [US7] Functional/E2E test: manifest present, service worker registers, offline cache serves prior content in `frontend/tests/pwa.spec.ts` — reopened and genuinely delivered 2026-08-17: 4 Playwright specs (installability + every manifest icon resolving, worker reaches `activated`, offline reload still renders the shell, `/api/` never cached), run against a production build and wired into CI
 
 ### Implementation for User Story 7
 
@@ -287,11 +287,38 @@ gallery, present in admin list; non-admin → 403; CSV export
 **Purpose**: Quality bars and go-live gates
 
 - [X] T085 [P] EN/ZH/RU string-parity audit across `frontend/src/locales/*` and `backend/src/i18n/*` (SC-004)
-- [X] T086 Load test sustaining 150 concurrent users (browse + upload) with a report in `infra/loadtest/` (SC-003)
+- [ ] T086 Load test sustaining 150 concurrent users (browse + upload) with a report in `infra/loadtest/` (SC-003) — GO-LIVE GATE. Reopened 2026-08-17 (had been marked done without ever running). Script now covers upload as well as browse, grades itself against numeric p95 budgets and exits non-zero on a miss; verified end-to-end against a local backend, including the failure path. **Remaining: the 150-user run against staging**, which needs the deployed stack
 - [X] T087 [P] Security hardening pass: verify no secrets in repo, prod CORS allow-list, presigned-URL scope, rate limiting
 - [X] T088 [P] Confirm `users.email` is excluded from every response; add cleanup-migration note
-- [ ] T089 Run full `quickstart.md` validation (steps 1–10) against a prod-like deploy — BLOCKED: needs deployed stack (core flows covered by 62 tests + frontend build; see docs/DEPLOY.md)
-- [ ] T090 Production deploy + smoke test on AliCloud with ICP filing active (SC-010, deadline 2026-09-15) — BLOCKED: requires AliCloud account + active ICP filing (operator task; runbook in docs/DEPLOY.md)
+- [ ] T089 Run full `quickstart.md` validation (steps 1–9) against a prod-like deploy — BLOCKED: needs deployed stack (core flows covered by 97 integration tests + frontend build; see docs/DEPLOY.md)
+- [ ] T090 Production deploy + smoke test on AliCloud with ICP filing active (SC-010, deadline 2026-09-15) — BLOCKED on the ICP filing (operator task; runbook in docs/DEPLOY.md). Note: filing requires a mainland ECS on a 3-month subscription to already exist, so buying it is step 1 of the filing, not blocked by it. T086/T089 do not need ICP and can run on a Hong Kong region now — see "Staging without ICP" in the runbook
+
+---
+
+## Phase 13: Post-Plan Changes (back-filled 2026-08-17)
+
+**Purpose**: Work that shipped after `/speckit-tasks` ran and never entered the artifacts.
+Recorded here by `/speckit-converge` so `tasks.md` matches the repository. All are already
+merged and covered by the green suite; they are logged for traceability, not to be redone.
+
+### Delivered
+
+- [X] T091 [P] Apply the editorial-monochrome theme (paper/charcoal/terracotta tokens) in `frontend/tailwind.config.ts` and global styles
+- [X] T092 Replace the top nav with a left sidebar on desktop and a bottom tab bar on mobile (`md:` breakpoint) in `frontend/src/components/Nav.tsx`, with custom stroke icons in `frontend/src/components/icons.tsx` (Principle V, mobile-first)
+- [X] T093 Split the upload entry point by input type in `frontend/src/lib/useUploader.ts` and `frontend/src/components/Uploader.tsx`: drag-and-drop on desktop only, a single picker control on mobile. Fixes the silent iOS Safari failure — `input[type=file].click()` must run in the same synchronous task as the tap to keep transient user activation (FR-006, amended)
+- [X] T094 [P] Clear completed items from the upload progress list automatically and add a show/hide toggle to the event-password field (`UploadProgressList.tsx`, `login/page.tsx`)
+- [X] T095 [P] Remove the "By status" and "Uploads (7d)" panels from the admin dashboard; `/admin/stats` keeps returning both fields (FR-029, amended)
+- [X] T096 [P] Rename the event to "Natasha & Yisi's Wedding" across `frontend/src/locales/{en,zh,ru}.json` (Chinese: 娜塔莎和易斯的婚礼) and use the localized name for the bulk-download archive filename (FR-036, SC-004)
+- [X] T097 Fix full-screen photo rendering in iOS Safari — images were zoomed and cropped instead of fitting the viewport (`Lightbox.tsx`, FR-014)
+- [X] T098 Fix admin delete-user failing on the media foreign key: migration `0006_nullable_uploader_fk` makes `media.uploader_id` nullable with `ondelete="SET NULL"`, plus `PRAGMA foreign_keys=ON` for SQLite in `backend/src/db.py`, which ignores FKs by default where PostgreSQL does not (FR-030)
+- [X] T099 Run Alembic on startup via `run_in_executor` in `backend/src/main.py`, and fail with an actionable message when an existing `wedding.db` has tables but no Alembic stamp — `create_all` only creates missing tables and never migrates an existing schema
+- [X] T100 [P] Drop `share_links` (migration `0005_drop_share_links`) and remove the share service, router, model and UI — the change that constitution amendment 1.1.0 later formalised
+
+### Outstanding
+
+- [X] T101 [P] Delete the stale `share.cpython-312.pyc` and `share_link.cpython-312.pyc` bytecode under `backend/src/**/__pycache__/` — the last on-disk trace of the withdrawn module
+
+**Checkpoint**: repository state and specification artifacts agree.
 
 ---
 

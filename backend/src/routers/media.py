@@ -32,7 +32,6 @@ async def list_gallery(
     uploader: Annotated[str | None, Query()] = None,
     date_from: Annotated[date | None, Query()] = None,
     date_to: Annotated[date | None, Query()] = None,
-    q: Annotated[str | None, Query()] = None,
     sort: Annotated[
         Literal["newest", "oldest", "most_viewed", "most_liked"], Query()
     ] = "newest",
@@ -45,7 +44,6 @@ async def list_gallery(
         uploader=uploader,
         date_from=date_from,
         date_to=date_to,
-        q=q,
         sort=sort,
         limit=limit,
         offset=offset,
@@ -54,6 +52,21 @@ async def list_gallery(
         items=[MediaOut.model_validate(m) for m in items],
         has_more=has_more,
         next_offset=(offset + limit) if has_more else None,
+    )
+
+
+@router.get("/ids", response_model=list[int])
+async def list_gallery_ids(
+    user: CurrentUser,
+    session: DbDep,
+    media_type: Annotated[Literal["image", "video"] | None, Query()] = None,
+    uploader: Annotated[str | None, Query()] = None,
+    date_from: Annotated[date | None, Query()] = None,
+    date_to: Annotated[date | None, Query()] = None,
+) -> list[int]:
+    """All media ids matching the given filters — backs "select all matching filter"."""
+    return await media_service.list_gallery_ids(
+        session, media_type=media_type, uploader=uploader, date_from=date_from, date_to=date_to
     )
 
 

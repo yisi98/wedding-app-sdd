@@ -21,5 +21,13 @@ class PushSubscribeRequest(BaseModel):
     auth: str = Field(min_length=1)
 
 
+class PushUnsubscribeRequest(BaseModel):
+    """Only the endpoint identifies the row to remove — requiring the keys as well would
+    force clients to resend values they no longer hold once the browser subscription is
+    already gone."""
+
+    endpoint: str = Field(min_length=1, max_length=512)
+
+
 class VapidKeyResponse(BaseModel):
     public_key: str | None
