@@ -161,7 +161,13 @@ Fill `backend/.env`:
 | `STORAGE_BUCKET` | your bucket name |
 | `REDIS_URL` | `redis://redis:6379/0` |
 | `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` | **leave unset for a mainland deployment** — see the web push note below |
-| `CORS_ORIGINS` | `https://your-domain.cn` |
+| `CORS_ORIGINS` | `["https://your-domain.cn"]` — JSON array; a bare URL crashes pydantic-settings at startup |
+
+> **Compose interpolates `$` inside `backend/.env`** (it is read via `env_file`). Bcrypt
+> hashes like `$2b$12$…` get mangled — the `$salt` segment is treated as an unset
+> variable (warning `The "…" variable is not set`) and blanked out, silently breaking
+> login. Double every `$`: `$$2b$$12$$…`. Same applies to any database password
+> containing `$`.
 
 Frontend values go in `infra/.env` — `docker compose build` forwards them as build args,
 because Next.js bakes `NEXT_PUBLIC_*` into the client bundle **at build time** (runtime
