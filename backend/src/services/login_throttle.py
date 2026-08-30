@@ -44,7 +44,7 @@ async def is_locked(ip: str) -> bool:
         return False
     try:
         return int(await client.get(_key(ip)) or 0) >= MAX_FAILURES
-    except Exception:  # noqa: BLE001 — fail open (see module docstring)
+    except Exception:  # fail open (see module docstring)
         logger.warning("Login throttle lookup failed", exc_info=True)
         return False
 
@@ -58,7 +58,7 @@ async def record_failure(ip: str) -> None:
         pipe.incr(_key(ip))
         pipe.expire(_key(ip), WINDOW_SECONDS)
         await pipe.execute()
-    except Exception:  # noqa: BLE001
+    except Exception:
         logger.warning("Login throttle increment failed", exc_info=True)
 
 
@@ -68,5 +68,5 @@ async def clear_failures(ip: str) -> None:
         return
     try:
         await client.delete(_key(ip))
-    except Exception:  # noqa: BLE001
+    except Exception:
         logger.warning("Login throttle reset failed", exc_info=True)
