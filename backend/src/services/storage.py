@@ -19,6 +19,9 @@ from ..config import get_settings
 
 class Storage(Protocol):
     def presigned_put_url(self, key: str, content_type: str) -> str: ...
+    # Signed read URL for private buckets; None when the backend can't presign
+    # (LocalStorage — the caller then serves the bytes itself).
+    def presigned_get_url(self, key: str, expires: int = 3600) -> str | None: ...
     def put(self, key: str, data: bytes) -> None: ...
     def get(self, key: str) -> bytes: ...
     def exists(self, key: str) -> bool: ...
@@ -40,6 +43,9 @@ class LocalStorage:
     def presigned_put_url(self, key: str, content_type: str) -> str:
         # Dev stand-in for a real presigned OSS URL; the client PUTs bytes here.
         return f"/api/v1/media/upload/raw?key={key}"
+
+    def presigned_get_url(self, key: str, expires: int = 3600) -> str | None:
+        return None
 
     def put(self, key: str, data: bytes) -> None:
         self._path(key).write_bytes(data)
@@ -66,16 +72,31 @@ class S3Storage:
         region: str | None = None,
     ) -> None:
         import boto3  # imported lazily so local/dev needs no boto3
+        from botocore.config import Config
 
         self.bucket = bucket
         # AliCloud OSS signs with SigV4, which requires a region (e.g. cn-beijing for
         # oss-cn-beijing); without it presigning raises NoRegionError. MinIO accepts any.
+        # OSS also rejects path-style URLs (SecondLevelDomainForbidden), so requests
+        # must address the bucket as a virtual host: bucket.oss-cn-beijing.aliyuncs.com.
+        # MinIO (dev) has no MINIO_DOMAIN, so it needs path-style — pick per endpoint.
+        is_oss = endpoint is not None and "aliyuncs.com" in endpoint
         self.client = boto3.client(
             "s3",
             endpoint_url=endpoint,
             region_name=region,
             aws_access_key_id=access_key,
             aws_secret_access_key=secret_key,
+            config=Config(
+                signature_version="s3v4",
+                # boto3 >= 1.36 adds flexible checksums to streaming uploads by default,
+                # encoding the body as STREAMING-UNSIGNED-PAYLOAD-TRAILER — OSS rejects
+                # that with NotImplemented. "when_required" restores the classic
+                # behavior (checksum only when the operation demands one).
+                request_checksum_calculation="when_required",
+                response_checksum_validation="when_required",
+                s3={"addressing_style": "virtual" if is_oss else "path"},
+            ),
         )
 
     def presigned_put_url(self, key: str, content_type: str) -> str:
@@ -85,6 +106,22 @@ class S3Storage:
             "put_object",
             Params={"Bucket": self.bucket, "Key": key, "ContentType": content_type},
             ExpiresIn=3600,
+        )
+
+    def presigned_get_url(self, key: str, expires: int = 3600) -> str | None:
+        # Signed GET for a private bucket. OSS/S3 serve HTTP Range requests natively,
+        # which <video> seeking (iOS Safari requires 206 responses) needs, and this
+        # keeps large media bytes out of the backend process entirely.
+        return self.client.generate_presigned_url(
+            "get_object",
+            Params={
+                "Bucket": self.bucket,
+                "Key": key,
+                # Content is immutable (keys embed the file hash), so the object may be
+                # cached hard even though the signed URL itself is short-lived.
+                "ResponseCacheControl": "public, max-age=31536000, immutable",
+            },
+            ExpiresIn=expires,
         )
 
     def put(self, key: str, data: bytes) -> None:
