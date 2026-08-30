@@ -11,6 +11,11 @@ MESSAGES: dict[str, dict[str, str]] = {
         "zh": "活动密码不正确。",
         "ru": "Неверный пароль мероприятия.",
     },
+    "login_locked": {
+        "en": "Too many failed attempts. Please try again in a few minutes.",
+        "zh": "失败次数过多，请几分钟后再试。",
+        "ru": "Слишком много неудачных попыток. Попробуйте снова через несколько минут.",
+    },
     "invalid_refresh_token": {
         "en": "Invalid or expired session. Please sign in again.",
         "zh": "会话无效或已过期，请重新登录。",
