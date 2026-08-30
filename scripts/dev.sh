@@ -102,8 +102,8 @@ $(bold "Ready.")
   App        http://localhost:$WEB_PORT
   API docs   http://localhost:$API_PORT/docs
 
-  Guest      any name you like + password  dev-only-event-pass
-  Admin      admin  /  dev-only-admin-pass
+  Guest      any name you like + password  $(grep -oP '^EVENT_PASSWORD=\K.*' "$BACKEND/.env" || echo 'see backend/.env')
+  Admin      admin  /  $(grep -oP '^ADMIN_PASSWORD=\K.*' "$BACKEND/.env" || echo 'see backend/.env')
 
   From your phone: connect it to the same wi-fi and open
     http://<this-computer's-LAN-IP>:$WEB_PORT

@@ -18,7 +18,7 @@ executed by the operator, not automatable from a dev machine.
       baked into the client bundle at build time, not read from container env.
 - [ ] **Set `ADMIN_PASSWORD`** (and optionally `ADMIN_USERNAME`) before the first
       `alembic upgrade head`. The admin account is seeded on migration/startup and
-      defaults to `admin` / `dev-only-admin-pass`, which is public knowledge — anyone who
+      defaults to a dev-only placeholder — anyone who reaches the site could otherwise
       reaches the site could otherwise sign in and delete guests and media. Seeding
       never overwrites an existing account, so if the default was already created,
       rotate it by signing in and changing it rather than by editing the env alone.
