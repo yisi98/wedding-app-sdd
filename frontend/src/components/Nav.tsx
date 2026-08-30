@@ -91,23 +91,48 @@ export default function Nav() {
 
       {/* Mobile: fixed bottom tab bar. No drag-and-drop on mobile — the "+" button opens
           the native file picker directly (a real synchronous click, not a delayed one
-          after navigation, which iOS Safari otherwise blocks). */}
-      <nav className="fixed inset-x-0 bottom-0 z-20 flex items-center justify-around border-t border-charcoal/10 bg-paper py-2 md:hidden">
-        <Link href="/gallery" className={linkClass("/gallery", "flex flex-col items-center gap-1 text-[11px]")}>
-          <IconGallery />
-          {t("nav.gallery")}
-        </Link>
-        <Link href="/favorites" className={linkClass("/favorites", "flex flex-col items-center gap-1 text-[11px]")}>
-          <IconStar />
-          {t("nav.favorites")}
-        </Link>
-        <button
-          onClick={() => fileInputRef.current?.click()}
-          aria-label={t("nav.upload")}
-          className="-mt-6 flex h-12 w-12 items-center justify-center rounded-full bg-accent text-white shadow"
-        >
-          <IconPlus width={24} height={24} strokeWidth={2} />
-        </button>
+          after navigation, which iOS Safari otherwise blocks). The "+" is absolutely
+          centered (not part of the flex row) so it stays dead-center for guests (4 tabs)
+          and admins (5 tabs) alike; the w-14 spacer reserves the middle gap. It is
+          vertically centered inside the bar (not a raised FAB) so its top edge lines
+          up with the other tab icons. */}
+      <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-charcoal/10 bg-paper py-2 md:hidden">
+        <div className="relative flex items-stretch">
+          <div className="flex flex-1 items-center justify-around">
+            <Link href="/gallery" className={linkClass("/gallery", "flex flex-col items-center gap-1 text-[11px]")}>
+              <IconGallery />
+              {t("nav.gallery")}
+            </Link>
+            <Link href="/favorites" className={linkClass("/favorites", "flex flex-col items-center gap-1 text-[11px]")}>
+              <IconStar />
+              {t("nav.favorites")}
+            </Link>
+          </div>
+          {/* Center gap reserved for the "+" button */}
+          <div className="w-14" aria-hidden />
+          <div className="flex flex-1 items-center justify-around">
+            {user?.role === "admin" && (
+              <Link href="/admin" className={linkClass("/admin", "flex flex-col items-center gap-1 text-[11px]")}>
+                <IconSliders />
+                {t("nav.admin")}
+              </Link>
+            )}
+            <button
+              onClick={() => setMenuOpen((v) => !v)}
+              className="flex flex-col items-center gap-1 text-[11px] text-charcoal"
+            >
+              <IconPerson />
+              {t("nav.profile")}
+            </button>
+          </div>
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            aria-label={t("nav.upload")}
+            className="absolute left-1/2 top-1/2 z-10 flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-accent text-white shadow"
+          >
+            <IconPlus width={22} height={22} strokeWidth={2} />
+          </button>
+        </div>
         <input
           ref={fileInputRef}
           type="file"
@@ -119,19 +144,6 @@ export default function Nav() {
             e.target.value = "";
           }}
         />
-        {user?.role === "admin" && (
-          <Link href="/admin" className={linkClass("/admin", "flex flex-col items-center gap-1 text-[11px]")}>
-            <IconSliders />
-            {t("nav.admin")}
-          </Link>
-        )}
-        <button
-          onClick={() => setMenuOpen((v) => !v)}
-          className="flex flex-col items-center gap-1 text-[11px] text-charcoal"
-        >
-          <IconPerson />
-          {t("nav.profile")}
-        </button>
       </nav>
 
       {/* Mobile: upload progress, floating above the tab bar regardless of which page
