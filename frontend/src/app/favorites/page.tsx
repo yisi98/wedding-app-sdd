@@ -20,6 +20,12 @@ export default function FavoritesPage() {
     if (ready) api.get("/media/favorites").then(({ data }) => setItems(data)).catch(() => {});
   }, [ready]);
 
+  // A favorited item deleted by its owner: drop it locally instead of refetching.
+  function handleDeleted(id: number) {
+    setItems((prev) => prev.filter((m) => m.id !== id));
+    setActive(null);
+  }
+
   if (!ready) return null;
 
   return (
@@ -39,6 +45,7 @@ export default function FavoritesPage() {
           items={items}
           onClose={() => setActive(null)}
           onOpenMedia={setActive}
+          onDeleted={handleDeleted}
         />
       )}
     </>

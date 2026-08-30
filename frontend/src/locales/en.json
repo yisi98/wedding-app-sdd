@@ -45,7 +45,9 @@
     "close": "Close",
     "previous": "Previous photo",
     "next": "Next photo",
-    "deleteComment": "Delete comment"
+    "deleteComment": "Delete comment",
+    "delete": "Delete",
+    "deleteConfirm": "Delete this permanently? This cannot be undone."
   },
   "upload": {
     "drop": "Drag photos & videos here, or click to select",

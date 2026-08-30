@@ -78,6 +78,12 @@ over-limit or disallowed file → rejected with a clear reason.
    known duration, and its status becomes ready.
 6. **Given** uploads have been globally paused (archive mode), **When** a guest attempts
    to upload, **Then** the attempt is refused with an "uploads closed" message.
+7. **Given** a guest's own uploaded item, **When** they delete it, **Then** it is removed
+   from the gallery along with its stored files; **When** they attempt the same on an item
+   uploaded by anyone else, **Then** the request is refused.
+   *Amended 2026-08-30*: guests may delete their own uploads (FR-039) — originally
+   deletion was admin-only, changed so guests can retract their own mistaken
+   or unwanted uploads without waiting for the couple.
 
 ---
 
@@ -294,6 +300,10 @@ archive containing exactly those items.
   placeholder, extracted capture metadata, and (for video) a duration.
 - **FR-010**: The system MUST support a global switch that pauses all uploads (archive
   mode) and communicates this to guests.
+- **FR-039** *(added 2026-08-30)*: Guests MUST be able to delete their own uploaded media
+  (photo or video), which also removes the stored originals and derivatives; deletion of
+  another user's media MUST be refused. Favorites are strictly personal: a guest's
+  favorites list contains only their own favorites.
 
 **Gallery & Discovery (FR-GALLERY)**
 

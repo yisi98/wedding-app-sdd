@@ -140,6 +140,16 @@ async def list_uploaders(user: CurrentUser, session: DbDep) -> list[str]:
     return await media_service.list_uploaders(session)
 
 
+@router.delete("/{media_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_media(media_id: int, user: CurrentUser, session: DbDep) -> None:
+    """Delete the caller's OWN upload; anyone else's item → 404 (owner-only, FR-039).
+
+    Admins deleting arbitrary media still go through DELETE /admin/media/{id}.
+    """
+    await media_service.delete_own_media(session, user, media_id)
+    await session.commit()
+
+
 @router.get("/{media_id}", response_model=MediaOut)
 async def get_media(media_id: int, user: CurrentUser, session: DbDep) -> MediaOut:
     media = await media_service.get_visible_item(session, media_id, user.language_preference)
