@@ -94,17 +94,22 @@ async def authenticate(
 
 async def ensure_default_admin(session: AsyncSession, settings: Settings) -> None:
     """Create the built-in admin account if it is missing. Idempotent; never overwrites
-    an existing account, so a changed password is not reverted on the next restart."""
+    an existing account, so a changed password is not reverted on the next restart.
+
+    ADMIN_PASSWORD_HASH (pre-hashed bcrypt) is preferred so no plaintext secret sits in
+    the environment; ADMIN_PASSWORD (plaintext) is hashed for dev convenience.
+    """
     existing = (
         await session.execute(select(User).where(User.username == settings.admin_username))
     ).scalar_one_or_none()
     if existing is not None:
         return
+    hashed = settings.admin_password_hash or hash_password(settings.admin_password)
     session.add(
         User(
             username=settings.admin_username,
             role=ROLE_ADMIN,
-            hashed_password=hash_password(settings.admin_password),
+            hashed_password=hashed,
         )
     )
     await session.commit()

@@ -25,9 +25,11 @@ class Settings(BaseSettings):
 
     # Default admin account, seeded when the database is first created. Unlike guests
     # (who share the event password), this account signs in with its own password.
-    # CHANGE ADMIN_PASSWORD before going live — the default is public knowledge.
+    # Prefer ADMIN_PASSWORD_HASH (bcrypt, no plaintext secret in the environment);
+    # ADMIN_PASSWORD is the dev convenience fallback.
     admin_username: str = "admin"
     admin_password: str = "dev-only-admin-pass"
+    admin_password_hash: str | None = None
 
     # Auth / JWT
     jwt_secret: str = "dev-secret-change-me"
@@ -41,6 +43,9 @@ class Settings(BaseSettings):
     storage_access_key: str | None = None
     storage_secret_key: str | None = None
     storage_bucket: str = "wedding-media"
+    # Region for S3-compatible signing. Required for AliCloud OSS (SigV4), e.g.
+    # cn-beijing for the oss-cn-beijing endpoint; MinIO accepts any value.
+    storage_region: str | None = None
     storage_dir: str = ".data"  # local backend base directory
 
     # Upload validation

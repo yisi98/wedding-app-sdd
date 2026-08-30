@@ -70,7 +70,21 @@ photo bytes never pass through the ECS instance. Serve media from OSS as well
 - Same region as the ECS (Beijing). A cross-region bucket adds a hop to every upload.
 - ACL: **private**. The app issues presigned URLs; the storage keys embed a content
   SHA-256, so they are unguessable capability URLs.
-- Enable CORS for the site origin, methods `PUT, GET, HEAD`, so browser uploads work.
+- Enable CORS for the site origin, methods `PUT, GET, HEAD`, **AllowedHeaders `*`** —
+  the browser PUT includes a `Content-Type` header that is part of the signature, and
+  OSS rejects the upload if CORS blocks that header. Expose `ETag` too.
+
+**How media reaches the gallery.** With a private bucket there are exactly two options:
+
+1. **Backend-served (recommended default).** Leave `NEXT_PUBLIC_MEDIA_BASE` empty. The
+   frontend then loads media via `GET /media-object/{key}`, which the backend streams
+   from OSS with its own credentials. Works out of the box, keeps the bucket private.
+   Cost: photo/video bytes pass through the ECS, so the pay-by-traffic bandwidth cap
+   must cover the gallery viewing load, not just API traffic.
+2. **AliCloud CDN (if bandwidth cost bites).** Point a CDN acceleration domain at the
+   bucket with private-bucket back-to-origin authorization (私有 Bucket 回源授权), and
+   set `NEXT_PUBLIC_MEDIA_BASE` to the CDN domain. Note the CDN domain **also needs an
+   ICP filing**, so this cannot be done before Phase 3 completes.
 
 ### 2.4 Database
 
@@ -121,9 +135,14 @@ While this runs, continue to Phase 4 — but keep the site private.
 
 You can run the full stack on the mainland instance now, reachable only by you.
 
+> **Getting the code onto the instance.** `github.com` is blocked or unreliable from
+> mainland ECS. Either push the repo to Aliyun Codeup / a Gitee mirror first, or ship a
+> tarball from your own machine (`git archive -o wedding-app.tar.gz HEAD` → `scp` it up
+> and extract). Do not plan on `git clone` from GitHub working on the instance.
+
 ```bash
-# on the ECS
-git clone <repo> && cd wedding-app-sdd
+# on the ECS (after getting the code up via Codeup/Gitee/scp)
+cd wedding-app-sdd
 cp backend/.env.example backend/.env
 ```
 
@@ -137,20 +156,74 @@ Fill `backend/.env`:
 | `JWT_SECRET` | a long random string |
 | `ADMIN_PASSWORD` | **set before the first migration** — see the warning below |
 | `STORAGE_ENDPOINT` | `https://oss-cn-beijing.aliyuncs.com` |
+| `STORAGE_REGION` | `cn-beijing` — must match the bucket's region; OSS SigV4 signing fails without it |
 | `STORAGE_ACCESS_KEY` / `STORAGE_SECRET_KEY` | a RAM user limited to this bucket, not the root account keys |
 | `STORAGE_BUCKET` | your bucket name |
 | `REDIS_URL` | `redis://redis:6379/0` |
-| `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` | generate a keypair for web push |
-| `CORS_ORIGINS` | `https://your-domain.cn` |
+| `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` | **leave unset for a mainland deployment** — see the web push note below |
+| `CORS_ORIGINS` | `["https://your-domain.cn"]` — JSON array; a bare URL crashes pydantic-settings at startup |
 
-Frontend build environment: `NEXT_PUBLIC_API_BASE=https://your-domain.cn`,
-`NEXT_PUBLIC_MEDIA_BASE` pointing at the OSS/CDN base.
+> **Compose interpolates `$` inside `backend/.env`** (it is read via `env_file`). Bcrypt
+> hashes like `$2b$12$…` get mangled — the `$salt` segment is treated as an unset
+> variable (warning `The "…" variable is not set`) and blanked out, silently breaking
+> login. Double every `$`: `$$2b$$12$$…`. Same applies to any database password
+> containing `$`.
+
+Frontend values go in `infra/.env` — `docker compose build` forwards them as build args,
+because Next.js bakes `NEXT_PUBLIC_*` into the client bundle **at build time** (runtime
+container env has no effect):
+
+- `NEXT_PUBLIC_API_BASE=https://your-domain.cn`
+- `NEXT_PUBLIC_MEDIA_BASE` — leave empty to serve media through the backend (option 1 in
+  2.3), or set to the CDN domain (option 2)
+- `NEXT_PUBLIC_ICP_NUMBER` — added and rebuilt in Phase 5, once the filing is granted
 
 > **Set `ADMIN_PASSWORD` before the first `alembic upgrade head`.** The admin account is
 > seeded during migration and defaults to `admin` / `dev-only-admin-pass`, which is public in this
 > repository. Seeding never overwrites an existing account, so if the default is created
 > once, changing the env afterwards does nothing — you would have to log in and change it
 > by hand. Anyone reaching the site could otherwise delete every guest and photo.
+
+> **Web push on the mainland.** Guests' browsers register push subscriptions with the
+> push service built into their browser — for Chrome-family Android, that is FCM
+> (`fcm.googleapis.com`), which is blocked in mainland China, so those messages would
+> never arrive. Leaving the VAPID keys unset is the correct mainland configuration: the
+> backend then skips sending entirely and the frontend hides the push toggle, so nothing
+> promises what cannot be delivered. Guests with the app open still get real-time updates
+> through the WebSocket layer, which is the reliable path for domestic users.
+
+### Building images on the mainland
+
+Docker Hub, PyPI, and the npm registry are slow or unreachable from a mainland host.
+Two levers, both off by default (without them the build behaves exactly as elsewhere):
+
+**1. Docker Hub mirror accelerator** — fixes every image pull (`nginx:1.27`, `redis:7`,
+and the Python/Node bases). Create `/etc/docker/daemon.json` on the ECS:
+
+```json
+{ "registry-mirrors": ["https://<your-accelerator>.mirror.aliyuncs.com"] }
+```
+
+The accelerator URL comes from the Aliyun console: Container Registry → Mirror
+Accelerator (容器镜像服务 → 镜像加速器). Restart Docker afterwards.
+
+**2. Build-time mirrors** — if the accelerator is not enough, create `infra/.env`
+(docker compose reads it automatically; it is git-ignored):
+
+```
+PYTHON_IMAGE=<mirror-host>/python:3.12-slim
+NODE_IMAGE=<mirror-host>/node:20-slim
+UV_DEFAULT_INDEX=https://mirrors.aliyun.com/pypi/simple/
+APT_MIRROR=mirrors.aliyun.com
+NPM_REGISTRY=https://registry.npmmirror.com
+# runtime pulls, only needed if daemon.json mirrors are unavailable:
+NGINX_IMAGE=<mirror-host>/nginx:1.27
+REDIS_IMAGE=<mirror-host>/redis:7
+```
+
+Then build normally — `docker compose -f docker-compose.prod.yml build` picks the values
+up. Aliyun Container Registry (ACR) hosts mirrors of the official images, or use any
+trusted mirror reachable from the instance.
 
 Bring it up on the temporary port by changing the nginx port mapping in
 `infra/docker-compose.prod.yml` from `"443:443"` to `"8443:443"`, then:

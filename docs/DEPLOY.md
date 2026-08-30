@@ -11,8 +11,11 @@ executed by the operator, not automatable from a dev machine.
 - [ ] AliCloud RDS (PostgreSQL 15), Redis, and OSS bucket provisioned in a mainland region.
 - [ ] TLS certs placed in `infra/nginx/certs/` (`fullchain.pem`, `privkey.pem`).
 - [ ] `backend/.env` filled: `DATABASE_URL` (asyncpg → RDS), `REDIS_URL`, OSS
-      `STORAGE_*`, `EVENT_PASSWORD_HASH`, `JWT_SECRET`, `VAPID_*`, `CORS_ORIGINS`,
-      `DEBUG=false`. Set `NEXT_PUBLIC_API_BASE` / `NEXT_PUBLIC_MEDIA_BASE` (CDN) for the frontend.
+      `STORAGE_*` (including `STORAGE_REGION`, required for OSS signing), `EVENT_PASSWORD_HASH`,
+      `JWT_SECRET`, `CORS_ORIGINS`, `DEBUG=false`. Leave `VAPID_*` unset on a mainland
+      deployment (FCM is unreachable there). Frontend values (`NEXT_PUBLIC_API_BASE`,
+      `NEXT_PUBLIC_MEDIA_BASE`, `NEXT_PUBLIC_ICP_NUMBER`) go in `infra/.env` — they are
+      baked into the client bundle at build time, not read from container env.
 - [ ] **Set `ADMIN_PASSWORD`** (and optionally `ADMIN_USERNAME`) before the first
       `alembic upgrade head`. The admin account is seeded on migration/startup and
       defaults to `admin` / `dev-only-admin-pass`, which is public knowledge — anyone who

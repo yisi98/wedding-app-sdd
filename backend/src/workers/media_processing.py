@@ -263,3 +263,48 @@ async def process_media(session: AsyncSession, media: Media) -> None:
     except Exception:  # noqa: BLE001 — treat any processing error as a failed item
         media.status = STATUS_FAILED
     await session.flush()
+
+
+def _process_media_task(media_id: int) -> None:
+    """Celery entrypoint: run process_media in the worker with its own DB session.
+
+    Registered by name ("process_media") because services.media dispatches via
+    send_task to avoid importing this module in the web process.
+    """
+    import asyncio
+
+    from ..db import async_session_factory
+    from ..models.media import STATUS_PROCESSING
+
+    async def _run() -> None:
+        async with async_session_factory() as session:
+            media = await session.get(Media, media_id)
+            if media is None or media.status != STATUS_PROCESSING:
+                return  # already processed, deleted, or never confirmed
+            await process_media(session, media)
+            await session.commit()
+
+    asyncio.run(_run())
+
+
+try:
+    from celery.signals import worker_process_init
+
+    @worker_process_init.connect
+    def _reset_engine_after_fork(**_kwargs) -> None:
+        # The Celery parent imports this module (registering the task), which builds the
+        # engine and its asyncpg pool — then forks children that inherit the same
+        # underlying sockets. Two children using them concurrently raises
+        # asyncpg's "another operation is in progress". Drop the pool (without closing
+        # the still-shared sockets) so every child lazily opens its own connections.
+        from .. import db
+
+        db.engine.sync_engine.dispose(close=False)
+
+    # Register the task when Celery is importable. In dev/test without Redis this
+    # module is still imported (eager path) but the decorator is never dispatched.
+    from .celery_app import celery_app
+
+    process_media_task = celery_app.task(name="process_media")(_process_media_task)
+except ImportError:  # pragma: no cover — celery is a hard dependency; defensive only
+    process_media_task = _process_media_task

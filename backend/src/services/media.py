@@ -107,7 +107,7 @@ async def init_upload(
                 "media_id": existing.id if existing else None,
             },
         )
-    upload_url = get_storage().presigned_put_url(storage_key)
+    upload_url = get_storage().presigned_put_url(storage_key, body.mime_type)
     return media, upload_url
 
 
