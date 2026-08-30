@@ -1,6 +1,6 @@
 """Auth router — implements contracts/auth.md (US1 / FR-AUTH). No /register endpoint."""
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, Request, status
 
 from ..deps import CurrentUser, DbDep, SettingsDep
 from ..i18n import t
@@ -13,17 +13,38 @@ from ..schemas.auth import (
     UserOut,
 )
 from ..services import auth as auth_service
+from ..services import login_throttle
 
 router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
 
 
+def _client_ip(request: Request) -> str:
+    """Real client IP. Behind nginx the peer is the nginx container, so trust the first
+    X-Forwarded-For hop (nginx sets it from $remote_addr); fall back to the socket peer
+    for direct dev connections."""
+    forwarded = request.headers.get("x-forwarded-for")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+    return request.client.host if request.client else "unknown"
+
+
 @router.post("/login", response_model=TokenResponse)
-async def login(body: LoginRequest, session: DbDep, settings: SettingsDep) -> TokenResponse:
+async def login(
+    body: LoginRequest, request: Request, session: DbDep, settings: SettingsDep
+) -> TokenResponse:
+    ip = _client_ip(request)
+    if await login_throttle.is_locked(ip):
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=t("login_locked"),
+        )
     user = await auth_service.authenticate(session, body.display_name, body.event_password, settings)
     if user is None:
+        await login_throttle.record_failure(ip)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail=t("invalid_event_password")
         )
+    await login_throttle.clear_failures(ip)
     access = auth_service.create_access_token(user, settings)
     refresh = await auth_service.issue_refresh_token(session, user, settings)
     await session.commit()

@@ -25,9 +25,11 @@ class Settings(BaseSettings):
 
     # Default admin account, seeded when the database is first created. Unlike guests
     # (who share the event password), this account signs in with its own password.
-    # CHANGE ADMIN_PASSWORD before going live — the default is public knowledge.
+    # Prefer ADMIN_PASSWORD_HASH (bcrypt, no plaintext secret in the environment);
+    # ADMIN_PASSWORD is the dev convenience fallback.
     admin_username: str = "admin"
     admin_password: str = "dev-only-admin-pass"
+    admin_password_hash: str | None = None
 
     # Auth / JWT
     jwt_secret: str = "dev-secret-change-me"
