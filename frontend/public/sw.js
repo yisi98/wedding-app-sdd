@@ -1,5 +1,8 @@
 // Service worker: offline-tolerant caching (US7 / Principle V).
-const CACHE = "wmp-v1";
+// v2: pages are network-first so deployments are actually picked up — v1 served the
+// app shell cache-first, which froze guests on old JS bundles forever. Only the
+// content-hashed build output stays cache-first, because those URLs are immutable.
+const CACHE = "wmp-v2";
 const APP_SHELL = ["/", "/gallery", "/manifest.webmanifest", "/icon.svg"];
 
 self.addEventListener("install", (event) => {
@@ -49,23 +52,39 @@ self.addEventListener("notificationclick", (event) => {
   );
 });
 
-// Network-first for API, cache-first with runtime caching for everything else.
+// API is never cached. Content-hashed build assets (immutable URLs) are cache-first;
+// everything else — pages, the manifest — is network-first with the cache as an
+// offline fallback, so a redeploy shows up on the next visit instead of never.
 self.addEventListener("fetch", (event) => {
   const { request } = event;
   if (request.method !== "GET") return;
   const url = new URL(request.url);
   if (url.pathname.startsWith("/api/")) return; // don't cache API responses
 
+  if (url.pathname.startsWith("/_next/static/")) {
+    event.respondWith(
+      caches.match(request).then(
+        (cached) =>
+          cached ||
+          fetch(request).then((response) => {
+            const copy = response.clone();
+            caches.open(CACHE).then((c) => c.put(request, copy)).catch(() => {});
+            return response;
+          })
+      )
+    );
+    return;
+  }
+
   event.respondWith(
-    caches.match(request).then((cached) => {
-      const network = fetch(request)
-        .then((response) => {
-          const copy = response.clone();
-          caches.open(CACHE).then((c) => c.put(request, copy)).catch(() => {});
-          return response;
-        })
-        .catch(() => cached);
-      return cached || network;
-    })
+    fetch(request)
+      .then((response) => {
+        const copy = response.clone();
+        caches.open(CACHE).then((c) => c.put(request, copy)).catch(() => {});
+        return response;
+      })
+      .catch(() =>
+        caches.match(request).then((cached) => cached || Response.error())
+      )
   );
 });
