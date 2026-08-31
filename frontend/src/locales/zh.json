@@ -45,7 +45,9 @@
     "close": "关闭",
     "previous": "上一张",
     "next": "下一张",
-    "deleteComment": "删除评论"
+    "deleteComment": "删除评论",
+    "delete": "删除",
+    "deleteConfirm": "永久删除吗？此操作无法撤销。"
   },
   "upload": {
     "drop": "将照片和视频拖到此处，或点击选择",
@@ -55,6 +57,8 @@
     "closed": "上传已关闭",
     "failed": "失败",
     "errorGeneric": "上传失败——请检查网络连接后重试。",
+    "typeNotAllowed": "不支持此文件类型。",
+    "failedCount": "{{count}} 个失败",
     "overall": "已完成 {{done}} / {{total}}"
   },
   "share": {

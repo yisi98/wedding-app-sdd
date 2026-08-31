@@ -4,7 +4,8 @@ Guests share one event password and carry a sentinel in ``hashed_password``; thi
 instead holds a real bcrypt hash and signs in with its own password, which is what makes
 the admin panel reachable on a fresh deployment.
 
-The password is read from ADMIN_PASSWORD (default ``dev-only-admin-pass``) at upgrade time. The
+The password is read from ADMIN_PASSWORD (dev default ``dev-only-admin-pass``; set the
+env var or ADMIN_PASSWORD_HASH for real deployments) at upgrade time. The
 insert is skipped when an account with that username already exists, so re-running is
 safe and never clobbers a password changed after the fact.
 """

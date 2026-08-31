@@ -17,6 +17,7 @@ directly unit-testable. `process_media` is called eagerly in dev/test and via Ce
 import base64
 import io
 import json
+import logging
 import shutil
 import subprocess
 import tempfile
@@ -24,8 +25,12 @@ from dataclasses import dataclass, field
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..models.media import MEDIA_IMAGE, STATUS_FAILED, STATUS_READY, Media
+from ..models.activity_event import EVENT_NEW_UPLOAD
+from ..models.media import MEDIA_IMAGE, STATUS_FAILED, STATUS_PROCESSING, STATUS_READY, Media
+from ..models.user import User
 from ..services.storage import get_storage
+
+logger = logging.getLogger(__name__)
 
 THUMBNAIL_SIZE = (400, 400)
 LQIP_WIDTH = 16
@@ -265,8 +270,37 @@ async def process_media(session: AsyncSession, media: Media) -> None:
     await session.flush()
 
 
+async def process_and_announce(session: AsyncSession, media_id: int) -> None:
+    """Process a confirmed upload and, once it is ready, announce it to clients.
+
+    The Celery task body, factored out so tests can drive it on their own session.
+    """
+    media = await session.get(Media, media_id)
+    if media is None or media.status != STATUS_PROCESSING:
+        return  # already processed, deleted, or never confirmed
+    await process_media(session, media)
+    await session.commit()
+
+    # Announce only after the READY status is committed: the gallery lists
+    # READY media only, and in this (Celery) path confirm_upload returned while
+    # the item was still PROCESSING, so announcing there refreshed clients too
+    # early and the new item never appeared until a manual reload. The dev-only
+    # eager path still announces from confirm_upload itself. Never let a
+    # notification failure lose an item the worker just finished processing.
+    if media.status == STATUS_READY and media.uploader_id is not None:
+        try:
+            user = await session.get(User, media.uploader_id)
+            if user is not None:
+                from ..services import activity as activity_service
+
+                await activity_service.record(session, EVENT_NEW_UPLOAD, user, media.id)
+                await session.commit()
+        except Exception:
+            logger.warning("Could not announce ready media %s", media_id, exc_info=True)
+
+
 def _process_media_task(media_id: int) -> None:
-    """Celery entrypoint: run process_media in the worker with its own DB session.
+    """Celery entrypoint: run process_and_announce in the worker with its own DB session.
 
     Registered by name ("process_media") because services.media dispatches via
     send_task to avoid importing this module in the web process.
@@ -274,15 +308,10 @@ def _process_media_task(media_id: int) -> None:
     import asyncio
 
     from ..db import async_session_factory
-    from ..models.media import STATUS_PROCESSING
 
     async def _run() -> None:
         async with async_session_factory() as session:
-            media = await session.get(Media, media_id)
-            if media is None or media.status != STATUS_PROCESSING:
-                return  # already processed, deleted, or never confirmed
-            await process_media(session, media)
-            await session.commit()
+            await process_and_announce(session, media_id)
 
     asyncio.run(_run())
 

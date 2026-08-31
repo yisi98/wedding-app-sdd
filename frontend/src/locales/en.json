@@ -45,7 +45,9 @@
     "close": "Close",
     "previous": "Previous photo",
     "next": "Next photo",
-    "deleteComment": "Delete comment"
+    "deleteComment": "Delete comment",
+    "delete": "Delete",
+    "deleteConfirm": "Delete this permanently? This cannot be undone."
   },
   "upload": {
     "drop": "Drag photos & videos here, or click to select",
@@ -55,6 +57,8 @@
     "closed": "Uploads are closed",
     "failed": "Failed",
     "errorGeneric": "Upload failed — check your connection and try again.",
+    "typeNotAllowed": "This file type is not allowed.",
+    "failedCount": "{{count}} failed",
     "overall": "{{done}} of {{total}} done"
   },
   "share": {

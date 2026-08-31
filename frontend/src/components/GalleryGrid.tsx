@@ -95,6 +95,13 @@ export default function GalleryGrid({ refreshKey }: { refreshKey: number }) {
     });
   }
 
+  // An upload was deleted by its owner from the lightbox: drop it from the grid and
+  // close the lightbox (its `media` object no longer exists).
+  function handleDeleted(id: number) {
+    setItems((prev) => prev.filter((m) => m.id !== id));
+    setActive(null);
+  }
+
   async function selectAllMatching() {
     setSelectingAll(true);
     try {
@@ -216,6 +223,7 @@ export default function GalleryGrid({ refreshKey }: { refreshKey: number }) {
           items={items}
           onClose={() => setActive(null)}
           onOpenMedia={setActive}
+          onDeleted={handleDeleted}
         />
       )}
     </div>

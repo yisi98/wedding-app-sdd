@@ -55,8 +55,9 @@ It creates `backend/.env` and `frontend/.env.local` on first run, installs
 dependencies, and starts both servers. Requires `uv` and Node 20+; `ffmpeg` is optional
 (without it videos still upload, but get no thumbnail, duration, or transcode).
 
-Sign in with **any name** plus the event password `dev-only-event-pass`, or as the
-built-in admin: **`admin` / `dev-only-admin-pass`**.
+Sign in with **any name** plus the event password (the `EVENT_PASSWORD` value that
+`dev.sh` writes into `backend/.env`), or as the built-in admin (`admin` / the
+`ADMIN_PASSWORD` value).
 
 To reach it from a phone on the same wi-fi, browse to `http://<your-LAN-IP>:3000` and
 point `NEXT_PUBLIC_API_BASE` in `frontend/.env.local` at `http://<your-LAN-IP>:8000` —
@@ -110,8 +111,9 @@ specs/       Spec-Kit artifacts for feature 001
 - **Auth**: display name + one shared event password; accounts auto-created (get-or-create).
   No email, no per-user password, no registration.
 - **Admin**: one built-in account, seeded automatically when the database is created —
-  username `admin`, password `dev-only-admin-pass` (override with `ADMIN_USERNAME` /
-  `ADMIN_PASSWORD`). It signs in on the same screen as guests but with its own password;
+  username `admin`, password from `ADMIN_PASSWORD` (override with `ADMIN_USERNAME` /
+  `ADMIN_PASSWORD`; seed from a bcrypt hash with `ADMIN_PASSWORD_HASH`). It signs in on
+  the same screen as guests but with its own password;
   the shared event password never grants admin. **Change the password before go-live.**
 - **Dedup**: every media file is content-addressed by a unique SHA-256 hash.
 - **Media URLs**: served via CDN in prod (`NEXT_PUBLIC_MEDIA_BASE`); in dev the backend

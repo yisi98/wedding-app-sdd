@@ -179,8 +179,8 @@ container env has no effect):
 - `NEXT_PUBLIC_ICP_NUMBER` — added and rebuilt in Phase 5, once the filing is granted
 
 > **Set `ADMIN_PASSWORD` before the first `alembic upgrade head`.** The admin account is
-> seeded during migration and defaults to `admin` / `dev-only-admin-pass`, which is public in this
-> repository. Seeding never overwrites an existing account, so if the default is created
+> seeded during migration from the env var and falls back to a dev-only placeholder. Seeding
+> never overwrites an existing account, so if the default is created
 > once, changing the env afterwards does nothing — you would have to log in and change it
 > by hand. Anyone reaching the site could otherwise delete every guest and photo.
 

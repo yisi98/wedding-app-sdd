@@ -4,9 +4,18 @@ import io
 import shutil
 
 import pytest
+from sqlalchemy import select
 
-from src.workers.media_processing import WEB_SAFE_VIDEO_TYPES, process_image, process_video
+from src.models.activity_event import EVENT_NEW_UPLOAD, ActivityEvent
+from src.models.media import STATUS_PROCESSING, Media
+from src.workers.media_processing import (
+    WEB_SAFE_VIDEO_TYPES,
+    process_and_announce,
+    process_image,
+    process_video,
+)
 from tests.conftest import (
+    TestSession,
     auth_headers,
     make_heic,
     make_jpeg_with_orientation,
@@ -174,3 +183,44 @@ async def test_original_download_keeps_the_untouched_bytes(client):
     )
     served = await client.get(f"/media-object/{key}")
     assert served.content == jpeg
+
+
+async def test_worker_processing_announces_new_upload_once_ready(client):
+    """Prod (Celery) path: confirm returns while the item is still processing, and the
+    worker must broadcast new_upload when it finishes — that broadcast is what makes
+    every open gallery refetch and show the item without a manual reload."""
+    headers = await auth_headers(client, "WorkerGuest")
+    png = make_png(width=40, height=30)
+    body = {
+        "original_filename": "late.png",
+        "mime_type": "image/png",
+        "file_size": len(png),
+        "file_hash": sha256_hex(png),
+    }
+    init = await client.post("/api/v1/media/upload/init", json=body, headers=headers)
+    media_id = init.json()["media_id"]
+    key = init.json()["storage_key"]
+    await client.put(f"/api/v1/media/upload/raw?key={key}", content=png, headers=headers)
+
+    # Simulate prod confirm: hand off to the worker instead of processing inline, so
+    # the item sits in `processing` after confirm has already returned to the client.
+    async with TestSession() as session:
+        media = await session.get(Media, media_id)
+        media.status = STATUS_PROCESSING
+        await session.commit()
+
+    async with TestSession() as session:
+        await process_and_announce(session, media_id)
+
+    async with TestSession() as session:
+        media = await session.get(Media, media_id)
+        assert media.status == "ready"
+        events = (
+            await session.execute(
+                select(ActivityEvent).where(
+                    ActivityEvent.media_id == media_id,
+                    ActivityEvent.event_type == EVENT_NEW_UPLOAD,
+                )
+            )
+        ).scalars().all()
+        assert len(events) == 1, "worker must announce exactly one new_upload event"

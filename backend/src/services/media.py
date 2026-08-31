@@ -5,6 +5,7 @@ uploads switch, and deduplicates by SHA-256; the client then PUTs bytes to stora
 enqueues background processing (eager in dev/test, Celery in prod).
 """
 
+import logging
 import re
 from datetime import date, timedelta
 
@@ -29,6 +30,8 @@ from ..schemas.media import UploadInitRequest
 from ..services import deduplication
 from ..services.storage import get_storage
 from ..workers.media_processing import process_media
+
+logger = logging.getLogger(__name__)
 
 SORT_COLUMNS = {
     "newest": desc(Media.created_at),
@@ -118,6 +121,31 @@ async def get_owned_pending(session: AsyncSession, user: User, media_id: int) ->
             status.HTTP_404_NOT_FOUND, detail=t("media_not_found", user.language_preference)
         )
     return media
+
+
+async def delete_own_media(session: AsyncSession, user: User, media_id: int) -> None:
+    """Guest self-service removal of their own upload (owner-only, FR-039).
+
+    Mirrors admin delete_media: storage removal is best-effort so a missing object
+    never blocks the row from going away. Anything the uploader did not upload
+    (including another guest's item) is indistinguishable from a missing id → 404,
+    matching get_owned_pending's convention of not leaking other users' content.
+    """
+    media = await session.get(Media, media_id)
+    if media is None or media.uploader_id != user.id:
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND, detail=t("media_not_found", user.language_preference)
+        )
+    storage = get_storage()
+    for key in (media.storage_path, media.thumbnail_path, media.optimized_path):
+        if not key:
+            continue
+        try:
+            storage.delete(key)
+        except Exception:
+            logger.warning("Could not delete stored object %s", key, exc_info=True)
+    await session.delete(media)  # comments/reactions/favorites cascade (data model)
+    await session.flush()
 
 
 async def confirm_upload(

@@ -19,12 +19,15 @@ export default function Lightbox({
   items = [],
   onClose,
   onOpenMedia,
+  onDeleted,
 }: {
   media: Media;
   /** The list the viewer is browsing, so prev/next can move through it (FR-014). */
   items?: Media[];
   onClose: () => void;
   onOpenMedia: (m: Media) => void;
+  /** Called after the uploader deletes this item, so the parent can drop it from its list. */
+  onDeleted?: (id: number) => void;
 }) {
   const { t } = useTranslation();
   const myUserId = useAuthStore((s) => s.user?.id);
@@ -134,6 +137,21 @@ export default function Lightbox({
     setComments((c) => c.filter((x) => x.id !== id));
   }
 
+  // Only the uploader sees this; the backend enforces ownership again on its side.
+  const canDelete = media.uploader_id != null && media.uploader_id === myUserId;
+
+  async function deleteMedia() {
+    if (busy) return;
+    if (!window.confirm(t("lightbox.deleteConfirm"))) return;
+    setBusy(true);
+    try {
+      await api.delete(`/media/${media.id}`);
+      onDeleted?.(media.id);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   const isVideo = media.media_type === "video";
   // optimized_path is a browser-safe derivative when set (WebP for images; an H.264/AAC MP4
   // transcode for videos whose original container/codec most browsers can't play natively).
@@ -224,6 +242,15 @@ export default function Lightbox({
         >
           {t("lightbox.download")}
         </a>
+        {canDelete && (
+          <button
+            onClick={deleteMedia}
+            disabled={busy}
+            className="rounded bg-red-600/80 px-2 py-1 text-sm text-white disabled:opacity-50"
+          >
+            {t("lightbox.delete")}
+          </button>
+        )}
       </div>
 
       {similar.length > 0 && (

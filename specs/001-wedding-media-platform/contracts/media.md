@@ -11,7 +11,7 @@ Implements US2 (upload) and US3 (gallery/discovery). All require an access token
 | POST | `/media/upload/init` | Validate `mime_type` + declared size against `event_config`; check `file_hash`. Duplicate → **409** `{message, media_id}` (no store; also enforced by the DB unique constraint, so a concurrent race still returns 409). Uploads paused → **403** (FR-010). Else return `{ media_id, upload_url, storage_key, status: "pending" }`. |
 | PUT | `/media/upload/raw?key=…` | **Dev/local-storage only** stand-in for the direct client→OSS PUT. Validates the **actual** byte size against the limit (declared size is not trusted) and records the true size. Returns **404** when S3 storage is configured. |
 | POST | `/media/upload/confirm` | Client upload done; enqueue background processing (Celery in prod, inline/eager in dev). Sets status `processing` → `ready`/`failed`. |
-| DELETE | `/media/{id}` | **Admin only** — delete media. Non-admin → **403**. |
+| DELETE | `/media/{id}` | **Owner only** — delete the caller's own upload (original + derivatives + row; comments/reactions/favorites cascade; the file hash is freed for re-upload). Someone else's item or a missing id → **404** (FR-039, added 2026-08-30; previously admin-only via `/admin/media/{id}`, which remains the path for deleting *any* user's media). |
 
 **Media bytes** are served at `GET /media-object/{key}` (app-root, unauthenticated — keys
 embed the content SHA-256 so they are unguessable capability URLs, matching CDN serving in
