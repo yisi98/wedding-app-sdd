@@ -37,3 +37,7 @@ Thumbs.db
 # Playwright
 frontend/test-results/
 frontend/playwright-report/
+
+# Deployment artifacts (generated locally for file-sync deploys, never committed)
+deploy-*.tgz
+deploy-*.b64
