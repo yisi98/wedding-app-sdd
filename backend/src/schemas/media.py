@@ -50,6 +50,18 @@ class MediaOut(BaseModel):
     created_at: datetime
 
 
+class BulkDeleteRequest(BaseModel):
+    media_ids: list[int] = Field(min_length=1, max_length=100)
+
+
+class BulkDeleteResponse(BaseModel):
+    deleted: list[int]
+    # Requested ids that were NOT deleted: someone else's uploads, ids that no
+    # longer exist, or items already gone. Kept out of `deleted` so the client
+    # can keep those tiles on screen.
+    skipped: list[int]
+
+
 class GalleryResponse(BaseModel):
     items: list["MediaOut"]
     has_more: bool

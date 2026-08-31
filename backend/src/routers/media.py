@@ -12,6 +12,8 @@ from fastapi import APIRouter, HTTPException, Query, Request, status
 from ..deps import CurrentUser, DbDep, SettingsDep
 from ..i18n import t
 from ..schemas.media import (
+    BulkDeleteRequest,
+    BulkDeleteResponse,
     GalleryResponse,
     MediaOut,
     UploadConfirmRequest,
@@ -66,6 +68,21 @@ async def list_gallery_ids(
 ) -> list[int]:
     """All media ids matching the given filters — backs "select all matching filter"."""
     return await media_service.list_gallery_ids(
+        session, media_type=media_type, uploader=uploader, date_from=date_from, date_to=date_to
+    )
+
+
+@router.get("/count", response_model=int)
+async def count_gallery(
+    user: CurrentUser,
+    session: DbDep,
+    media_type: Annotated[Literal["image", "video"] | None, Query()] = None,
+    uploader: Annotated[str | None, Query()] = None,
+    date_from: Annotated[date | None, Query()] = None,
+    date_to: Annotated[date | None, Query()] = None,
+) -> int:
+    """Total items matching the given filters — backs the gallery's "N items" badge."""
+    return await media_service.count_gallery(
         session, media_type=media_type, uploader=uploader, date_from=date_from, date_to=date_to
     )
 
@@ -148,6 +165,20 @@ async def delete_media(media_id: int, user: CurrentUser, session: DbDep) -> None
     """
     await media_service.delete_own_media(session, user, media_id)
     await session.commit()
+
+
+@router.post("/bulk-delete", response_model=BulkDeleteResponse)
+async def bulk_delete_media(
+    body: BulkDeleteRequest, user: CurrentUser, session: DbDep
+) -> BulkDeleteResponse:
+    """Multi-select delete: removes only the caller's OWN uploads among the ids.
+
+    Ids belonging to someone else (or already gone) are returned in `skipped`,
+    never deleted — the UI pre-warns about them and keeps those tiles visible.
+    """
+    deleted, skipped = await media_service.bulk_delete_own_media(session, user, body.media_ids)
+    await session.commit()
+    return BulkDeleteResponse(deleted=deleted, skipped=skipped)
 
 
 @router.get("/{media_id}", response_model=MediaOut)
