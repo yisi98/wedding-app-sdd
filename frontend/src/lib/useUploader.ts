@@ -95,12 +95,37 @@ export function useUploader(onUploaded: () => void) {
     }
   }
 
+  /** The picker's `accept` attribute only filters the file dialog — dropped files bypass
+   * it entirely. Anything that is clearly not an image/video (e.g. an .mkv some browsers
+   * report no MIME type for) is rejected locally, instead of hashing hundreds of MB only
+   * for the server to refuse it. The backend still validates against its own allow-list. */
+  function isAllowedType(file: File): boolean {
+    return file.type.startsWith("image/") || file.type.startsWith("video/");
+  }
+
   async function handleFiles(files: FileList | File[] | null) {
     if (!files || files.length === 0) return;
     const list = Array.from(files);
     const start = items.length;
-    setItems((prev) => [...prev, ...list.map((f) => ({ name: f.name, progress: 0, status: "uploading" as const }))]);
-    await Promise.all(list.map((file, i) => uploadOne(file, start + i)));
+    setItems((prev) => [
+      ...prev,
+      ...list.map((f) =>
+        isAllowedType(f)
+          ? { name: f.name, progress: 0, status: "uploading" as const }
+          : {
+              name: f.name,
+              progress: 0,
+              status: "error" as const,
+              message: t("upload.typeNotAllowed"),
+            }
+      ),
+    ]);
+    await Promise.all(
+      list
+        .map((file, i) => ({ file, i }))
+        .filter(({ file }) => isAllowedType(file))
+        .map(({ file, i }) => uploadOne(file, start + i))
+    );
     onUploaded();
   }
 

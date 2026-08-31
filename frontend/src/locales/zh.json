@@ -57,6 +57,8 @@
     "closed": "上传已关闭",
     "failed": "失败",
     "errorGeneric": "上传失败——请检查网络连接后重试。",
+    "typeNotAllowed": "不支持此文件类型。",
+    "failedCount": "{{count}} 个失败",
     "overall": "已完成 {{done}} / {{total}}"
   },
   "share": {
