@@ -96,3 +96,94 @@ async def test_deleted_hash_can_be_reuploaded(client):
     }
     r = await client.post("/api/v1/media/upload/init", headers=headers, json=body)
     assert r.status_code == 200  # no 409 duplicate_media
+
+
+# --- Multi-select bulk delete ---------------------------------------------------------
+
+
+async def test_bulk_delete_own_items(client):
+    uid = await seed_user("DelBulk")
+    headers = await auth_headers(client, "DelBulk")
+    ids = [
+        await seed_media(uid, filename=f"bulk{i}.png", file_hash=f"c{i}" * 32)
+        for i in range(3)
+    ]
+
+    r = await client.post("/api/v1/media/bulk-delete", headers=headers, json={"media_ids": ids})
+    assert r.status_code == 200
+    assert sorted(r.json()["deleted"]) == sorted(ids)
+    assert r.json()["skipped"] == []
+
+    async with TestSession() as s:
+        for media_id in ids:
+            assert await s.get(Media, media_id) is None
+
+
+async def test_bulk_delete_mixed_selection_deletes_own_skips_others(client):
+    """The whole batch is submitted at once: own items go, other guests' stay."""
+    uid = await seed_user("DelMixed")
+    headers = await auth_headers(client, "DelMixed")
+    other = await seed_user("DelOther")
+    own_ids = [
+        await seed_media(uid, filename=f"mine{i}.png", file_hash=f"d{i}" * 32)
+        for i in range(2)
+    ]
+    foreign_ids = [
+        await seed_media(other, filename=f"theirs{i}.png", file_hash=f"e{i}" * 32)
+        for i in range(2)
+    ]
+
+    r = await client.post(
+        "/api/v1/media/bulk-delete",
+        headers=headers,
+        json={"media_ids": own_ids + foreign_ids},
+    )
+    assert r.status_code == 200
+    assert sorted(r.json()["deleted"]) == sorted(own_ids)
+    assert sorted(r.json()["skipped"]) == sorted(foreign_ids)
+
+    async with TestSession() as s:
+        for media_id in foreign_ids:
+            assert await s.get(Media, media_id) is not None  # untouched
+
+
+async def test_bulk_delete_only_foreign_items_deletes_nothing(client):
+    headers = await auth_headers(client, "DelNone")
+    other = await seed_user("DelOwner")
+    foreign_id = await seed_media(other, filename="keep.png")
+
+    r = await client.post(
+        "/api/v1/media/bulk-delete", headers=headers, json={"media_ids": [foreign_id]}
+    )
+    assert r.status_code == 200
+    assert r.json()["deleted"] == []
+    assert r.json()["skipped"] == [foreign_id]
+
+    async with TestSession() as s:
+        assert await s.get(Media, foreign_id) is not None
+
+
+async def test_bulk_delete_requires_auth(client):
+    r = await client.post("/api/v1/media/bulk-delete", json={"media_ids": [1]})
+    assert r.status_code == 401
+
+
+async def test_gallery_count_respects_filters(client):
+    uid = await seed_user("DelCount")
+    headers = await auth_headers(client, "DelCount")
+    other = await seed_user("DelCountB")
+    for i in range(2):
+        await seed_media(uid, filename=f"count{i}.png", file_hash=f"f{i}" * 32)
+    await seed_media(other, filename="count-other.png", file_hash="g" * 64)
+
+    r = await client.get("/api/v1/media/count", headers=headers)
+    assert r.status_code == 200
+    assert r.json() == 3
+
+    r = await client.get("/api/v1/media/count", headers=headers, params={"uploader": "DelCount"})
+    assert r.json() == 2
+
+
+async def test_gallery_count_requires_auth(client):
+    r = await client.get("/api/v1/media/count")
+    assert r.status_code == 401

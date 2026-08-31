@@ -10,7 +10,7 @@ import re
 from datetime import date, timedelta
 
 from fastapi import HTTPException, status
-from sqlalchemy import asc, desc, select
+from sqlalchemy import asc, desc, func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -123,6 +123,19 @@ async def get_owned_pending(session: AsyncSession, user: User, media_id: int) ->
     return media
 
 
+def _delete_stored_objects(media: Media) -> None:
+    """Best-effort removal of original + derivatives; a missing object never blocks
+    the row from going away."""
+    storage = get_storage()
+    for key in (media.storage_path, media.thumbnail_path, media.optimized_path):
+        if not key:
+            continue
+        try:
+            storage.delete(key)
+        except Exception:
+            logger.warning("Could not delete stored object %s", key, exc_info=True)
+
+
 async def delete_own_media(session: AsyncSession, user: User, media_id: int) -> None:
     """Guest self-service removal of their own upload (owner-only, FR-039).
 
@@ -136,16 +149,37 @@ async def delete_own_media(session: AsyncSession, user: User, media_id: int) -> 
         raise HTTPException(
             status.HTTP_404_NOT_FOUND, detail=t("media_not_found", user.language_preference)
         )
-    storage = get_storage()
-    for key in (media.storage_path, media.thumbnail_path, media.optimized_path):
-        if not key:
-            continue
-        try:
-            storage.delete(key)
-        except Exception:
-            logger.warning("Could not delete stored object %s", key, exc_info=True)
+    _delete_stored_objects(media)
     await session.delete(media)  # comments/reactions/favorites cascade (data model)
     await session.flush()
+
+
+async def bulk_delete_own_media(
+    session: AsyncSession, user: User, media_ids: list[int]
+) -> tuple[list[int], list[int]]:
+    """Batch version of delete_own_media for multi-select delete in the gallery.
+
+    Deletes only the caller's own uploads and returns (deleted, skipped): ids that
+    belong to someone else (or no longer exist) are skipped, never deleted, and
+    never raise — the UI warns about them before calling and keeps those tiles
+    visible afterwards.
+    """
+    rows = list(
+        (await session.execute(select(Media).where(Media.id.in_(media_ids)))).scalars().all()
+    )
+    found = {m.id: m for m in rows}
+    deleted: list[int] = []
+    skipped: list[int] = []
+    for media_id in media_ids:
+        media = found.get(media_id)
+        if media is None or media.uploader_id != user.id:
+            skipped.append(media_id)
+            continue
+        _delete_stored_objects(media)
+        await session.delete(media)
+        deleted.append(media_id)
+    await session.flush()
+    return deleted, skipped
 
 
 async def confirm_upload(
@@ -216,6 +250,25 @@ async def list_gallery(
     rows = list((await session.execute(stmt)).scalars().all())
     has_more = len(rows) > limit
     return rows[:limit], has_more
+
+
+async def count_gallery(
+    session: AsyncSession,
+    *,
+    media_type: str | None = None,
+    uploader: str | None = None,
+    date_from: date | None = None,
+    date_to: date | None = None,
+) -> int:
+    """Total ready + visible items matching the filters — backs the "N items" badge."""
+    stmt = _gallery_filters(
+        select(func.count(Media.id)),
+        media_type=media_type,
+        uploader=uploader,
+        date_from=date_from,
+        date_to=date_to,
+    )
+    return (await session.execute(stmt)).scalar_one()
 
 
 async def list_gallery_ids(
