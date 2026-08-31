@@ -8,6 +8,7 @@ import type { Media } from "@/lib/types";
 import { useAuthStore } from "@/stores/auth";
 import { useRealtimeStore } from "@/stores/realtime";
 
+import FilterBar, { type GalleryView } from "./FilterBar";
 import Lightbox from "./Lightbox";
 import MediaGrid from "./MediaGrid";
 
@@ -15,6 +16,7 @@ const PAGE = 24;
 
 export default function GalleryGrid({ refreshKey }: { refreshKey: number }) {
   const { t } = useTranslation();
+  const myUserId = useAuthStore((s) => s.user?.id);
   const [items, setItems] = useState<Media[]>([]);
   const [offset, setOffset] = useState(0);
   const [hasMore, setHasMore] = useState(false);
@@ -26,6 +28,9 @@ export default function GalleryGrid({ refreshKey }: { refreshKey: number }) {
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [selectingAll, setSelectingAll] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [count, setCount] = useState<number | null>(null);
+  const [view, setView] = useState<GalleryView>("grid");
   const uploadTick = useRealtimeStore((s) => s.uploadTick);
   const sentinel = useRef<HTMLDivElement | null>(null);
 
@@ -56,6 +61,17 @@ export default function GalleryGrid({ refreshKey }: { refreshKey: number }) {
   useEffect(() => {
     api.get("/media/uploaders").then(({ data }) => setUploaders(data));
   }, [refreshKey, uploadTick]);
+
+  // "N items" badge: total matching the filters (not just the loaded page).
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (type) params.set("media_type", type);
+    if (uploader) params.set("uploader", uploader);
+    api
+      .get<number>(`/media/count?${params.toString()}`)
+      .then(({ data }) => setCount(data))
+      .catch(() => {});
+  }, [type, uploader, refreshKey, uploadTick]);
 
   // Someone else uploaded: pull the first page again so the new photo actually appears,
   // instead of only announcing it via a toast (FR-022).
@@ -115,6 +131,51 @@ export default function GalleryGrid({ refreshKey }: { refreshKey: number }) {
     }
   }
 
+  // Multi-select delete: only the caller's OWN uploads can go. If the selection mixes
+  // own and foreign items, the confirm warns about the foreign ones; the backend then
+  // deletes the own items and returns the foreign ids in `skipped` so their tiles stay.
+  async function bulkDelete() {
+    if (deleting || selected.size === 0) return;
+    const selItems = items.filter((m) => selected.has(m.id));
+    const mineCount = selItems.filter((m) => m.uploader_id === myUserId).length;
+    const othersCount = selItems.length - mineCount;
+    // "Select all matching" can exceed the loaded pages; those ids can't be checked
+    // locally, but the server deletes own uploads only regardless.
+    const uncheckedCount = selected.size - selItems.length;
+
+    if (mineCount === 0 && uncheckedCount === 0) {
+      window.alert(t("gallery.cannotDeleteOthers"));
+      return;
+    }
+    let msg = t("gallery.deleteConfirm", { count: selected.size });
+    if (othersCount > 0) msg += `\n${t("gallery.othersWarning", { count: othersCount })}`;
+    else if (uncheckedCount > 0) msg += `\n${t("gallery.onlyOwnDeletes")}`;
+    if (!window.confirm(msg)) return;
+
+    setDeleting(true);
+    try {
+      const { data } = await api.post<{ deleted: number[]; skipped: number[] }>(
+        "/media/bulk-delete",
+        { media_ids: Array.from(selected) }
+      );
+      const deletedSet = new Set(data.deleted);
+      setItems((prev) => prev.filter((m) => !deletedSet.has(m.id)));
+      setActive((prev) => (prev && deletedSet.has(prev.id) ? null : prev));
+      // Skipped (someone else's) items stay selected so the user sees they remain.
+      setSelected(new Set(data.skipped));
+      setCount((c) => (c === null ? c : Math.max(0, c - data.deleted.length)));
+      if (data.deleted.length > 0) {
+        const summary = [t("gallery.deletedCount", { count: data.deleted.length })];
+        if (data.skipped.length > 0) {
+          summary.push(t("gallery.skippedCount", { count: data.skipped.length }));
+        }
+        window.alert(summary.join("\n"));
+      }
+    } finally {
+      setDeleting(false);
+    }
+  }
+
   async function bulkDownload() {
     const token = useAuthStore.getState().accessToken;
     const res = await fetch(`${API_BASE}/api/v1/downloads/bulk`, {
@@ -143,31 +204,18 @@ export default function GalleryGrid({ refreshKey }: { refreshKey: number }) {
 
   return (
     <div>
-      <div className="mb-3 flex flex-wrap items-center gap-2">
-        <select value={type} onChange={(e) => setType(e.target.value)} className="rounded border px-2 py-1 text-sm">
-          <option value="">{t("gallery.all")}</option>
-          <option value="image">{t("gallery.images")}</option>
-          <option value="video">{t("gallery.videos")}</option>
-        </select>
-        <select
-          value={uploader}
-          onChange={(e) => setUploader(e.target.value)}
-          className="rounded border px-2 py-1 text-sm"
-        >
-          <option value="">{t("gallery.allUploaders")}</option>
-          {uploaders.map((name) => (
-            <option key={name} value={name}>
-              {name}
-            </option>
-          ))}
-        </select>
-        <select value={sort} onChange={(e) => setSort(e.target.value)} className="rounded border px-2 py-1 text-sm">
-          <option value="newest">{t("gallery.sortNewest")}</option>
-          <option value="oldest">{t("gallery.sortOldest")}</option>
-          <option value="most_viewed">{t("gallery.sortMostViewed")}</option>
-          <option value="most_liked">{t("gallery.sortMostLiked")}</option>
-        </select>
-      </div>
+      <FilterBar
+        type={type}
+        uploader={uploader}
+        sort={sort}
+        uploaders={uploaders}
+        count={count}
+        view={view}
+        onTypeChange={setType}
+        onUploaderChange={setUploader}
+        onSortChange={setSort}
+        onViewChange={setView}
+      />
 
       {items.length > 0 && (
         <div className="mb-3 flex flex-wrap items-center gap-2">
@@ -186,6 +234,13 @@ export default function GalleryGrid({ refreshKey }: { refreshKey: number }) {
               <button onClick={bulkDownload} className="rounded bg-accent px-3 py-1 text-sm text-white">
                 ⬇ {selected.size}
               </button>
+              <button
+                onClick={bulkDelete}
+                disabled={deleting}
+                className="rounded bg-red-600 px-3 py-1 text-sm text-white disabled:opacity-50"
+              >
+                🗑 {deleting ? t("gallery.deleting") : `${t("gallery.delete")} ${selected.size}`}
+              </button>
             </>
           )}
         </div>
@@ -200,6 +255,7 @@ export default function GalleryGrid({ refreshKey }: { refreshKey: number }) {
           selectable
           selected={selected}
           onToggleSelect={toggleSelect}
+          view={view}
         />
       )}
 
