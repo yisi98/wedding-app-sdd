@@ -32,3 +32,13 @@ class CommentOut(BaseModel):
 class FavoriteState(BaseModel):
     favorited: bool
     favorite_count: int
+
+
+class BulkFavoriteRemoveRequest(BaseModel):
+    media_ids: list[int] = Field(min_length=1, max_length=200)
+
+
+class BulkFavoriteRemoveResponse(BaseModel):
+    removed: list[int]
+    # Requested ids the caller had not favorited (or that no longer exist).
+    skipped: list[int]

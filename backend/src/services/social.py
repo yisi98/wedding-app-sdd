@@ -128,6 +128,36 @@ async def list_favorites(session: AsyncSession, user: User) -> list[Media]:
     return list(rows.scalars().all())
 
 
+async def remove_favorites_bulk(
+    session: AsyncSession, user: User, media_ids: list[int]
+) -> tuple[list[int], list[int]]:
+    """Remove the caller's favorite rows for the given media ids.
+
+    Ids the caller had not favorited (or that no longer exist) are reported as
+    skipped rather than raising, so partial selections still succeed.
+    """
+    rows = (
+        await session.execute(
+            select(Favorite).where(
+                Favorite.user_id == user.id, Favorite.media_id.in_(media_ids)
+            )
+        )
+    ).scalars().all()
+
+    removed: list[int] = []
+    for fav in rows:
+        media = await session.get(Media, fav.media_id)
+        if media is not None:
+            media.favorite_count = max(0, media.favorite_count - 1)
+        await session.delete(fav)
+        removed.append(fav.media_id)
+
+    removed_set = set(removed)
+    skipped = [mid for mid in media_ids if mid not in removed_set]
+    await session.flush()
+    return removed, skipped
+
+
 async def increment_view(session: AsyncSession, user: User, media_id: int) -> int:
     media = await get_visible_item(session, media_id, user.language_preference)
     media.view_count += 1
