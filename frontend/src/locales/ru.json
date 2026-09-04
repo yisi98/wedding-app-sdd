@@ -44,12 +44,22 @@
     "selectAllMatching": "Выбрать все подходящие",
     "selecting": "Выбор…",
     "clearSelection": "Снять выбор",
+    "downloadSelected": "Скачать выбранные элементы",
+    "downloading": "Скачивание…",
     "sortNewest": "Новые",
     "sortOldest": "Старые",
     "sortMostViewed": "Популярные",
     "sortMostLiked": "Понравившиеся",
     "loadMore": "Ещё",
     "loading": "Загрузка…"
+  },
+  "favorites": {
+    "selectAll": "Выбрать все",
+    "remove": "Убрать из избранного",
+    "removing": "Удаление…",
+    "removeConfirm": "Убрать {{count}} выбранных элементов из избранного?",
+    "removedCount": "Убрано из избранного элементов: {{count}}.",
+    "removeFailed": "Не удалось обновить избранное — попробуйте снова."
   },
   "lightbox": {
     "download": "Скачать",

@@ -44,12 +44,22 @@
     "selectAllMatching": "全选符合条件的",
     "selecting": "选择中……",
     "clearSelection": "清除选择",
+    "downloadSelected": "下载所选项目",
+    "downloading": "下载中……",
     "sortNewest": "最新",
     "sortOldest": "最早",
     "sortMostViewed": "最多浏览",
     "sortMostLiked": "最多点赞",
     "loadMore": "加载更多",
     "loading": "加载中……"
+  },
+  "favorites": {
+    "selectAll": "全选",
+    "remove": "从收藏中移除",
+    "removing": "移除中……",
+    "removeConfirm": "从收藏中移除 {{count}} 个项目？",
+    "removedCount": "已从收藏中移除 {{count}} 个项目。",
+    "removeFailed": "无法更新收藏——请重试。"
   },
   "lightbox": {
     "download": "下载",

@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { api, API_BASE } from "@/lib/api";
+import { api } from "@/lib/api";
+import { downloadZip } from "@/lib/download";
 import type { Media } from "@/lib/types";
 import { useAuthStore } from "@/stores/auth";
 import { useRealtimeStore } from "@/stores/realtime";
@@ -11,6 +12,7 @@ import { useRealtimeStore } from "@/stores/realtime";
 import FilterBar, { type GalleryView } from "./FilterBar";
 import Lightbox from "./Lightbox";
 import MediaGrid from "./MediaGrid";
+import SelectionBar from "./SelectionBar";
 
 const PAGE = 24;
 
@@ -29,6 +31,7 @@ export default function GalleryGrid({ refreshKey }: { refreshKey: number }) {
   const [selectingAll, setSelectingAll] = useState(false);
   const [loading, setLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [downloading, setDownloading] = useState(false);
   const [count, setCount] = useState<number | null>(null);
   const [view, setView] = useState<GalleryView>("grid");
   const uploadTick = useRealtimeStore((s) => s.uploadTick);
@@ -177,29 +180,15 @@ export default function GalleryGrid({ refreshKey }: { refreshKey: number }) {
   }
 
   async function bulkDownload() {
-    const token = useAuthStore.getState().accessToken;
-    const res = await fetch(`${API_BASE}/api/v1/downloads/bulk`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ media_ids: Array.from(selected) }),
-    });
-    if (!res.ok) {
-      alert(t("share.downloadFailed"));
-      return;
+    if (downloading || selected.size === 0) return;
+    setDownloading(true);
+    try {
+      await downloadZip(Array.from(selected), t("share.archiveFilename"));
+    } catch {
+      window.alert(t("share.downloadFailed"));
+    } finally {
+      setDownloading(false);
     }
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = t("share.archiveFilename");
-    // Safari (and some older WebKit builds) only honors a click-triggered download when
-    // the anchor is actually in the document; an unattached element silently no-ops there.
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    // Revoking synchronously can race the browser's own read of the blob URL, so give it
-    // a moment before freeing it.
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
   return (
@@ -218,32 +207,20 @@ export default function GalleryGrid({ refreshKey }: { refreshKey: number }) {
       />
 
       {items.length > 0 && (
-        <div className="mb-3 flex flex-wrap items-center gap-2">
-          <button
-            onClick={selectAllMatching}
-            disabled={selectingAll}
-            className="rounded border px-2 py-1 text-sm disabled:opacity-50"
-          >
-            {selectingAll ? t("gallery.selecting") : t("gallery.selectAllMatching")}
-          </button>
-          {selected.size > 0 && (
-            <>
-              <button onClick={() => setSelected(new Set())} className="rounded border px-2 py-1 text-sm">
-                {t("gallery.clearSelection")}
-              </button>
-              <button onClick={bulkDownload} className="rounded bg-accent px-3 py-1 text-sm text-white">
-                ⬇ {selected.size}
-              </button>
-              <button
-                onClick={bulkDelete}
-                disabled={deleting}
-                className="rounded bg-red-600 px-3 py-1 text-sm text-white disabled:opacity-50"
-              >
-                🗑 {deleting ? t("gallery.deleting") : `${t("gallery.delete")} ${selected.size}`}
-              </button>
-            </>
-          )}
-        </div>
+        <SelectionBar
+          count={selected.size}
+          selectAllLabel={selectingAll ? t("gallery.selecting") : t("gallery.selectAllMatching")}
+          selectingAll={selectingAll}
+          onSelectAll={selectAllMatching}
+          onClear={() => setSelected(new Set())}
+          onDownload={bulkDownload}
+          downloading={downloading}
+          deleteLabel={
+            deleting ? t("gallery.deleting") : `🗑 ${t("gallery.delete")} ${selected.size}`
+          }
+          onDelete={bulkDelete}
+          deleting={deleting}
+        />
       )}
 
       {items.length === 0 ? (
