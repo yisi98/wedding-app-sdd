@@ -44,12 +44,22 @@
     "selectAllMatching": "Select all matching",
     "selecting": "Selecting…",
     "clearSelection": "Clear selection",
+    "downloadSelected": "Download selected items",
+    "downloading": "Downloading…",
     "sortNewest": "Newest",
     "sortOldest": "Oldest",
     "sortMostViewed": "Most viewed",
     "sortMostLiked": "Most liked",
     "loadMore": "Load more",
     "loading": "Loading…"
+  },
+  "favorites": {
+    "selectAll": "Select all",
+    "remove": "Remove from favorites",
+    "removing": "Removing…",
+    "removeConfirm": "Remove {{count}} items from favorites?",
+    "removedCount": "Removed {{count}} items from favorites.",
+    "removeFailed": "Couldn't update favorites — try again."
   },
   "lightbox": {
     "download": "Download",

@@ -9,6 +9,8 @@ from fastapi import APIRouter, status
 from ..deps import CurrentUser, DbDep
 from ..schemas.media import MediaOut
 from ..schemas.social import (
+    BulkFavoriteRemoveRequest,
+    BulkFavoriteRemoveResponse,
     CommentCreate,
     CommentOut,
     FavoriteState,
@@ -24,6 +26,16 @@ router = APIRouter(prefix="/api/v1/media", tags=["social"])
 async def list_favorites(user: CurrentUser, session: DbDep) -> list[MediaOut]:
     items = await social_service.list_favorites(session, user)
     return [MediaOut.model_validate(m) for m in items]
+
+
+# Declared BEFORE any /{media_id} route so "bulk-remove" is never parsed as a media_id.
+@router.post("/favorites/bulk-remove", response_model=BulkFavoriteRemoveResponse)
+async def bulk_remove_favorites(
+    body: BulkFavoriteRemoveRequest, user: CurrentUser, session: DbDep
+) -> BulkFavoriteRemoveResponse:
+    removed, skipped = await social_service.remove_favorites_bulk(session, user, body.media_ids)
+    await session.commit()
+    return BulkFavoriteRemoveResponse(removed=removed, skipped=skipped)
 
 
 @router.post("/{media_id}/reactions", response_model=ReactionState)
