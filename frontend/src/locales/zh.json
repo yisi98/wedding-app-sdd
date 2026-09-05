@@ -76,6 +76,7 @@
     "addComment": "添加评论……",
     "send": "发送",
     "close": "关闭",
+    "moreOptions": "更多选项",
     "previous": "上一张",
     "next": "下一张",
     "deleteComment": "删除评论",
@@ -92,7 +93,8 @@
     "errorGeneric": "上传失败——请检查网络连接后重试。",
     "typeNotAllowed": "不支持此文件类型。",
     "failedCount": "{{count}} 个失败",
-    "overall": "已完成 {{done}} / {{total}}"
+    "overall": "已完成 {{done}} / {{total}}",
+    "dismiss": "关闭已完成的上传"
   },
   "share": {
     "archiveFilename": "娜塔莎和易斯的婚礼.zip",
