@@ -273,7 +273,7 @@ export default function GalleryGrid({ refreshKey, onUpload }: { refreshKey: numb
           <div className="space-y-2 py-10 text-center text-gray-500">
             <p>{t("gallery.empty")}</p>
             <p className="text-sm md:hidden">{t("gallery.emptyMobile")}</p>
-            {onUpload && <button type="button" onClick={onUpload} className="rounded bg-accent px-3 py-2 text-sm text-white md:hidden">{t("nav.upload")}</button>}
+            {onUpload && <button type="button" aria-label={t("gallery.emptyMobile")} onClick={onUpload} className="rounded bg-accent px-3 py-2 text-sm text-white md:hidden">{t("nav.upload")}</button>}
             <p className="hidden text-sm md:block">{t("gallery.emptyDesktop")}</p>
           </div>
         )
