@@ -13,7 +13,7 @@ export default function Uploader({ onUploaded }: { onUploaded: () => void }) {
   const { t } = useTranslation();
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
-  const { items, handleFiles } = useUploader(onUploaded);
+  const { items, handleFiles, dismiss } = useUploader(onUploaded);
 
   return (
     <div className="mb-4 hidden md:block">
@@ -45,7 +45,7 @@ export default function Uploader({ onUploaded }: { onUploaded: () => void }) {
       </div>
       {items.length > 0 && (
         <div className="mt-2">
-          <UploadProgressList items={items} />
+        <UploadProgressList items={items} onDismiss={dismiss} />
         </div>
       )}
     </div>

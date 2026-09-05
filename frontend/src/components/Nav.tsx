@@ -28,7 +28,7 @@ export default function Nav() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   // Refresh callback is a no-op: a successful upload's own websocket broadcast already
   // bumps GalleryGrid's uploadTick and triggers its refetch, on whatever page it's mounted.
-  const { items: uploadItems, handleFiles } = useUploader(() => {});
+  const { items: uploadItems, handleFiles, dismiss: dismissUploads } = useUploader(() => {});
 
   async function logout() {
     try {
@@ -152,7 +152,7 @@ export default function Nav() {
           triggered it. */}
       {uploadItems.length > 0 && (
         <div className="fixed inset-x-3 bottom-16 z-20 rounded-md border border-charcoal/10 bg-paper p-3 shadow md:hidden">
-          <UploadProgressList items={uploadItems} />
+          <UploadProgressList items={uploadItems} onDismiss={dismissUploads} />
         </div>
       )}
 

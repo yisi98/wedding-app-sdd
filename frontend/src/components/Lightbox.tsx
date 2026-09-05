@@ -38,6 +38,7 @@ export default function Lightbox({
   const [favorited, setFavorited] = useState(false);
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const touchStartX = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
 
@@ -160,7 +161,7 @@ export default function Lightbox({
 
   return (
     <div className="fixed inset-0 z-40 flex flex-col overflow-auto bg-black/90 text-white">
-      <div className="flex items-center justify-between p-3">
+      <div className="relative flex items-center justify-between p-3">
         <span className="text-sm">
           {media.original_filename}
           <span className="ml-2 text-white/60">
@@ -172,9 +173,19 @@ export default function Lightbox({
             </span>
           )}
         </span>
-        <button onClick={onClose} aria-label="close" className="px-2 text-2xl leading-none">
-          ×
-        </button>
+        <div className="flex items-center gap-2">
+          {canDelete && (
+            <div className="relative">
+              <button onClick={() => setMenuOpen((value) => !value)} aria-label="More options" aria-expanded={menuOpen} className="rounded px-2 py-1 text-2xl leading-none text-white/80 hover:bg-white/10">⋯</button>
+              {menuOpen && (
+                <div className="absolute right-0 top-full z-10 mt-1 min-w-28 rounded border border-white/10 bg-charcoal p-1 shadow-lg">
+                  <button onClick={deleteMedia} disabled={busy} className="w-full rounded px-3 py-2 text-left text-sm text-red-300 hover:bg-white/10 disabled:opacity-50">{t("lightbox.delete")}</button>
+                </div>
+              )}
+            </div>
+          )}
+          <button onClick={onClose} aria-label="close" className="px-2 text-2xl leading-none">×</button>
+        </div>
       </div>
 
       <div
@@ -242,15 +253,6 @@ export default function Lightbox({
         >
           {t("lightbox.download")}
         </a>
-        {canDelete && (
-          <button
-            onClick={deleteMedia}
-            disabled={busy}
-            className="rounded bg-red-600/80 px-2 py-1 text-sm text-white disabled:opacity-50"
-          >
-            {t("lightbox.delete")}
-          </button>
-        )}
       </div>
 
       {similar.length > 0 && (

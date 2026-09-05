@@ -56,7 +56,9 @@
     "sortMostViewed": "Most viewed",
     "sortMostLiked": "Most liked",
     "loadMore": "Load more",
-    "loading": "Loading…"
+    "loading": "Loading…",
+    "select": "Select",
+    "cancelSelect": "Cancel"
   },
   "favorites": {
     "empty": "Save your favourite moments here — tap ☆ on any photo.",

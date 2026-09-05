@@ -56,7 +56,9 @@
     "sortMostViewed": "Популярные",
     "sortMostLiked": "Понравившиеся",
     "loadMore": "Ещё",
-    "loading": "Загрузка…"
+    "loading": "Загрузка…",
+    "select": "Выбрать",
+    "cancelSelect": "Отмена"
   },
   "favorites": {
     "empty": "Сохраняйте любимые моменты здесь — нажмите ☆ на любом фото.",

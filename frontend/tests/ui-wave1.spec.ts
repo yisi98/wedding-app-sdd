@@ -178,7 +178,56 @@ for (const mobile of [true, false]) {
     await expect(page.getByText("0 of 3 done", { exact: true })).toBeVisible();
     releaseUploads();
     await expect(page.getByText("3 of 3 done", { exact: true })).toBeVisible();
+    await expect(page.getByText(en.upload.done, { exact: true })).toHaveCount(0);
+    await page.getByText("3 of 3 done", { exact: true }).click();
     await expect(page.getByText(en.upload.done, { exact: true })).toHaveCount(3);
     await expect(page.getByText("3 of 3 done", { exact: true })).toHaveCount(0, { timeout: 6000 });
   });
 }
+
+test("select mode keeps browsing clean and toggles tiles plus bulk actions", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await prepare(page, "en", "guest");
+  const media = {
+    id: 1, uploader_id: 1, uploader_name: "UI Test", original_filename: "memory.jpg",
+    thumbnail_path: "test.svg", optimized_path: "test.svg", storage_path: "test.svg",
+    media_type: "image", lqip: null, created_at: new Date().toISOString(), reaction_count: 0,
+  };
+  await page.route("**/api/v1/media?*", (route) => route.fulfill({ json: { items: [media], has_more: false } }));
+  await page.route("**/api/v1/media/count?*", (route) => route.fulfill({ json: 1 }));
+  await page.route("**/api/v1/media/uploaders", (route) => route.fulfill({ json: ["UI Test"] }));
+  await page.route("**/media-object/test.svg", (route) => route.fulfill({ contentType: "image/svg+xml", body: '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#c17a5a"/></svg>' }));
+  await page.goto("/gallery");
+  await expect(page.getByRole("checkbox")).toHaveCount(0);
+  await expect(page.getByRole("button", { name: en.gallery.select, exact: true })).toBeVisible();
+  await page.getByRole("button", { name: en.gallery.select, exact: true }).click();
+  await expect(page.getByRole("checkbox")).toHaveCount(1);
+  await expect(page.getByText(en.gallery.selectAllMatching)).toBeVisible();
+  await expect(page.getByText(en.gallery.clearSelection)).toHaveCount(0);
+  await page.getByRole("img", { name: "memory.jpg" }).click();
+  await expect(page.getByText(en.gallery.clearSelection)).toBeVisible();
+  await expect(page.getByRole("button", { name: /Delete 1/ })).toBeVisible();
+  await page.getByRole("button", { name: en.gallery.cancelSelect, exact: true }).last().click();
+  await expect(page.getByRole("checkbox")).toHaveCount(0);
+  await expect(page.getByRole("button", { name: en.gallery.select, exact: true })).toBeVisible();
+});
+
+test("owner delete is tucked into the lightbox overflow menu", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await prepare(page, "en", "guest");
+  const media = {
+    id: 1, uploader_id: 1, uploader_name: "UI Test", original_filename: "memory.jpg",
+    thumbnail_path: "test.svg", optimized_path: "test.svg", storage_path: "test.svg",
+    media_type: "image", lqip: null, created_at: new Date().toISOString(), reaction_count: 0,
+  };
+  await page.route("**/api/v1/media?*", (route) => route.fulfill({ json: { items: [media], has_more: false } }));
+  await page.route("**/api/v1/media/count?*", (route) => route.fulfill({ json: 1 }));
+  await page.route("**/api/v1/media/uploaders", (route) => route.fulfill({ json: ["UI Test"] }));
+  await page.route("**/api/v1/media/1/**", (route) => route.fulfill({ json: [] }));
+  await page.route("**/media-object/test.svg", (route) => route.fulfill({ contentType: "image/svg+xml", body: '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#c17a5a"/></svg>' }));
+  await page.goto("/gallery");
+  await page.getByRole("img", { name: "memory.jpg" }).click();
+  await expect(page.getByRole("button", { name: en.lightbox.delete, exact: true })).toHaveCount(0);
+  await page.getByRole("button", { name: "More options" }).click();
+  await expect(page.getByRole("button", { name: en.lightbox.delete, exact: true })).toBeVisible();
+});

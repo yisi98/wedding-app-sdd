@@ -1,11 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { UploadItem } from "@/lib/useUploader";
 
-export default function UploadProgressList({ items }: { items: UploadItem[] }) {
+export default function UploadProgressList({ items, onDismiss }: { items: UploadItem[]; onDismiss?: () => void }) {
   const { t } = useTranslation();
+  const [expanded, setExpanded] = useState(false);
   if (items.length === 0) return null;
 
   // Failed files never transferred any bytes, so they are excluded from the batch
@@ -24,25 +26,29 @@ export default function UploadProgressList({ items }: { items: UploadItem[] }) {
   return (
     <div className="text-xs">
       {/* FR-006 aggregate progress across the batch, alongside the per-file rows. */}
-      {tracked.length > 0 && (
+      {(tracked.length > 0 || failed > 0) && (
         <>
-          <div className="mb-1 flex justify-between text-gray-500">
-            <span>
+          <div className="mb-1 flex items-center gap-2 text-gray-500">
+            <button type="button" onClick={() => setExpanded((value) => !value)} className="flex min-w-0 flex-1 items-center gap-2 text-left">
+              <span className={`text-[10px] transition-transform ${expanded ? "rotate-180" : ""}`}>⌄</span>
+              <span className="truncate">
               {t("upload.overall", { done, total: tracked.length })}
               {failed > 0 && (
                 <span className="ml-2 text-red-600">
                   {t("upload.failedCount", { count: failed })}
                 </span>
               )}
-            </span>
-            <span>{overall}%</span>
+              </span>
+              {overall !== null && <span className="shrink-0">{overall}%</span>}
+            </button>
+            {onDismiss && <button type="button" onClick={onDismiss} aria-label="Dismiss completed uploads" className="shrink-0 px-1 text-lg leading-none text-gray-500 hover:text-charcoal">×</button>}
           </div>
-          <div className="h-1 w-full overflow-hidden rounded bg-charcoal/10">
+          {overall !== null && <div className="h-1 w-full overflow-hidden rounded bg-charcoal/10">
             <div className="h-full bg-accent transition-all" style={{ width: `${overall}%` }} />
-          </div>
+          </div>}
         </>
       )}
-      <ul className="mt-2 space-y-1">
+      {expanded && <ul className="mt-2 max-h-48 space-y-1 overflow-y-auto pr-1">
         {items.map((it, i) => (
           <li key={i} className="flex flex-col gap-0.5">
             <div
@@ -87,7 +93,7 @@ export default function UploadProgressList({ items }: { items: UploadItem[] }) {
             )}
           </li>
         ))}
-      </ul>
+      </ul>}
     </div>
   );
 }

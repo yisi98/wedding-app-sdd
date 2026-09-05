@@ -29,6 +29,7 @@ export default function GalleryGrid({ refreshKey }: { refreshKey: number }) {
   const [sort, setSort] = useState("newest");
   const [active, setActive] = useState<Media | null>(null);
   const [selected, setSelected] = useState<Set<number>>(new Set());
+  const [selectMode, setSelectMode] = useState(false);
   const [selectingAll, setSelectingAll] = useState(false);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
@@ -113,6 +114,11 @@ export default function GalleryGrid({ refreshKey }: { refreshKey: number }) {
       else next.add(id);
       return next;
     });
+  }
+
+  function exitSelectMode() {
+    setSelectMode(false);
+    setSelected(new Set());
   }
 
   // An upload was deleted by its owner from the lightbox: drop it from the grid and
@@ -214,9 +220,11 @@ export default function GalleryGrid({ refreshKey }: { refreshKey: number }) {
           setSort(value);
         }}
         onViewChange={setView}
+        selectMode={selectMode}
+        onToggleSelectMode={() => (selectMode ? exitSelectMode() : setSelectMode(true))}
       />
 
-      {items.length > 0 && (
+      {selectMode && items.length > 0 && (
         <SelectionBar
           count={selected.size}
           selectAllLabel={selectingAll ? t("gallery.selecting") : t("gallery.selectAllMatching")}
@@ -230,6 +238,7 @@ export default function GalleryGrid({ refreshKey }: { refreshKey: number }) {
           }
           onDelete={bulkDelete}
           deleting={deleting}
+          onCancel={exitSelectMode}
         />
       )}
 
@@ -262,7 +271,7 @@ export default function GalleryGrid({ refreshKey }: { refreshKey: number }) {
         <MediaGrid
           items={items}
           onOpen={setActive}
-          selectable
+          selectable={selectMode}
           selected={selected}
           onToggleSelect={toggleSelect}
           view={view}

@@ -40,8 +40,8 @@ export default function MediaGrid({
       <ul className="divide-y divide-gray-100">
         {items.map((m) => (
           <li key={m.id} className="flex items-center gap-3 py-2">
-            {checkbox(m)}
-            <button onClick={() => onOpen(m)} className="flex min-w-0 flex-1 items-center gap-3 text-left">
+            <span onClick={(e) => e.stopPropagation()}>{checkbox(m)}</span>
+            <button onClick={() => (selectable ? onToggleSelect?.(m.id) : onOpen(m))} className="flex min-w-0 flex-1 items-center gap-3 text-left">
               <BlurImage
                 src={mediaUrl(m.thumbnail_path || m.optimized_path)}
                 lqip={m.lqip}
@@ -69,7 +69,7 @@ export default function MediaGrid({
     <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
       {items.map((m) => (
         <div key={m.id} className="relative aspect-square">
-          <button onClick={() => onOpen(m)} className="h-full w-full">
+          <button onClick={() => (selectable ? onToggleSelect?.(m.id) : onOpen(m))} className="h-full w-full">
             <BlurImage
               src={mediaUrl(m.thumbnail_path || m.optimized_path)}
               lqip={m.lqip}
@@ -86,7 +86,7 @@ export default function MediaGrid({
             {m.uploader_name ?? t("gallery.deletedGuest")}
           </span>
           {selectable && (
-            <span className="absolute left-1 top-1">{checkbox(m)}</span>
+            <span className="absolute left-1 top-1" onClick={(e) => e.stopPropagation()}>{checkbox(m)}</span>
           )}
         </div>
       ))}
