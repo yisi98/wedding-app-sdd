@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import GallerySkeleton from "@/components/GallerySkeleton";
 import Lightbox from "@/components/Lightbox";
 import MediaGrid from "@/components/MediaGrid";
 import Nav from "@/components/Nav";
@@ -16,13 +17,27 @@ export default function FavoritesPage() {
   const { ready } = useAuthGuard();
   const { t } = useTranslation();
   const [items, setItems] = useState<Media[]>([]);
+  const [loading, setLoading] = useState(true);
   const [active, setActive] = useState<Media | null>(null);
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [downloading, setDownloading] = useState(false);
   const [removing, setRemoving] = useState(false);
 
   useEffect(() => {
-    if (ready) api.get("/media/favorites").then(({ data }) => setItems(data)).catch(() => {});
+    if (!ready) return;
+    let cancelled = false;
+    setLoading(true);
+    api.get("/media/favorites")
+      .then(({ data }) => {
+        if (!cancelled) setItems(data);
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [ready]);
 
   function toggleSelect(id: number) {
@@ -88,36 +103,40 @@ export default function FavoritesPage() {
   return (
     <>
       <Nav />
-      <main className="mx-auto max-w-5xl p-4 pb-24 md:mx-0 md:ml-56 md:pb-4">
-        <h1 className="mb-3 text-lg font-semibold">{t("nav.favorites")}</h1>
-        {items.length > 0 && (
-          <SelectionBar
-            count={selected.size}
-            selectAllLabel={t("favorites.selectAll")}
-            onSelectAll={() => setSelected(new Set(items.map((m) => m.id)))}
-            onClear={() => setSelected(new Set())}
-            onDownload={bulkDownload}
-            downloading={downloading}
-            deleteLabel={
-              removing
-                ? t("favorites.removing")
-                : `♥ ${t("favorites.remove")} ${selected.size}`
-            }
-            onDelete={bulkRemove}
-            deleting={removing}
-          />
-        )}
-        {items.length === 0 ? (
-          <p className="py-10 text-center text-gray-400">{t("gallery.empty")}</p>
-        ) : (
-          <MediaGrid
-            items={items}
-            onOpen={setActive}
-            selectable
-            selected={selected}
-            onToggleSelect={toggleSelect}
-          />
-        )}
+      <main className="pb-24 md:pb-4 md:pl-56">
+        <div className="mx-auto max-w-5xl p-4">
+          <h1 className="mb-3 text-lg font-semibold">{t("nav.favorites")}</h1>
+          {items.length > 0 && (
+            <SelectionBar
+              count={selected.size}
+              selectAllLabel={t("favorites.selectAll")}
+              onSelectAll={() => setSelected(new Set(items.map((m) => m.id)))}
+              onClear={() => setSelected(new Set())}
+              onDownload={bulkDownload}
+              downloading={downloading}
+              deleteLabel={
+                removing
+                  ? t("favorites.removing")
+                  : `♥ ${t("favorites.remove")} ${selected.size}`
+              }
+              onDelete={bulkRemove}
+              deleting={removing}
+            />
+          )}
+          {loading && items.length === 0 ? (
+            <GallerySkeleton />
+          ) : items.length === 0 ? (
+            <p className="py-10 text-center text-gray-500">{t("favorites.empty")}</p>
+          ) : (
+            <MediaGrid
+              items={items}
+              onOpen={setActive}
+              selectable
+              selected={selected}
+              onToggleSelect={toggleSelect}
+            />
+          )}
+        </div>
       </main>
       {active && (
         <Lightbox

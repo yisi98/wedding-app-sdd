@@ -93,9 +93,8 @@ export default function Nav() {
           the native file picker directly (a real synchronous click, not a delayed one
           after navigation, which iOS Safari otherwise blocks). The "+" is absolutely
           centered (not part of the flex row) so it stays dead-center for guests (4 tabs)
-          and admins (5 tabs) alike; the w-14 spacer reserves the middle gap. It is
-          vertically centered inside the bar (not a raised FAB) so its top edge lines
-          up with the other tab icons. */}
+          and admins (5 tabs) alike; the w-14 spacer reserves the middle gap. The smaller
+          circle and visible caption stay vertically centered without growing the bar. */}
       <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-charcoal/10 bg-paper py-2 md:hidden">
         <div className="relative flex items-stretch">
           <div className="flex flex-1 items-center justify-around">
@@ -128,9 +127,12 @@ export default function Nav() {
           <button
             onClick={() => fileInputRef.current?.click()}
             aria-label={t("nav.upload")}
-            className="absolute left-1/2 top-1/2 z-10 flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-accent text-white shadow"
+            className="absolute left-1/2 top-1/2 z-10 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1 text-[11px] text-charcoal"
           >
-            <IconPlus width={22} height={22} strokeWidth={2} />
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-accent text-white shadow">
+              <IconPlus width={22} height={22} strokeWidth={2} />
+            </span>
+            <span>{t("nav.upload")}</span>
           </button>
         </div>
         <input
