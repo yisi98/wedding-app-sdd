@@ -20,6 +20,7 @@ export default function FavoritesPage() {
   const [loading, setLoading] = useState(true);
   const [active, setActive] = useState<Media | null>(null);
   const [selected, setSelected] = useState<Set<number>>(new Set());
+  const [selectMode, setSelectMode] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [removing, setRemoving] = useState(false);
 
@@ -47,6 +48,11 @@ export default function FavoritesPage() {
       else next.add(id);
       return next;
     });
+  }
+
+  function exitSelectMode() {
+    setSelectMode(false);
+    setSelected(new Set());
   }
 
   // A favorited item deleted by its owner: drop it locally instead of refetching.
@@ -105,8 +111,13 @@ export default function FavoritesPage() {
       <Nav />
       <main className="pb-24 md:pb-4 md:pl-56">
         <div className="mx-auto max-w-5xl p-4">
-          <h1 className="mb-3 text-lg font-semibold">{t("nav.favorites")}</h1>
-          {items.length > 0 && (
+          <div className="mb-3 flex items-center justify-between gap-2">
+            <h1 className="text-lg font-semibold">{t("nav.favorites")}</h1>
+            {items.length > 0 && <button type="button" onClick={() => (selectMode ? exitSelectMode() : setSelectMode(true))} className={`rounded border px-2 py-1 text-sm ${selectMode ? "border-accent text-accent" : ""}`}>
+              {selectMode ? t("gallery.cancelSelect") : t("gallery.select")}
+            </button>}
+          </div>
+          {selectMode && items.length > 0 && (
             <SelectionBar
               count={selected.size}
               selectAllLabel={t("favorites.selectAll")}
@@ -121,6 +132,7 @@ export default function FavoritesPage() {
               }
               onDelete={bulkRemove}
               deleting={removing}
+              onCancel={exitSelectMode}
             />
           )}
           {loading && items.length === 0 ? (
@@ -131,7 +143,7 @@ export default function FavoritesPage() {
             <MediaGrid
               items={items}
               onOpen={setActive}
-              selectable
+            selectable={selectMode}
               selected={selected}
               onToggleSelect={toggleSelect}
             />

@@ -15,6 +15,7 @@ type SelectionBarProps = {
   deleteLabel: string;
   onDelete: () => void;
   deleting?: boolean;
+  onCancel?: () => void;
 };
 
 /**
@@ -32,6 +33,7 @@ export default function SelectionBar({
   deleteLabel,
   onDelete,
   deleting = false,
+  onCancel,
 }: SelectionBarProps) {
   const { t } = useTranslation();
 
@@ -66,6 +68,11 @@ export default function SelectionBar({
             {deleteLabel}
           </button>
         </>
+      )}
+      {onCancel && (
+        <button onClick={onCancel} className="rounded border px-2 py-1 text-sm">
+          {t("gallery.cancelSelect")}
+        </button>
       )}
     </div>
   );

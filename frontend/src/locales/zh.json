@@ -56,7 +56,9 @@
     "sortMostViewed": "最多浏览",
     "sortMostLiked": "最多点赞",
     "loadMore": "加载更多",
-    "loading": "加载中……"
+    "loading": "加载中……",
+    "select": "选择",
+    "cancelSelect": "取消"
   },
   "favorites": {
     "empty": "珍藏你喜爱的瞬间——点击任意照片中的 ☆ 即可收藏。",
