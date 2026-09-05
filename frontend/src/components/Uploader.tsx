@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useUploader } from "@/lib/useUploader";
@@ -9,11 +9,12 @@ import UploadProgressList from "./UploadProgressList";
 
 /** Drag-and-drop dropzone. Desktop-only — mobile has no drag gesture for files, so it
  * uploads via the nav's "+" button instead (see Nav.tsx). */
-export default function Uploader({ onUploaded }: { onUploaded: () => void }) {
+export default function Uploader({ onUploaded, onPickerReady }: { onUploaded: () => void; onPickerReady?: (open: () => void) => void }) {
   const { t } = useTranslation();
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
-  const { items, handleFiles, dismiss } = useUploader(onUploaded);
+  const { items, handleFiles, dismiss, retry } = useUploader(onUploaded);
+  useEffect(() => { onPickerReady?.(() => inputRef.current?.click()); }, [onPickerReady]);
 
   return (
     <div className="mb-4 hidden md:block">
@@ -45,7 +46,7 @@ export default function Uploader({ onUploaded }: { onUploaded: () => void }) {
       </div>
       {items.length > 0 && (
         <div className="mt-2">
-        <UploadProgressList items={items} onDismiss={dismiss} />
+        <UploadProgressList items={items} onDismiss={dismiss} onRetry={retry} />
         </div>
       )}
     </div>

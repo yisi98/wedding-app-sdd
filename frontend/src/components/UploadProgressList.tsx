@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 
 import type { UploadItem } from "@/lib/useUploader";
 
-export default function UploadProgressList({ items, onDismiss }: { items: UploadItem[]; onDismiss?: () => void }) {
+export default function UploadProgressList({ items, onDismiss, onRetry }: { items: UploadItem[]; onDismiss?: () => void; onRetry?: (index: number) => void }) {
   const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
   if (items.length === 0) return null;
@@ -92,6 +92,7 @@ export default function UploadProgressList({ items, onDismiss }: { items: Upload
                 {it.message}
               </span>
             )}
+            {it.status === "error" && onRetry && it.file && <button type="button" onClick={() => onRetry(i)} className="self-start px-1 text-accent hover:underline">{t("upload.retry")}</button>}
           </li>
         ))}
       </ul>}

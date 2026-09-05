@@ -13,7 +13,7 @@ function Toast({ toast, onDone }: { toast: ToastType; onDone: () => void }) {
   }, [onDone]);
   return (
     <div className="rounded-md border border-white/10 bg-charcoal px-4 py-2 text-sm text-white">
-      <b>{toast.user}</b> {t(`activity.${toast.event_type}`)}
+      {toast.message ?? <><b>{toast.user}</b> {t(`activity.${toast.event_type}`)}</>}
     </div>
   );
 }
