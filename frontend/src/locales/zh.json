@@ -1,6 +1,7 @@
 {
   "app": {
-    "title": "娜塔莎和易斯的婚礼"
+    "title": "娜塔莎和易斯的婚礼",
+    "tagline": "透过你的视角，珍藏我们的婚礼。"
   },
   "login": {
     "displayName": "你的名字",
@@ -20,6 +21,10 @@
   },
   "gallery": {
     "empty": "还没有照片——快来第一个上传吧！",
+    "emptyDesktop": "将照片和视频拖到上方上传区域，与大家分享。",
+    "emptyMobile": "点击下方 +，分享照片和视频。",
+    "noMatches": "没有匹配的内容——请清除筛选条件",
+    "clearFilters": "清除筛选",
     "all": "全部",
     "images": "照片",
     "videos": "视频",
@@ -54,6 +59,7 @@
     "loading": "加载中……"
   },
   "favorites": {
+    "empty": "珍藏你喜爱的瞬间——点击任意照片中的 ☆ 即可收藏。",
     "selectAll": "全选",
     "remove": "从收藏中移除",
     "removing": "移除中……",

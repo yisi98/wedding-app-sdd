@@ -10,6 +10,7 @@ import { useAuthStore } from "@/stores/auth";
 import { useRealtimeStore } from "@/stores/realtime";
 
 import FilterBar, { type GalleryView } from "./FilterBar";
+import GallerySkeleton from "./GallerySkeleton";
 import Lightbox from "./Lightbox";
 import MediaGrid from "./MediaGrid";
 import SelectionBar from "./SelectionBar";
@@ -29,7 +30,7 @@ export default function GalleryGrid({ refreshKey }: { refreshKey: number }) {
   const [active, setActive] = useState<Media | null>(null);
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [selectingAll, setSelectingAll] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [count, setCount] = useState<number | null>(null);
@@ -200,9 +201,18 @@ export default function GalleryGrid({ refreshKey }: { refreshKey: number }) {
         uploaders={uploaders}
         count={count}
         view={view}
-        onTypeChange={setType}
-        onUploaderChange={setUploader}
-        onSortChange={setSort}
+        onTypeChange={(value) => {
+          if (value !== type) setLoading(true);
+          setType(value);
+        }}
+        onUploaderChange={(value) => {
+          if (value !== uploader) setLoading(true);
+          setUploader(value);
+        }}
+        onSortChange={(value) => {
+          if (value !== sort) setLoading(true);
+          setSort(value);
+        }}
         onViewChange={setView}
       />
 
@@ -223,8 +233,31 @@ export default function GalleryGrid({ refreshKey }: { refreshKey: number }) {
         />
       )}
 
-      {items.length === 0 ? (
-        <p className="py-10 text-center text-gray-400">{t("gallery.empty")}</p>
+      {loading && items.length === 0 ? (
+        <GallerySkeleton />
+      ) : items.length === 0 ? (
+        type || uploader ? (
+          <div className="space-y-3 py-10 text-center">
+            <p className="text-gray-500">{t("gallery.noMatches")}</p>
+            <button
+              type="button"
+              onClick={() => {
+                setLoading(true);
+                setType("");
+                setUploader("");
+              }}
+              className="rounded border border-charcoal/20 px-3 py-2 text-sm hover:bg-charcoal/5"
+            >
+              {t("gallery.clearFilters")}
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-2 py-10 text-center text-gray-500">
+            <p>{t("gallery.empty")}</p>
+            <p className="text-sm md:hidden">{t("gallery.emptyMobile")}</p>
+            <p className="hidden text-sm md:block">{t("gallery.emptyDesktop")}</p>
+          </div>
+        )
       ) : (
         <MediaGrid
           items={items}

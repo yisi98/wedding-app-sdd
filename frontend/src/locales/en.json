@@ -1,6 +1,7 @@
 {
   "app": {
-    "title": "Natasha & Yisi's Wedding"
+    "title": "Natasha & Yisi's Wedding",
+    "tagline": "Our wedding, through your eyes."
   },
   "login": {
     "displayName": "Your name",
@@ -20,6 +21,10 @@
   },
   "gallery": {
     "empty": "No photos yet — be the first to upload!",
+    "emptyDesktop": "Drag photos & videos into the upload area above to share them.",
+    "emptyMobile": "Tap + below to share photos & videos.",
+    "noMatches": "No matches — clear filters",
+    "clearFilters": "Clear filters",
     "all": "All",
     "images": "Photos",
     "videos": "Videos",
@@ -54,6 +59,7 @@
     "loading": "Loading…"
   },
   "favorites": {
+    "empty": "Save your favourite moments here — tap ☆ on any photo.",
     "selectAll": "Select all",
     "remove": "Remove from favorites",
     "removing": "Removing…",
