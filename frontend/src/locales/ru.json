@@ -76,6 +76,7 @@
     "addComment": "Добавить комментарий…",
     "send": "Отправить",
     "close": "Закрыть",
+    "moreOptions": "Дополнительные параметры",
     "previous": "Предыдущее фото",
     "next": "Следующее фото",
     "deleteComment": "Удалить комментарий",
@@ -92,7 +93,8 @@
     "errorGeneric": "Не удалось загрузить — проверьте соединение и попробуйте снова.",
     "typeNotAllowed": "Этот тип файлов не поддерживается.",
     "failedCount": "Не загрузилось: {{count}}",
-    "overall": "Готово {{done}} из {{total}}"
+    "overall": "Готово {{done}} из {{total}}",
+    "dismiss": "Скрыть завершённые загрузки"
   },
   "share": {
     "archiveFilename": "Свадьба Natasha и Yisi.zip",

@@ -46,6 +46,8 @@ class MediaOut(BaseModel):
     reaction_count: int
     comment_count: int
     favorite_count: int
+    my_reaction: str | None = None
+    is_favorited: bool = False
     is_visible: bool
     created_at: datetime
 
