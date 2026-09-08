@@ -56,7 +56,9 @@
     "sortMostViewed": "Most viewed",
     "sortMostLiked": "Most liked",
     "loadMore": "Load more",
-    "loading": "Loading…"
+    "loading": "Loading…",
+    "select": "Select",
+    "cancelSelect": "Cancel"
   },
   "favorites": {
     "empty": "Save your favourite moments here — tap ☆ on any photo.",
@@ -74,6 +76,7 @@
     "addComment": "Add a comment…",
     "send": "Send",
     "close": "Close",
+    "moreOptions": "More options",
     "previous": "Previous photo",
     "next": "Next photo",
     "deleteComment": "Delete comment",
@@ -90,7 +93,8 @@
     "errorGeneric": "Upload failed — check your connection and try again.",
     "typeNotAllowed": "This file type is not allowed.",
     "failedCount": "{{count}} failed",
-    "overall": "{{done}} of {{total}} done"
+    "overall": "{{done}} of {{total}} done",
+    "dismiss": "Dismiss completed uploads"
   },
   "share": {
     "archiveFilename": "Natasha and Yisi Wedding.zip",

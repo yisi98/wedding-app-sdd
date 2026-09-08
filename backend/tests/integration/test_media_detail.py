@@ -20,6 +20,24 @@ async def test_hidden_item_returns_404(client):
     assert r.status_code == 404
 
 
+async def test_detail_returns_callers_social_state(client):
+    headers = await auth_headers(client, "StateViewer")
+    owner = await seed_user("StateOwner")
+    media_id = await seed_media(owner, filename="state.png")
+
+    await client.post(
+        f"/api/v1/media/{media_id}/reactions",
+        headers=headers,
+        json={"reaction_type": "love"},
+    )
+    await client.post(f"/api/v1/media/{media_id}/favorites", headers=headers)
+
+    detail = await client.get(f"/api/v1/media/{media_id}", headers=headers)
+    assert detail.status_code == 200
+    assert detail.json()["my_reaction"] == "love"
+    assert detail.json()["is_favorited"] is True
+
+
 async def test_similar_ranks_by_phash_distance(client):
     headers = await auth_headers(client)
     uid = await seed_user("DetailChen")

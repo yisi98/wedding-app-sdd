@@ -60,6 +60,8 @@ export default function FilterBar({
   onUploaderChange,
   onSortChange,
   onViewChange,
+  selectMode,
+  onToggleSelectMode,
 }: {
   type: string;
   uploader: string;
@@ -72,6 +74,8 @@ export default function FilterBar({
   onUploaderChange: (v: string) => void;
   onSortChange: (v: string) => void;
   onViewChange: (v: GalleryView) => void;
+  selectMode?: boolean;
+  onToggleSelectMode?: () => void;
 }) {
   const { t } = useTranslation();
 
@@ -119,6 +123,16 @@ export default function FilterBar({
 
       <div className="ml-auto flex items-center gap-2">
         {count !== null && <span className="text-sm text-gray-500">{t("gallery.items", { count })}</span>}
+        {onToggleSelectMode && (
+          <button
+            type="button"
+            aria-pressed={selectMode}
+            onClick={onToggleSelectMode}
+            className={`rounded-lg border px-2 py-1.5 text-sm ${selectMode ? "border-accent bg-accent/10 text-accent" : "border-gray-300 text-gray-600 hover:bg-gray-50"}`}
+          >
+            {selectMode ? t("gallery.cancelSelect") : t("gallery.select")}
+          </button>
+        )}
         <button
           type="button"
           onClick={() => onViewChange("grid")}

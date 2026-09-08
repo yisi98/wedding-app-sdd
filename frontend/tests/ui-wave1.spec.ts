@@ -34,7 +34,6 @@ async function prepare(page: Page, language = "en", role = "admin") {
     await route.fulfill({ json });
   });
 }
-
 for (const [language, copy] of Object.entries({ en, zh, ru })) {
   test(`mobile loading, empty states, header and upload caption (${language})`, async ({ page }, testInfo) => {
     await page.setViewportSize({ width: 390, height: 844 });
@@ -178,7 +177,10 @@ for (const mobile of [true, false]) {
     await expect(page.getByText("0 of 3 done", { exact: true })).toBeVisible();
     releaseUploads();
     await expect(page.getByText("3 of 3 done", { exact: true })).toBeVisible();
+    await expect(page.getByText(en.upload.done, { exact: true })).toHaveCount(0);
+    await page.getByText("3 of 3 done", { exact: true }).click();
     await expect(page.getByText(en.upload.done, { exact: true })).toHaveCount(3);
     await expect(page.getByText("3 of 3 done", { exact: true })).toHaveCount(0, { timeout: 6000 });
   });
 }
+

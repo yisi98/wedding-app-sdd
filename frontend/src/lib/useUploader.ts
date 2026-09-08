@@ -43,6 +43,9 @@ async function sha256Hex(file: File): Promise<string> {
 export function useUploader(onUploaded: () => void) {
   const { t } = useTranslation();
   const [items, setItems] = useState<UploadItem[]>([]);
+  function dismiss() {
+    setItems((list) => list.filter((it) => it.status === "uploading"));
+  }
 
   // Once nothing is still uploading, tidy the list away so it doesn't sit there for the
   // rest of the evening. Rejections stay put — a guest needs time to read why a file
@@ -129,5 +132,5 @@ export function useUploader(onUploaded: () => void) {
     onUploaded();
   }
 
-  return { items, handleFiles };
+  return { items, handleFiles, dismiss };
 }
