@@ -28,7 +28,7 @@ export default function MediaGrid({
     selectable && (
       <input
         type="checkbox"
-        aria-label="select"
+        aria-label={t("gallery.select")}
         checked={selected?.has(m.id) ?? false}
         onChange={() => onToggleSelect?.(m.id)}
         className="h-5 w-5"

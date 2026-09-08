@@ -27,6 +27,8 @@ export interface Media {
   reaction_count: number;
   comment_count: number;
   favorite_count: number;
+  my_reaction?: string | null;
+  is_favorited?: boolean;
   is_visible: boolean;
   created_at: string;
 }

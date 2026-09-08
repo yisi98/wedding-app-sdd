@@ -16,6 +16,7 @@ export default function UploadProgressList({ items, onDismiss }: { items: Upload
   const tracked = items.filter((it) => it.status !== "error");
   const failed = items.filter((it) => it.status === "error").length;
   const done = tracked.filter((it) => it.status !== "uploading").length;
+  const total = items.length;
   const overall = tracked.length
     ? Math.round(
         tracked.reduce((sum, it) => sum + (it.status === "uploading" ? it.progress : 100), 0) /
@@ -32,7 +33,7 @@ export default function UploadProgressList({ items, onDismiss }: { items: Upload
             <button type="button" onClick={() => setExpanded((value) => !value)} className="flex min-w-0 flex-1 items-center gap-2 text-left">
               <span className={`text-[10px] transition-transform ${expanded ? "rotate-180" : ""}`}>⌄</span>
               <span className="truncate">
-              {t("upload.overall", { done, total: tracked.length })}
+              {t("upload.overall", { done, total })}
               {failed > 0 && (
                 <span className="ml-2 text-red-600">
                   {t("upload.failedCount", { count: failed })}
@@ -41,7 +42,7 @@ export default function UploadProgressList({ items, onDismiss }: { items: Upload
               </span>
               {overall !== null && <span className="shrink-0">{overall}%</span>}
             </button>
-            {onDismiss && <button type="button" onClick={onDismiss} aria-label="Dismiss completed uploads" className="shrink-0 px-1 text-lg leading-none text-gray-500 hover:text-charcoal">×</button>}
+            {onDismiss && <button type="button" onClick={onDismiss} aria-label={t("upload.dismiss")} className="shrink-0 px-1 text-lg leading-none text-gray-500 hover:text-charcoal">×</button>}
           </div>
           {overall !== null && <div className="h-1 w-full overflow-hidden rounded bg-charcoal/10">
             <div className="h-full bg-accent transition-all" style={{ width: `${overall}%` }} />

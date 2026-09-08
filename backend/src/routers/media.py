@@ -8,9 +8,12 @@ from datetime import date
 from typing import Annotated, Literal
 
 from fastapi import APIRouter, HTTPException, Query, Request, status
+from sqlalchemy import select
 
 from ..deps import CurrentUser, DbDep, SettingsDep
 from ..i18n import t
+from ..models.favorite import Favorite
+from ..models.reaction import Reaction
 from ..schemas.media import (
     BulkDeleteRequest,
     BulkDeleteResponse,
@@ -184,7 +187,17 @@ async def bulk_delete_media(
 @router.get("/{media_id}", response_model=MediaOut)
 async def get_media(media_id: int, user: CurrentUser, session: DbDep) -> MediaOut:
     media = await media_service.get_visible_item(session, media_id, user.language_preference)
-    return MediaOut.model_validate(media)
+    reaction = await session.scalar(
+        select(Reaction.reaction_type).where(
+            Reaction.user_id == user.id, Reaction.media_id == media_id
+        )
+    )
+    favorited = await session.scalar(
+        select(Favorite.id).where(Favorite.user_id == user.id, Favorite.media_id == media_id)
+    )
+    return MediaOut.model_validate(media).model_copy(
+        update={"my_reaction": reaction, "is_favorited": favorited is not None}
+    )
 
 
 @router.get("/{media_id}/similar", response_model=list[MediaOut])

@@ -39,17 +39,35 @@ export default function Lightbox({
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement | null>(null);
   const touchStartX = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
     setReactionCount(media.reaction_count);
     setMyReaction(null);
     setFavorited(false);
+    setMenuOpen(false);
     api.post(`/media/${media.id}/view`).catch(() => {});
-    api.get(`/media/${media.id}/comments`).then(({ data }) => setComments(data)).catch(() => {});
-    api.get(`/media/${media.id}/similar`).then(({ data }) => setSimilar(data)).catch(() => {});
+    api.get(`/media/${media.id}`).then(({ data }) => {
+      if (cancelled) return;
+      setMyReaction(data.my_reaction ?? null);
+      setFavorited(Boolean(data.is_favorited));
+    }).catch(() => {});
+    api.get(`/media/${media.id}/comments`).then(({ data }) => { if (!cancelled) setComments(data); }).catch(() => {});
+    api.get(`/media/${media.id}/similar`).then(({ data }) => { if (!cancelled) setSimilar(data); }).catch(() => {});
+    return () => { cancelled = true; };
   }, [media.id, media.reaction_count]);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const closeOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) setMenuOpen(false);
+    };
+    document.addEventListener("mousedown", closeOutside);
+    return () => document.removeEventListener("mousedown", closeOutside);
+  }, [menuOpen]);
 
   const index = items.findIndex((m) => m.id === media.id);
   const prev = index > 0 ? items[index - 1] : null;
@@ -69,6 +87,10 @@ export default function Lightbox({
       const el = e.target as HTMLElement | null;
       const typing = el && /^(INPUT|TEXTAREA)$/.test(el.tagName);
       if (e.key === "Escape") {
+        if (menuOpen) {
+          setMenuOpen(false);
+          return;
+        }
         onClose();
         return;
       }
@@ -78,7 +100,7 @@ export default function Lightbox({
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [goPrev, goNext, onClose]);
+  }, [goPrev, goNext, onClose, menuOpen]);
 
   function onTouchStart(e: React.TouchEvent) {
     touchStartX.current = e.touches[0].clientX;
@@ -175,8 +197,8 @@ export default function Lightbox({
         </span>
         <div className="flex items-center gap-2">
           {canDelete && (
-            <div className="relative">
-              <button onClick={() => setMenuOpen((value) => !value)} aria-label="More options" aria-expanded={menuOpen} className="rounded px-2 py-1 text-2xl leading-none text-white/80 hover:bg-white/10">⋯</button>
+            <div ref={menuRef} className="relative">
+              <button onClick={() => setMenuOpen((value) => !value)} aria-label={t("lightbox.moreOptions")} aria-expanded={menuOpen} className="rounded px-2 py-1 text-2xl leading-none text-white/80 hover:bg-white/10">⋯</button>
               {menuOpen && (
                 <div className="absolute right-0 top-full z-10 mt-1 min-w-28 rounded border border-white/10 bg-charcoal p-1 shadow-lg">
                   <button onClick={deleteMedia} disabled={busy} className="w-full rounded px-3 py-2 text-left text-sm text-red-300 hover:bg-white/10 disabled:opacity-50">{t("lightbox.delete")}</button>
@@ -184,7 +206,7 @@ export default function Lightbox({
               )}
             </div>
           )}
-          <button onClick={onClose} aria-label="close" className="px-2 text-2xl leading-none">×</button>
+          <button onClick={onClose} aria-label={t("lightbox.close")} className="px-2 text-2xl leading-none">×</button>
         </div>
       </div>
 
