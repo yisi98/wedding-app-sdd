@@ -23,7 +23,9 @@ export default function BeianFooter() {
   if (!icp && !psb) return null;
 
   return (
-    <footer className="w-full py-6 text-center text-xs text-charcoal/50">
+    // Extra bottom padding on mobile lifts the text above the fixed bottom tab bar
+    // (Nav), which would otherwise cover a footer pinned to the viewport bottom.
+    <footer className="w-full pb-20 pt-6 text-center text-xs text-charcoal/50 md:pb-6">
       <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
         {icp && (
           <a
