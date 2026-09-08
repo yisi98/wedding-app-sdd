@@ -62,6 +62,7 @@ export default function FilterBar({
   onViewChange,
   selectMode,
   onToggleSelectMode,
+  onMyUploads,
 }: {
   type: string;
   uploader: string;
@@ -76,6 +77,7 @@ export default function FilterBar({
   onViewChange: (v: GalleryView) => void;
   selectMode?: boolean;
   onToggleSelectMode?: () => void;
+  onMyUploads?: () => void;
 }) {
   const { t } = useTranslation();
 
@@ -123,6 +125,7 @@ export default function FilterBar({
 
       <div className="ml-auto flex items-center gap-2">
         {count !== null && <span className="text-sm text-gray-500">{t("gallery.items", { count })}</span>}
+        {onMyUploads && <button type="button" onClick={onMyUploads} className="rounded-lg border border-gray-300 px-2 py-1.5 text-sm text-gray-600 hover:bg-gray-50">{t("gallery.myUploads")}</button>}
         {onToggleSelectMode && (
           <button
             type="button"

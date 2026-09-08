@@ -15,6 +15,7 @@ export interface UploadItem {
   status: "uploading" | "done" | "duplicate" | "error";
   /** The server's reason for a rejection, shown to the guest. */
   message?: string;
+  file?: File;
 }
 
 /** The API localizes its own error messages (EN/ZH/RU), so prefer its `detail` over a
@@ -98,6 +99,14 @@ export function useUploader(onUploaded: () => void) {
     }
   }
 
+  async function retry(index: number) {
+    const item = items[index];
+    if (!item?.file || item.status === "uploading") return;
+    setItems((list) => list.map((it, i) => i === index ? { ...it, status: "uploading", progress: 0, message: undefined } : it));
+    await uploadOne(item.file, index);
+    onUploaded();
+  }
+
   /** The picker's `accept` attribute only filters the file dialog — dropped files bypass
    * it entirely. Anything that is clearly not an image/video (e.g. an .mkv some browsers
    * report no MIME type for) is rejected locally, instead of hashing hundreds of MB only
@@ -114,12 +123,12 @@ export function useUploader(onUploaded: () => void) {
       ...prev,
       ...list.map((f) =>
         isAllowedType(f)
-          ? { name: f.name, progress: 0, status: "uploading" as const }
+          ? { name: f.name, progress: 0, status: "uploading" as const, file: f }
           : {
               name: f.name,
               progress: 0,
               status: "error" as const,
-              message: t("upload.typeNotAllowed"),
+            message: t("upload.typeNotAllowed"), file: f,
             }
       ),
     ]);
@@ -132,5 +141,5 @@ export function useUploader(onUploaded: () => void) {
     onUploaded();
   }
 
-  return { items, handleFiles, dismiss };
+  return { items, handleFiles, dismiss, retry };
 }

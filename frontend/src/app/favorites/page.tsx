@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import GallerySkeleton from "@/components/GallerySkeleton";
+import ConfirmDialog from "@/components/ConfirmDialog";
 import Lightbox from "@/components/Lightbox";
 import MediaGrid from "@/components/MediaGrid";
 import Nav from "@/components/Nav";
@@ -12,6 +13,7 @@ import { api } from "@/lib/api";
 import { downloadZip } from "@/lib/download";
 import type { Media } from "@/lib/types";
 import { useAuthGuard } from "@/lib/useAuthGuard";
+import { useRealtimeStore } from "@/stores/realtime";
 
 export default function FavoritesPage() {
   const { ready } = useAuthGuard();
@@ -23,6 +25,8 @@ export default function FavoritesPage() {
   const [selectMode, setSelectMode] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [removing, setRemoving] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const pushToast = useRealtimeStore((s) => s.message);
 
   useEffect(() => {
     if (!ready) return;
@@ -73,7 +77,7 @@ export default function FavoritesPage() {
     try {
       await downloadZip(Array.from(selected), t("share.archiveFilename"));
     } catch {
-      window.alert(t("share.downloadFailed"));
+      pushToast(t("share.downloadFailed"));
     } finally {
       setDownloading(false);
     }
@@ -83,7 +87,10 @@ export default function FavoritesPage() {
   // itself stays in the gallery (owners can still delete their own uploads there).
   async function bulkRemove() {
     if (removing || selected.size === 0) return;
-    if (!window.confirm(t("favorites.removeConfirm", { count: selected.size }))) return;
+    setConfirmOpen(true);
+  }
+  async function performBulkRemove() {
+    setConfirmOpen(false);
     setRemoving(true);
     try {
       const { data } = await api.post<{ removed: number[]; skipped: number[] }>(
@@ -95,10 +102,10 @@ export default function FavoritesPage() {
       setActive((prev) => (prev && removedSet.has(prev.id) ? null : prev));
       setSelected(new Set());
       if (data.removed.length > 0) {
-        window.alert(t("favorites.removedCount", { count: data.removed.length }));
+        pushToast(t("favorites.removedCount", { count: data.removed.length }));
       }
     } catch {
-      window.alert(t("favorites.removeFailed"));
+      pushToast(t("favorites.removeFailed"));
     } finally {
       setRemoving(false);
     }
@@ -159,6 +166,7 @@ export default function FavoritesPage() {
           onDeleted={handleDeleted}
         />
       )}
+      {confirmOpen && <ConfirmDialog message={t("favorites.removeConfirm", { count: selected.size })} onCancel={() => setConfirmOpen(false)} onConfirm={() => void performBulkRemove()} />}
     </>
   );
 }

@@ -11,15 +11,17 @@ import { useRealtimeStore } from "@/stores/realtime";
 
 import FilterBar, { type GalleryView } from "./FilterBar";
 import GallerySkeleton from "./GallerySkeleton";
+import ConfirmDialog from "./ConfirmDialog";
 import Lightbox from "./Lightbox";
 import MediaGrid from "./MediaGrid";
 import SelectionBar from "./SelectionBar";
 
 const PAGE = 24;
 
-export default function GalleryGrid({ refreshKey }: { refreshKey: number }) {
+export default function GalleryGrid({ refreshKey, onUpload }: { refreshKey: number; onUpload?: () => void }) {
   const { t } = useTranslation();
   const myUserId = useAuthStore((s) => s.user?.id);
+  const myUsername = useAuthStore((s) => s.user?.username);
   const [items, setItems] = useState<Media[]>([]);
   const [offset, setOffset] = useState(0);
   const [hasMore, setHasMore] = useState(false);
@@ -35,6 +37,9 @@ export default function GalleryGrid({ refreshKey }: { refreshKey: number }) {
   const [deleting, setDeleting] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [count, setCount] = useState<number | null>(null);
+  const [confirmMessage, setConfirmMessage] = useState<string | null>(null);
+  const confirmAction = useRef<(() => void) | null>(null);
+  const pushToast = useRealtimeStore((s) => s.message);
   const [view, setView] = useState<GalleryView>("grid");
   const uploadTick = useRealtimeStore((s) => s.uploadTick);
   const sentinel = useRef<HTMLDivElement | null>(null);
@@ -154,14 +159,17 @@ export default function GalleryGrid({ refreshKey }: { refreshKey: number }) {
     const uncheckedCount = selected.size - selItems.length;
 
     if (mineCount === 0 && uncheckedCount === 0) {
-      window.alert(t("gallery.cannotDeleteOthers"));
+      pushToast(t("gallery.cannotDeleteOthers"));
       return;
     }
     let msg = t("gallery.deleteConfirm", { count: selected.size });
     if (othersCount > 0) msg += `\n${t("gallery.othersWarning", { count: othersCount })}`;
     else if (uncheckedCount > 0) msg += `\n${t("gallery.onlyOwnDeletes")}`;
-    if (!window.confirm(msg)) return;
+    confirmAction.current = () => { setConfirmMessage(null); void performBulkDelete(); };
+    setConfirmMessage(msg);
+  }
 
+  async function performBulkDelete() {
     setDeleting(true);
     try {
       const { data } = await api.post<{ deleted: number[]; skipped: number[] }>(
@@ -179,7 +187,7 @@ export default function GalleryGrid({ refreshKey }: { refreshKey: number }) {
         if (data.skipped.length > 0) {
           summary.push(t("gallery.skippedCount", { count: data.skipped.length }));
         }
-        window.alert(summary.join("\n"));
+        pushToast(summary.join("\n"));
       }
     } finally {
       setDeleting(false);
@@ -192,7 +200,7 @@ export default function GalleryGrid({ refreshKey }: { refreshKey: number }) {
     try {
       await downloadZip(Array.from(selected), t("share.archiveFilename"));
     } catch {
-      window.alert(t("share.downloadFailed"));
+      pushToast(t("share.downloadFailed"));
     } finally {
       setDownloading(false);
     }
@@ -222,6 +230,7 @@ export default function GalleryGrid({ refreshKey }: { refreshKey: number }) {
         onViewChange={setView}
         selectMode={selectMode}
         onToggleSelectMode={() => (selectMode ? exitSelectMode() : setSelectMode(true))}
+        onMyUploads={myUsername && uploader !== myUsername ? () => setUploader(myUsername) : undefined}
       />
 
       {selectMode && items.length > 0 && (
@@ -264,6 +273,7 @@ export default function GalleryGrid({ refreshKey }: { refreshKey: number }) {
           <div className="space-y-2 py-10 text-center text-gray-500">
             <p>{t("gallery.empty")}</p>
             <p className="text-sm md:hidden">{t("gallery.emptyMobile")}</p>
+            {onUpload && <button type="button" aria-label={t("gallery.emptyMobile")} onClick={onUpload} className="rounded bg-accent px-3 py-2 text-sm text-white md:hidden">{t("nav.upload")}</button>}
             <p className="hidden text-sm md:block">{t("gallery.emptyDesktop")}</p>
           </div>
         )
@@ -279,6 +289,8 @@ export default function GalleryGrid({ refreshKey }: { refreshKey: number }) {
       )}
 
       <div ref={sentinel} aria-hidden className="h-1" />
+
+      {confirmMessage && <ConfirmDialog message={confirmMessage} onCancel={() => setConfirmMessage(null)} onConfirm={() => confirmAction.current?.()} />}
 
       {hasMore && (
         <div className="mt-4 text-center">

@@ -6,13 +6,24 @@ import { useTranslation } from "react-i18next";
 import { api, mediaUrl } from "@/lib/api";
 import type { Comment, Media } from "@/lib/types";
 import { useAuthStore } from "@/stores/auth";
+import { useRealtimeStore } from "@/stores/realtime";
 
 import BlurImage from "./BlurImage";
+import ConfirmDialog from "./ConfirmDialog";
 
 const REACTIONS = ["like", "love", "laugh"] as const;
 const EMOJI: Record<string, string> = { like: "👍", love: "❤️", laugh: "😂" };
 // Horizontal travel (px) that counts as a swipe rather than a tap or a vertical scroll.
 const SWIPE_THRESHOLD = 50;
+
+function relativeTime(value: string, t: (key: string, options?: Record<string, unknown>) => string) {
+  const minutes = Math.max(0, Math.floor((Date.now() - new Date(value).getTime()) / 60000));
+  if (minutes < 1) return t("lightbox.justNow");
+  if (minutes < 60) return t("lightbox.minutesAgo", { count: minutes });
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return t("lightbox.hoursAgo", { count: hours });
+  return t("lightbox.daysAgo", { count: Math.floor(hours / 24) });
+}
 
 export default function Lightbox({
   media,
@@ -39,9 +50,14 @@ export default function Lightbox({
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [zoom, setZoom] = useState(1);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const touchStartX = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
+  const pinchStartDistance = useRef<number | null>(null);
+  const pinchStartZoom = useRef(1);
+  const pushToast = useRealtimeStore((s) => s.message);
 
   useEffect(() => {
     let cancelled = false;
@@ -49,6 +65,7 @@ export default function Lightbox({
     setMyReaction(null);
     setFavorited(false);
     setMenuOpen(false);
+    setZoom(1);
     api.post(`/media/${media.id}/view`).catch(() => {});
     api.get(`/media/${media.id}`).then(({ data }) => {
       if (cancelled) return;
@@ -103,11 +120,23 @@ export default function Lightbox({
   }, [goPrev, goNext, onClose, menuOpen]);
 
   function onTouchStart(e: React.TouchEvent) {
+    if (e.touches.length > 1) {
+      pinchStartDistance.current = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+      pinchStartZoom.current = zoom;
+      return;
+    }
     touchStartX.current = e.touches[0].clientX;
     touchStartY.current = e.touches[0].clientY;
   }
 
+  function onTouchMove(e: React.TouchEvent) {
+    if (e.touches.length < 2 || pinchStartDistance.current === null) return;
+    const distance = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+    setZoom(Math.min(4, Math.max(1, pinchStartZoom.current * distance / pinchStartDistance.current)));
+  }
+
   function onTouchEnd(e: React.TouchEvent) {
+    if (pinchStartDistance.current !== null) { pinchStartDistance.current = null; return; }
     if (touchStartX.current === null || touchStartY.current === null) return;
     const dx = e.changedTouches[0].clientX - touchStartX.current;
     const dy = e.changedTouches[0].clientY - touchStartY.current;
@@ -165,11 +194,16 @@ export default function Lightbox({
 
   async function deleteMedia() {
     if (busy) return;
-    if (!window.confirm(t("lightbox.deleteConfirm"))) return;
+    setConfirmDelete(true);
+  }
+  async function performDeleteMedia() {
+    setConfirmDelete(false);
     setBusy(true);
     try {
       await api.delete(`/media/${media.id}`);
       onDeleted?.(media.id);
+    } catch {
+      pushToast(t("lightbox.deleteFailed"));
     } finally {
       setBusy(false);
     }
@@ -213,6 +247,7 @@ export default function Lightbox({
       <div
         className="relative flex flex-1 flex-col items-center justify-center p-4"
         onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
       >
         {isVideo ? (
@@ -224,6 +259,7 @@ export default function Lightbox({
             alt={media.original_filename}
             className="max-h-[60vh] w-auto"
             fit="contain"
+            style={{ transform: `scale(${zoom})`, transformOrigin: "center", touchAction: "none" }}
           />
         )}
 
@@ -302,6 +338,7 @@ export default function Lightbox({
             <div key={c.id} className="flex items-start gap-2 text-sm">
               <span className="flex-1">
                 <b>{c.username}</b> {c.content}
+                <span className="ml-2 text-xs text-white/50">{relativeTime(c.created_at, t)}</span>
               </span>
               {c.user_id === myUserId && (
                 <button
@@ -335,6 +372,7 @@ export default function Lightbox({
           </button>
         </div>
       </div>
+      {confirmDelete && <ConfirmDialog message={t("lightbox.deleteConfirm")} onCancel={() => setConfirmDelete(false)} onConfirm={() => void performDeleteMedia()} />}
     </div>
   );
 }

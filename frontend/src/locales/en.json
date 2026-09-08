@@ -1,7 +1,8 @@
 {
   "app": {
     "title": "Natasha & Yisi's Wedding",
-    "tagline": "Our wedding, through your eyes."
+    "tagline": "Our wedding, through your eyes.",
+    "date": "October 10, 2026"
   },
   "login": {
     "displayName": "Your name",
@@ -58,7 +59,8 @@
     "loadMore": "Load more",
     "loading": "Loading…",
     "select": "Select",
-    "cancelSelect": "Cancel"
+    "cancelSelect": "Cancel",
+    "myUploads": "My uploads"
   },
   "favorites": {
     "empty": "Save your favourite moments here — tap ☆ on any photo.",
@@ -81,7 +83,12 @@
     "next": "Next photo",
     "deleteComment": "Delete comment",
     "delete": "Delete",
-    "deleteConfirm": "Delete this permanently? This cannot be undone."
+    "deleteConfirm": "Delete this permanently? This cannot be undone.",
+    "justNow": "just now",
+    "minutesAgo": "{{count}}m ago",
+    "hoursAgo": "{{count}}h ago",
+    "daysAgo": "{{count}}d ago",
+    "deleteFailed": "Could not delete this photo. Please try again."
   },
   "upload": {
     "drop": "Drag photos & videos here, or click to select",
@@ -94,7 +101,8 @@
     "typeNotAllowed": "This file type is not allowed.",
     "failedCount": "{{count}} failed",
     "overall": "{{done}} of {{total}} done",
-    "dismiss": "Dismiss completed uploads"
+    "dismiss": "Dismiss completed uploads",
+    "retry": "Retry"
   },
   "share": {
     "archiveFilename": "Natasha and Yisi Wedding.zip",
@@ -145,5 +153,9 @@
     "disable": "Stop notifying",
     "blocked": "Notifications are blocked in your browser settings",
     "unsupported": "Notifications aren't supported on this device"
+  },
+  "common": {
+    "cancel": "Cancel",
+    "confirm": "Confirm"
   }
 }
