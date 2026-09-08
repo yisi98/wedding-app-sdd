@@ -41,3 +41,15 @@ frontend/playwright-report/
 # Deployment artifacts (generated locally for file-sync deploys, never committed)
 deploy-*.tgz
 deploy-*.b64
+
+# TLS material (secrets — never commit). Certs live only on the server at
+# infra/nginx/certs/; downloaded bundles/keys must not enter git.
+infra/nginx/certs/
+*.pem
+*.key
+*_nginx.zip
+*_apache.zip
+*_iis.zip
+*_jks.zip
+*_tomcat.zip
+*_other.zip

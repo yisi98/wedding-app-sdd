@@ -27,8 +27,13 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body>
-        <Providers>{children}</Providers>
+      {/* Sticky-footer layout: the content column grows to fill the viewport so the
+          ICP/PSB filing footer always rests at the bottom of the page (MIIT requires
+          it at the bottom of the homepage), even when a page's content is short. */}
+      <body className="flex min-h-screen flex-col">
+        <Providers>
+          <div className="flex flex-1 flex-col">{children}</div>
+        </Providers>
         <BeianFooter />
       </body>
     </html>
