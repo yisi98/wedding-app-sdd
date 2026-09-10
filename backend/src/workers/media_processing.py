@@ -307,11 +307,27 @@ def _process_media_task(media_id: int) -> None:
     """
     import asyncio
 
-    from ..db import async_session_factory
+    from .. import db
 
     async def _run() -> None:
-        async with async_session_factory() as session:
-            await process_and_announce(session, media_id)
+        try:
+            async with db.async_session_factory() as session:
+                await process_and_announce(session, media_id)
+        finally:
+            # An asyncpg pool must not outlive the event loop that created it.
+            # asyncio.run() builds a fresh loop per task and closes it on the way out,
+            # but db.engine is a module-level singleton whose pool survives the task:
+            # the first task in a prefork child opened connections bound to its own
+            # (now closed) loop, and every later task checked those same connections
+            # out under a different one. The task then died on its very first query
+            # with "got Future attached to a different loop" / asyncpg's "another
+            # operation is in progress", before the handler that marks an item FAILED
+            # could run — so the row stayed in PROCESSING and never reached the gallery.
+            # worker_process_init only disposes once per child, which covers sockets
+            # inherited across the fork but not this per-task loop turnover. Disposing
+            # inside the running loop costs one connection handshake per item, which is
+            # the right trade for a worker that must never strand an upload.
+            await db.engine.dispose()
 
     asyncio.run(_run())
 
