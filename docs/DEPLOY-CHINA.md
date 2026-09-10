@@ -163,6 +163,14 @@ Fill `backend/.env`:
 | `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` | **leave unset for a mainland deployment** — see the web push note below |
 | `CORS_ORIGINS` | `["https://your-domain.cn"]` — JSON array; a bare URL crashes pydantic-settings at startup |
 
+> **One origin, not two.** `https://www.your-domain.cn` is a *different origin* from the
+> apex. A browser sitting on www sends a CORS preflight that an apex-only `CORS_ORIGINS`
+> list rejects with `400 Disallowed CORS origin` — the login POST then never leaves the
+> browser, which looks exactly like a wrong password — and login state in localStorage
+> does not carry between the two hosts. `infra/nginx/nginx.conf` strips a leading `www`
+> with a 301 so only the apex ever reaches the app; if you must serve www directly, add
+> it to `CORS_ORIGINS` as well.
+
 > **Compose interpolates `$` inside `backend/.env`** (it is read via `env_file`). Bcrypt
 > hashes like `$2b$12$…` get mangled — the `$salt` segment is treated as an unset
 > variable (warning `The "…" variable is not set`) and blanked out, silently breaking
