@@ -224,3 +224,52 @@ async def test_worker_processing_announces_new_upload_once_ready(client):
             )
         ).scalars().all()
         assert len(events) == 1, "worker must announce exactly one new_upload event"
+
+
+def test_celery_entrypoint_disposes_the_engine_inside_its_own_loop(monkeypatch):
+    """Regression: asyncio.run() gives every Celery task a fresh event loop, but db.engine
+    is a module-level singleton whose asyncpg pool outlived it. The connection opened by
+    the first task stayed bound to that task's closed loop, so every later task in the same
+    prefork child died on its first query ("got Future attached to a different loop",
+    surfacing as asyncpg's "another operation is in progress") and stranded the upload in
+    PROCESSING — invisible in a gallery that lists READY only.
+
+    No SQLite stand-in reproduces asyncpg's loop affinity, so this pins the invariant
+    itself with stubs: the pool must be released inside the loop that opened it, and each
+    task must get a loop of its own.
+    """
+    import asyncio
+
+    from src import db
+    from src.workers import media_processing
+
+    loops: list[asyncio.AbstractEventLoop] = []
+
+    class _Session:
+        async def __aenter__(self):
+            loops.append(asyncio.get_running_loop())
+            return self
+
+        async def __aexit__(self, *_exc):
+            return False
+
+    class _Engine:
+        async def dispose(self):
+            # get_running_loop() raises if the pool is ever released outside a live loop,
+            # which is exactly the mistake this guards against.
+            loops.append(asyncio.get_running_loop())
+
+    async def _noop(_session, _media_id):
+        return None
+
+    monkeypatch.setattr(db, "engine", _Engine())
+    monkeypatch.setattr(db, "async_session_factory", _Session)
+    monkeypatch.setattr(media_processing, "process_and_announce", _noop)
+
+    media_processing._process_media_task(1)
+    media_processing._process_media_task(2)
+
+    assert len(loops) == 4, "each task must open a session and then release the pool"
+    assert loops[0] is loops[1], "the pool must be disposed in the loop that used it"
+    assert loops[2] is loops[3]
+    assert loops[0] is not loops[2], "the second task must not reuse the first task's loop"
