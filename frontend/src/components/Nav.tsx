@@ -26,8 +26,7 @@ export default function Nav() {
   const { user, clear } = useAuthStore();
   const [menuOpen, setMenuOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  // Refresh callback is a no-op: a successful upload's own websocket broadcast already
-  // bumps GalleryGrid's uploadTick and triggers its refetch, on whatever page it's mounted.
+  // The shared hook refreshes the gallery after each file, even without a live socket.
   const { items: uploadItems, handleFiles, dismiss: dismissUploads } = useUploader(() => {});
 
   async function logout() {
@@ -138,7 +137,7 @@ export default function Nav() {
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/*,video/*"
+          accept="image/*,video/*,.mp4,.mov,.m4v,.webm"
           multiple
           hidden
           onChange={(e) => {

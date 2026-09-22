@@ -4,10 +4,9 @@ import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import Nav from "@/components/Nav";
-import { api, API_BASE, mediaUrl } from "@/lib/api";
+import { api, mediaUrl } from "@/lib/api";
 import type { Media, User } from "@/lib/types";
 import { useAuthGuard } from "@/lib/useAuthGuard";
-import { useAuthStore } from "@/stores/auth";
 
 const PAGE = 24;
 
@@ -34,6 +33,8 @@ export default function AdminPage() {
   const { ready, user: me } = useAuthGuard(true);
   const { t } = useTranslation();
   const [stats, setStats] = useState<Stats | null>(null);
+  const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState(false);
   const [config, setConfig] = useState<EventConfig | null>(null);
 
   const [users, setUsers] = useState<User[]>([]);
@@ -89,12 +90,6 @@ export default function AdminPage() {
     await Promise.all([loadUsers(), loadSummary()]);
   }
 
-  async function removeUser(id: number) {
-    if (!confirm(t("admin.confirmDeleteUser"))) return;
-    await api.delete(`/admin/users/${id}`);
-    await Promise.all([loadUsers(), loadSummary()]);
-  }
-
   async function toggleVisibility(m: Media) {
     await api.patch(`/admin/media/${m.id}/visibility`, { is_visible: !m.is_visible });
     loadMedia();
@@ -115,17 +110,27 @@ export default function AdminPage() {
   }
 
   async function exportCsv() {
-    const token = useAuthStore.getState().accessToken;
-    const res = await fetch(`${API_BASE}/api/v1/admin/export/media`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "media.csv";
-    a.click();
-    URL.revokeObjectURL(url);
+    if (exporting) return;
+    setExporting(true);
+    setExportError(false);
+    try {
+      // Use the authenticated client so an expired access token is refreshed.
+      const { data } = await api.get<Blob>("/admin/export/media", { responseType: "blob" });
+      // UTF-8 BOM keeps Russian and Chinese filenames readable in spreadsheet apps.
+      const url = URL.createObjectURL(new Blob(["\uFEFF", data], { type: "text/csv;charset=utf-8" }));
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "media.csv";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      // Give the browser time to start the download before releasing the blob.
+      window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    } catch {
+      setExportError(true);
+    } finally {
+      setExporting(false);
+    }
   }
 
   if (!ready) return null;
@@ -201,10 +206,11 @@ export default function AdminPage() {
           <section>
             <div className="mb-2 flex items-center justify-between">
               <h2 className="font-serif font-semibold">{t("admin.media")}</h2>
-              <button onClick={exportCsv} className="rounded bg-accent px-3 py-1 text-sm text-white">
-                {t("admin.export")}
+              <button onClick={exportCsv} disabled={exporting} className="rounded bg-accent px-3 py-1 text-sm text-white disabled:opacity-50">
+                {t(exporting ? "admin.exporting" : "admin.export")}
               </button>
             </div>
+            {exportError && <p role="alert" className="mb-2 text-sm text-red-600">{t("admin.exportError")}</p>}
             <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
               {media.map((m) => {
                 // Pending/failed items have no derivative yet; an <img> with an empty src
@@ -302,12 +308,6 @@ export default function AdminPage() {
                               className="text-gray-500 hover:underline"
                             >
                               {u.is_active ? t("admin.deactivate") : t("admin.activate")}
-                            </button>
-                            <button
-                              onClick={() => removeUser(u.id)}
-                              className="text-red-600 hover:underline"
-                            >
-                              {t("admin.delete")}
                             </button>
                           </>
                         )}

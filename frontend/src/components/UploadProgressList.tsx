@@ -19,7 +19,7 @@ export default function UploadProgressList({ items, onDismiss }: { items: Upload
   const total = items.length;
   const overall = tracked.length
     ? Math.round(
-        tracked.reduce((sum, it) => sum + (it.status === "uploading" ? it.progress : 100), 0) /
+        tracked.reduce((sum, it) => sum + (it.status === "uploading" ? (it.phase === "queued" || it.phase === "preparing" ? 0 : it.progress) : 100), 0) /
           tracked.length
       )
     : null;
@@ -50,8 +50,8 @@ export default function UploadProgressList({ items, onDismiss }: { items: Upload
         </>
       )}
       {expanded && <ul className="mt-2 max-h-48 space-y-1 overflow-y-auto pr-1">
-        {items.map((it, i) => (
-          <li key={i} className="flex flex-col gap-0.5">
+        {items.map((it) => (
+          <li key={it.id} className="flex flex-col gap-0.5">
             <div
               className={`flex items-center gap-2 rounded px-1 py-0.5 ${
                 it.status === "error" ? "bg-red-500/10" : ""
@@ -76,7 +76,7 @@ export default function UploadProgressList({ items, onDismiss }: { items: Upload
                     ? t("upload.duplicate")
                     : it.status === "error"
                       ? t("upload.failed")
-                      : `${it.progress}%`}
+                      : it.phase ? `${t(`upload.${it.phase}`)}${it.phase === "preparing" ? ` ${it.progress}%` : ""}` : `${it.progress}%`}
               </span>
             </div>
             {it.status === "uploading" && (

@@ -15,7 +15,6 @@ type SelectionBarProps = {
   deleteLabel: string;
   onDelete: () => void;
   deleting?: boolean;
-  onCancel?: () => void;
 };
 
 /**
@@ -33,7 +32,6 @@ export default function SelectionBar({
   deleteLabel,
   onDelete,
   deleting = false,
-  onCancel,
 }: SelectionBarProps) {
   const { t } = useTranslation();
 
@@ -58,7 +56,7 @@ export default function SelectionBar({
             aria-label={t("gallery.downloadSelected")}
             className="rounded bg-accent px-3 py-1 text-sm text-white disabled:opacity-50"
           >
-            {downloading ? t("gallery.downloading") : `⬇ ${count}`}
+            {downloading ? t("gallery.downloading") : `${t("lightbox.download")} ${count}`}
           </button>
           <button
             onClick={onDelete}
@@ -68,11 +66,6 @@ export default function SelectionBar({
             {deleteLabel}
           </button>
         </>
-      )}
-      {onCancel && (
-        <button onClick={onCancel} className="rounded border px-2 py-1 text-sm">
-          {t("gallery.cancelSelect")}
-        </button>
       )}
     </div>
   );

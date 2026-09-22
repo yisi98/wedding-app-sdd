@@ -21,7 +21,8 @@ export default function GalleryGrid({ refreshKey }: { refreshKey: number }) {
   const { t } = useTranslation();
   const myUserId = useAuthStore((s) => s.user?.id);
   const [items, setItems] = useState<Media[]>([]);
-  const [offset, setOffset] = useState(0);
+  const offset = useRef(0);
+  const pending = useRef<AbortController | null>(null);
   const [hasMore, setHasMore] = useState(false);
   const [type, setType] = useState("");
   const [uploader, setUploader] = useState("");
@@ -40,28 +41,67 @@ export default function GalleryGrid({ refreshKey }: { refreshKey: number }) {
   const sentinel = useRef<HTMLDivElement | null>(null);
 
   const load = useCallback(
-    async (reset: boolean) => {
-      const nextOffset = reset ? 0 : offset;
-      const params = new URLSearchParams({ sort, limit: String(PAGE), offset: String(nextOffset) });
-      if (type) params.set("media_type", type);
-      if (uploader) params.set("uploader", uploader);
-      setLoading(true);
+    async (reset: boolean, background = false) => {
+      if (background && pending.current) return;
+      pending.current?.abort();
+      const controller = new AbortController();
+      pending.current = controller;
+      const nextOffset = reset ? 0 : offset.current;
+      const limit = reset ? Math.max(PAGE, offset.current) : PAGE;
+      if (!background) setLoading(true);
       try {
-        const { data } = await api.get(`/media?${params.toString()}`);
-        setItems((prev) => (reset ? data.items : [...prev, ...data.items]));
-        setHasMore(data.has_more);
-        setOffset(nextOffset + PAGE);
+        const refreshed: Media[] = [];
+        let more = false;
+        do {
+          const params = new URLSearchParams({ sort, limit: String(Math.min(100, limit - refreshed.length)), offset: String(nextOffset + refreshed.length) });
+          if (type) params.set("media_type", type);
+          if (uploader) params.set("uploader", uploader);
+          const { data } = await api.get(`/media?${params}`, { signal: controller.signal });
+          refreshed.push(...data.items);
+          more = data.has_more;
+          if (!data.items.length) break;
+        } while (more && refreshed.length < limit);
+        if (controller.signal.aborted) return;
+        setItems((prev) => reset ? refreshed : [...prev, ...refreshed]);
+        setHasMore(more);
+        offset.current = nextOffset + refreshed.length;
+      } catch {
+        // Preserve the current gallery during a transient failure; polling retries.
       } finally {
-        setLoading(false);
+        if (pending.current === controller) {
+          pending.current = null;
+          setLoading(false);
+        }
       }
     },
-    [offset, sort, type, uploader]
+    [sort, type, uploader]
   );
 
   useEffect(() => {
-    load(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sort, type, uploader, refreshKey]);
+    offset.current = 0;
+    return () => pending.current?.abort();
+  }, [load]);
+
+  useEffect(() => {
+    void load(true);
+  }, [load, refreshKey, uploadTick]);
+
+  useEffect(() => {
+    const refresh = () => {
+      if (document.visibilityState !== "visible") return;
+      void load(true, true);
+      const params = new URLSearchParams();
+      if (type) params.set("media_type", type);
+      if (uploader) params.set("uploader", uploader);
+      api.get<number>(`/media/count?${params}`).then(({ data }) => setCount(data)).catch(() => {});
+    };
+    const timer = window.setInterval(refresh, 3000);
+    document.addEventListener("visibilitychange", refresh);
+    return () => {
+      window.clearInterval(timer);
+      document.removeEventListener("visibilitychange", refresh);
+    };
+  }, [load, type, uploader]);
 
   useEffect(() => {
     api.get("/media/uploaders").then(({ data }) => setUploaders(data));
@@ -77,14 +117,6 @@ export default function GalleryGrid({ refreshKey }: { refreshKey: number }) {
       .then(({ data }) => setCount(data))
       .catch(() => {});
   }, [type, uploader, refreshKey, uploadTick]);
-
-  // Someone else uploaded: pull the first page again so the new photo actually appears,
-  // instead of only announcing it via a toast (FR-022).
-  useEffect(() => {
-    if (uploadTick === 0) return;
-    load(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [uploadTick]);
 
   // FR-011 infinite scroll: fetch the next page as the sentinel comes into view. The
   // "Load more" button stays as a fallback for browsers without IntersectionObserver.
@@ -238,7 +270,6 @@ export default function GalleryGrid({ refreshKey }: { refreshKey: number }) {
           }
           onDelete={bulkDelete}
           deleting={deleting}
-          onCancel={exitSelectMode}
         />
       )}
 

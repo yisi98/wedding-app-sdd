@@ -46,7 +46,7 @@
     "cannotDeleteOthers": "You can only delete photos and videos that you uploaded yourself.",
     "uploadedBy": "uploaded by {{name}}",
     "deletedGuest": "a deleted guest",
-    "selectAllMatching": "Select all matching",
+    "selectAllMatching": "Select all",
     "selecting": "Selecting…",
     "clearSelection": "Clear selection",
     "downloadSelected": "Download selected items",
@@ -84,6 +84,9 @@
     "deleteConfirm": "Delete this permanently? This cannot be undone."
   },
   "upload": {
+    "queued": "Queued",
+    "preparing": "Preparing…",
+    "processing": "Finishing…",
     "drop": "Drag photos & videos here, or click to select",
     "uploading": "Uploading…",
     "done": "Done",
@@ -113,6 +116,8 @@
     "hide": "Hide",
     "show": "Show",
     "export": "Export CSV",
+    "exporting": "Exporting…",
+    "exportError": "Could not export CSV. Please try again.",
     "totalReactions": "Reactions",
     "totalComments": "Comments",
     "byType": "By type",
