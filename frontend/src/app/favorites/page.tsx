@@ -132,7 +132,6 @@ export default function FavoritesPage() {
               }
               onDelete={bulkRemove}
               deleting={removing}
-              onCancel={exitSelectMode}
             />
           )}
           {loading && items.length === 0 ? (

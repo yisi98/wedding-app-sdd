@@ -46,7 +46,7 @@
     "cannotDeleteOthers": "只能删除您自己上传的照片和视频。",
     "uploadedBy": "由 {{name}} 上传",
     "deletedGuest": "已删除的宾客",
-    "selectAllMatching": "全选符合条件的",
+    "selectAllMatching": "全选",
     "selecting": "选择中……",
     "clearSelection": "清除选择",
     "downloadSelected": "下载所选项目",
@@ -84,6 +84,9 @@
     "deleteConfirm": "永久删除吗？此操作无法撤销。"
   },
   "upload": {
+    "queued": "排队中",
+    "preparing": "准备中……",
+    "processing": "正在完成……",
     "drop": "将照片和视频拖到此处，或点击选择",
     "uploading": "上传中……",
     "done": "完成",
@@ -113,6 +116,8 @@
     "hide": "隐藏",
     "show": "显示",
     "export": "导出 CSV",
+    "exporting": "正在导出……",
+    "exportError": "无法导出 CSV，请重试。",
     "totalReactions": "点赞",
     "totalComments": "评论",
     "byType": "按类型",

@@ -11,6 +11,7 @@ interface RealtimeState {
   /** Bumped on every new_upload event, so views can refresh themselves rather than
    * telling a guest something arrived and then not showing it until a manual reload. */
   uploadTick: number;
+  refreshUploads: () => void;
   push: (event_type: string, user: string) => void;
   dismiss: (id: number) => void;
 }
@@ -20,6 +21,7 @@ let counter = 0;
 export const useRealtimeStore = create<RealtimeState>((set) => ({
   toasts: [],
   uploadTick: 0,
+  refreshUploads: () => set((state) => ({ uploadTick: state.uploadTick + 1 })),
   push: (event_type, user) =>
     set((state) => ({
       toasts: [...state.toasts, { id: ++counter, event_type, user }],

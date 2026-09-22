@@ -37,10 +37,15 @@ export default function Uploader({ onUploaded }: { onUploaded: () => void }) {
         <input
           ref={inputRef}
           type="file"
-          accept="image/*,video/*"
+          accept="image/*,video/*,.mp4,.mov,.m4v,.webm"
           multiple
           hidden
-          onChange={(e) => handleFiles(e.target.files)}
+          onClick={(e) => e.stopPropagation()}
+          onChange={(e) => {
+            const files = Array.from(e.currentTarget.files || []);
+            e.currentTarget.value = "";
+            void handleFiles(files);
+          }}
         />
       </div>
       {items.length > 0 && (

@@ -1,18 +1,22 @@
 "use client";
 
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { api } from "@/lib/api";
+import { hashFile, uploadMimeType } from "@/lib/upload";
+import { useRealtimeStore } from "@/stores/realtime";
 
 /** How long finished upload rows stay on screen before clearing themselves. */
 const CLEAR_AFTER_MS = 3000;
 
 export interface UploadItem {
+  id: number;
   name: string;
   progress: number;
   status: "uploading" | "done" | "duplicate" | "error";
+  phase?: "queued" | "preparing" | "processing";
   /** The server's reason for a rejection, shown to the guest. */
   message?: string;
 }
@@ -30,19 +34,13 @@ function serverMessage(err: unknown): string | undefined {
   return undefined;
 }
 
-async function sha256Hex(file: File): Promise<string> {
-  const buffer = await file.arrayBuffer();
-  const digest = await crypto.subtle.digest("SHA-256", buffer);
-  return Array.from(new Uint8Array(digest))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-}
-
 /** Shared upload flow — used by the desktop dropzone and the mobile nav's "+" button, so
  * there is exactly one implementation of hash/init/PUT/confirm and its progress state. */
 export function useUploader(onUploaded: () => void) {
   const { t } = useTranslation();
   const [items, setItems] = useState<UploadItem[]>([]);
+  const nextId = useRef(0);
+  const queue = useRef(Promise.resolve());
   function dismiss() {
     setItems((list) => list.filter((it) => it.status === "uploading"));
   }
@@ -59,14 +57,17 @@ export function useUploader(onUploaded: () => void) {
     return () => clearTimeout(timer);
   }, [items]);
 
-  async function uploadOne(file: File, index: number) {
+  async function uploadOne(file: File, id: number) {
     const setStatus = (patch: Partial<UploadItem>) =>
-      setItems((list) => list.map((it, i) => (i === index ? { ...it, ...patch } : it)));
+      setItems((list) => list.map((it) => (it.id === id ? { ...it, ...patch } : it)));
     try {
-      const fileHash = await sha256Hex(file);
+      setStatus({ phase: "preparing", progress: 0 });
+      const mimeType = uploadMimeType(file);
+      const fileHash = await hashFile(file, (progress) => setStatus({ progress }));
+      setStatus({ phase: undefined, progress: 0 });
       const init = await api.post("/media/upload/init", {
         original_filename: file.name,
-        mime_type: file.type,
+        mime_type: mimeType,
         file_size: file.size,
         file_hash: fileHash,
       });
@@ -75,7 +76,7 @@ export function useUploader(onUploaded: () => void) {
       if (upload_url.startsWith("http")) {
         // Direct presigned PUT to object storage (prod).
         await axios.put(upload_url, file, {
-          headers: { "Content-Type": file.type },
+          headers: { "Content-Type": mimeType },
           onUploadProgress: (e) => setStatus({ progress: Math.round((100 * e.loaded) / (e.total || 1)) }),
         });
       } else {
@@ -85,8 +86,12 @@ export function useUploader(onUploaded: () => void) {
           onUploadProgress: (e) => setStatus({ progress: Math.round((100 * e.loaded) / (e.total || 1)) }),
         });
       }
-      await api.post("/media/upload/confirm", { media_id });
+      setStatus({ phase: "processing" });
+      const { data } = await api.post("/media/upload/confirm", { media_id });
+      if (data.status === "failed") throw new Error("Processing failed");
       setStatus({ progress: 100, status: "done" });
+      useRealtimeStore.getState().refreshUploads();
+      onUploaded();
     } catch (err) {
       const isDuplicate = axios.isAxiosError(err) && err.response?.status === 409;
       setStatus({
@@ -103,19 +108,20 @@ export function useUploader(onUploaded: () => void) {
    * report no MIME type for) is rejected locally, instead of hashing hundreds of MB only
    * for the server to refuse it. The backend still validates against its own allow-list. */
   function isAllowedType(file: File): boolean {
-    return file.type.startsWith("image/") || file.type.startsWith("video/");
+    const type = uploadMimeType(file);
+    return type.startsWith("image/") || type.startsWith("video/");
   }
 
   async function handleFiles(files: FileList | File[] | null) {
     if (!files || files.length === 0) return;
-    const list = Array.from(files);
-    const start = items.length;
+    const list = Array.from(files).map((file) => ({ file, id: nextId.current++ }));
     setItems((prev) => [
       ...prev,
-      ...list.map((f) =>
+      ...list.map(({ file: f, id }) =>
         isAllowedType(f)
-          ? { name: f.name, progress: 0, status: "uploading" as const }
+          ? { id, name: f.name, progress: 0, status: "uploading" as const, phase: "queued" as const }
           : {
+              id,
               name: f.name,
               progress: 0,
               status: "error" as const,
@@ -123,13 +129,10 @@ export function useUploader(onUploaded: () => void) {
             }
       ),
     ]);
-    await Promise.all(
-      list
-        .map((file, i) => ({ file, i }))
-        .filter(({ file }) => isAllowedType(file))
-        .map(({ file, i }) => uploadOne(file, start + i))
-    );
-    onUploaded();
+    for (const { file, id } of list.filter(({ file }) => isAllowedType(file))) {
+      queue.current = queue.current.then(() => uploadOne(file, id));
+    }
+    await queue.current;
   }
 
   return { items, handleFiles, dismiss };

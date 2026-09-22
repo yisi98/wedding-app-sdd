@@ -1,6 +1,6 @@
 {
   "app": {
-    "title": "Свадьба Natasha и Yisi",
+    "title": "Свадьба Наташи и Исы",
     "tagline": "Наша свадьба вашими глазами."
   },
   "login": {
@@ -46,7 +46,7 @@
     "cannotDeleteOthers": "Вы можете удалять только загруженные вами фото и видео.",
     "uploadedBy": "загрузил(а) {{name}}",
     "deletedGuest": "удалённый гость",
-    "selectAllMatching": "Выбрать все подходящие",
+    "selectAllMatching": "Выбрать все",
     "selecting": "Выбор…",
     "clearSelection": "Снять выбор",
     "downloadSelected": "Скачать выбранные элементы",
@@ -84,6 +84,9 @@
     "deleteConfirm": "Удалить навсегда? Это действие нельзя отменить."
   },
   "upload": {
+    "queued": "В очереди",
+    "preparing": "Подготовка…",
+    "processing": "Завершение…",
     "drop": "Перетащите фото и видео сюда или нажмите для выбора",
     "uploading": "Загрузка…",
     "done": "Готово",
@@ -113,6 +116,8 @@
     "hide": "Скрыть",
     "show": "Показать",
     "export": "Экспорт CSV",
+    "exporting": "Экспорт…",
+    "exportError": "Не удалось экспортировать CSV. Попробуйте ещё раз.",
     "totalReactions": "Реакции",
     "totalComments": "Комментарии",
     "byType": "По типу",
